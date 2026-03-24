@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type AuthUser = {
   id: string;
@@ -7,19 +8,30 @@ export type AuthUser = {
   last_name: string;
 };
 
+type AuthUserState = AuthUser | Record<string, unknown>;
+
 type AuthStore = {
-  user: AuthUser | null;
+  user: AuthUserState | null;
   activeOrganizationId: string | null;
-  setUser: (user: AuthUser | null) => void;
+  setAuth: (user: AuthUserState | null) => void;
+  setUser: (user: AuthUserState | null) => void;
   setActiveOrganizationId: (activeOrganizationId: string | null) => void;
   logout: () => void;
 };
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
-  activeOrganizationId: null,
-  setUser: (user) => set({ user }),
-  setActiveOrganizationId: (activeOrganizationId) =>
-    set({ activeOrganizationId }),
-  logout: () => set({ user: null, activeOrganizationId: null }),
-}));
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      activeOrganizationId: null,
+      setAuth: (user) => set({ user }),
+      setUser: (user) => set({ user }),
+      setActiveOrganizationId: (activeOrganizationId) =>
+        set({ activeOrganizationId }),
+      logout: () => set({ user: null, activeOrganizationId: null }),
+    }),
+    {
+      name: 'tourcrm-auth-storage',
+    }
+  )
+);
