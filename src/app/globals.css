@@ -128,3 +128,22 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .kinetic-gradient {
+    background: linear-gradient(135deg, #57f1db 0%, #2dd4bf 100%);
+  }
+
+  .glass-panel {
+    background: rgba(49, 53, 60, 0.4);
+    backdrop-filter: blur(20px);
+  }
+
+  .glow-hover:hover {
+    box-shadow: 0 0 20px rgba(87, 241, 219, 0.2);
+  }
+
+  .tight-tracking {
+    letter-spacing: -0.04em;
+  }
+}
