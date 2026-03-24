@@ -13,9 +13,11 @@ type AuthUserState = AuthUser | Record<string, unknown>;
 type AuthStore = {
   user: AuthUserState | null;
   activeOrganizationId: string | null;
+  _hasHydrated: boolean;
   setAuth: (user: AuthUserState | null) => void;
   setUser: (user: AuthUserState | null) => void;
   setActiveOrganizationId: (activeOrganizationId: string | null) => void;
+  setHasHydrated: (state: boolean) => void;
   logout: () => void;
 };
 
@@ -24,14 +26,19 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       activeOrganizationId: null,
+      _hasHydrated: false,
       setAuth: (user) => set({ user }),
       setUser: (user) => set({ user }),
       setActiveOrganizationId: (activeOrganizationId) =>
         set({ activeOrganizationId }),
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
       logout: () => set({ user: null, activeOrganizationId: null }),
     }),
     {
       name: 'tourcrm-auth-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

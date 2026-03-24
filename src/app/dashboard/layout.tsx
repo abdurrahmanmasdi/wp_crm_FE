@@ -3,8 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-
-import { useAuthHydrated } from '@/hooks/use-auth-hydrated';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function LoadingSpinner() {
@@ -19,22 +17,28 @@ export default function DashboardLayout({
   children: ReactNode;
 }>) {
   const router = useRouter();
+  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
-  const hasHydrated = useAuthHydrated();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (!hasHydrated) {
+    if (!_hasHydrated) {
+      return;
+    }
+
+    if (user == null) {
+      router.push('/auth/login');
       return;
     }
 
     if (!activeOrganizationId) {
       router.push('/onboarding');
     }
-  }, [activeOrganizationId, hasHydrated, router]);
+  }, [_hasHydrated, activeOrganizationId, user, router]);
 
-  if (!hasHydrated || !activeOrganizationId) {
+  if (!_hasHydrated || user == null || !activeOrganizationId) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
         <LoadingSpinner />

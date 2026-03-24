@@ -8,7 +8,6 @@ import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingChoiceCard } from '@/components/onboarding/onboarding-choice-card';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 import { OnboardingNav } from '@/components/onboarding/onboarding-nav';
-import { useAuthHydrated } from '@/hooks/use-auth-hydrated';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function getDisplayName(user: unknown) {
@@ -23,34 +22,29 @@ function getDisplayName(user: unknown) {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const user = useAuthStore((state) => state.user);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
   const logout = useAuthStore((state) => state.logout);
-  const hasHydrated = useAuthHydrated();
 
   useEffect(() => {
-    if (!hasHydrated) {
+    if (!_hasHydrated) {
+      return;
+    }
+
+    if (user == null) {
+      router.push('/auth/login');
       return;
     }
 
     if (activeOrganizationId) {
       router.push('/dashboard');
     }
-  }, [activeOrganizationId, hasHydrated, router]);
+  }, [_hasHydrated, activeOrganizationId, user, router]);
 
-  useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
-
-    if (user === null) {
-      router.push('/auth/login');
-    }
-  }, [hasHydrated, router, user]);
-
-  if (!hasHydrated || !user || activeOrganizationId) {
+  if (!_hasHydrated || !user || activeOrganizationId) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
         <LoadingSpinner />
