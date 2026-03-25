@@ -1,6 +1,6 @@
 'use client';
-
-import { Languages, MoonStar } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 export function OnboardingNav() {
   return (
@@ -10,19 +10,8 @@ export function OnboardingNav() {
       </div>
 
       <div className="flex items-center gap-6">
-        <button
-          type="button"
-          className="flex scale-95 items-center gap-2 text-[#bacac5] transition-transform duration-200 hover:text-[#57f1db] active:scale-90"
-        >
-          <MoonStar className="h-4 w-4" />
-        </button>
-
-        <div className="group flex cursor-pointer items-center gap-2 text-[#bacac5] transition-colors duration-200 hover:text-[#57f1db]">
-          <Languages className="h-4 w-4" />
-          <span className="text-[0.6875rem] font-semibold tracking-widest uppercase">
-            EN
-          </span>
-        </div>
+        <ThemeToggle />
+        <LanguageToggle />
       </div>
     </nav>
   );

@@ -3,11 +3,13 @@
 import { Building2, PlusCircle } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingChoiceCard } from '@/components/onboarding/onboarding-choice-card';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 import { OnboardingNav } from '@/components/onboarding/onboarding-nav';
+import { orgService, type OrganizationMembership } from '@/lib/org.service';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function getDisplayName(user: unknown) {
@@ -20,6 +22,27 @@ function getDisplayName(user: unknown) {
   return profile.firstName ?? profile.first_name ?? 'there';
 }
 
+function getMemberships(data: unknown): OrganizationMembership[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (data && typeof data === 'object') {
+    const response = data as {
+      memberships?: OrganizationMembership[];
+      organizations?: OrganizationMembership[];
+    };
+
+    return response.memberships ?? response.organizations ?? [];
+  }
+
+  return [];
+}
+
+function getOrganizationId(membership: OrganizationMembership) {
+  return membership.organizationId ?? membership.organization?.id ?? null;
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
@@ -28,6 +51,15 @@ export default function OnboardingPage() {
     (state) => state.activeOrganizationId
   );
   const logout = useAuthStore((state) => state.logout);
+
+  const membershipsQuery = useQuery({
+    queryKey: ['my-memberships'],
+    queryFn: async () => {
+      const response = await orgService.getMyMemberships();
+      return response.data;
+    },
+    enabled: _hasHydrated && user != null,
+  });
 
   useEffect(() => {
     if (!_hasHydrated) {
@@ -43,6 +75,41 @@ export default function OnboardingPage() {
       router.push('/dashboard');
     }
   }, [_hasHydrated, activeOrganizationId, user, router]);
+
+  useEffect(() => {
+    if (!_hasHydrated || membershipsQuery.isLoading) {
+      return;
+    }
+
+    const memberships = getMemberships(membershipsQuery.data);
+
+    if (memberships.length === 0) {
+      return;
+    }
+
+    const pendingMembership = memberships.find(
+      (membership) => membership.status === 'pending_approval'
+    );
+
+    if (pendingMembership) {
+      router.push('/onboarding/waiting');
+      return;
+    }
+
+    const activeMembership = memberships.find(
+      (membership) => membership.status === 'active'
+    );
+
+    if (activeMembership) {
+      const organizationId = getOrganizationId(activeMembership);
+
+      if (organizationId) {
+        useAuthStore.getState().setActiveOrganizationId(organizationId);
+      }
+
+      router.push('/dashboard');
+    }
+  }, [_hasHydrated, membershipsQuery.data, membershipsQuery.isLoading, router]);
 
   if (!_hasHydrated || !user || activeOrganizationId) {
     return (
