@@ -8,12 +8,12 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { orgService } from '@/lib/org.service';
 import { useAuthStore } from '@/store/useAuthStore';
-import { OnboardingNav } from '@/components/onboarding/onboarding-nav';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 
 const joinWorkspaceSchema = z.object({
@@ -106,7 +106,7 @@ export default function JoinWorkspacePage() {
 
   return (
     <main className="relative flex min-h-screen flex-col bg-[#0d1117] text-[#dfe2eb]">
-      <OnboardingNav />
+      <OnboardingHeader />
 
       <section className="flex flex-1 flex-col items-center justify-center bg-[#0d1117] px-4 pt-24 pb-12">
         <section className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#181c22] p-8 shadow-2xl shadow-black/30 md:p-12">

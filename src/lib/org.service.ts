@@ -4,6 +4,22 @@ export type JoinOrganizationPayload = {
   slug: string;
 };
 
+export type CreateOrganizationPayload = {
+  name: string;
+  slug: string;
+};
+
+export type InviteTeamMemberPayload = {
+  email: string;
+  role: string;
+};
+
+export type Organization = {
+  id: string;
+  name?: string;
+  slug?: string;
+};
+
 export type OrganizationMembership = {
   id?: string;
   status?: 'active' | 'pending_approval' | string;
@@ -23,6 +39,12 @@ export type MyMembershipsResponse =
 export const orgService = {
   joinOrganization(payload: JoinOrganizationPayload) {
     return api.post('/organizations/join', payload);
+  },
+  createOrganization(payload: CreateOrganizationPayload) {
+    return api.post<Organization>('/organizations', payload);
+  },
+  inviteTeamMember(orgId: string, payload: InviteTeamMemberPayload) {
+    return api.post(`/organizations/${orgId}/invite`, payload);
   },
   getMyMemberships() {
     return api.get<MyMembershipsResponse>('/users/me/organizations');
