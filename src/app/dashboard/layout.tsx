@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ReactNode } from 'react';
+
+import { DashboardHeader } from '@/components/layout/DashboardHeader';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function LoadingSpinner() {
@@ -46,5 +48,15 @@ export default function DashboardLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-[#0d1117] text-[#dfe2eb]">
+      <Sidebar />
+
+      <div className="ml-64 min-h-screen">
+        <DashboardHeader />
+
+        <main className="bg-[#0a0e14] px-6 py-8 lg:px-8">{children}</main>
+      </div>
+    </div>
+  );
 }

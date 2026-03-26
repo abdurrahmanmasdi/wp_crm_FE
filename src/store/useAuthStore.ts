@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import Cookies from 'js-cookie';
 
 export type AuthUser = {
   id: string;
@@ -32,7 +33,10 @@ export const useAuthStore = create<AuthStore>()(
       setActiveOrganizationId: (activeOrganizationId) =>
         set({ activeOrganizationId }),
       setHasHydrated: (state) => set({ _hasHydrated: state }),
-      logout: () => set({ user: null, activeOrganizationId: null }),
+      logout: () => {
+        Cookies.remove('access_token', { path: '/' });
+        set({ user: null, activeOrganizationId: null });
+      },
     }),
     {
       name: 'tourcrm-auth-storage',
