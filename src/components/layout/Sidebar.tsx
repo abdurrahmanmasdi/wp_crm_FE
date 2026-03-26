@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { LayoutDashboard, Settings, MapPinned, Users } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -16,10 +16,19 @@ const navigationItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const locale = useLocale();
   const t = useTranslations('Navigation');
+  const isRTL = locale === 'ar';
 
   return (
-    <aside className="bg-background text-foreground fixed top-0 left-0 flex h-screen w-64 flex-col border-r border-white/5 px-4 py-6 shadow-2xl shadow-black/30">
+    <aside
+      className={cn(
+        'bg-background text-foreground fixed top-0 flex h-screen w-64 flex-col px-4 py-6 shadow-2xl shadow-black/30',
+        isRTL
+          ? 'right-0 border-l border-white/5'
+          : 'left-0 border-r border-white/5'
+      )}
+    >
       <div className="mb-10 flex items-center gap-3 px-2">
         <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-2xl shadow-[0_0_18px_var(--glow-primary-sm)]">
           <LayoutDashboard className="h-5 w-5" />

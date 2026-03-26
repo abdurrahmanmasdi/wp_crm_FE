@@ -2,10 +2,12 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
+import { cn } from '@/lib/utils';
 
 function LoadingSpinner() {
   return (
@@ -19,6 +21,8 @@ export default function DashboardLayout({
   children: ReactNode;
 }>) {
   const router = useRouter();
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
@@ -52,7 +56,7 @@ export default function DashboardLayout({
     <div className="bg-background text-foreground min-h-screen">
       <Sidebar />
 
-      <div className="ml-64 min-h-screen">
+      <div className={cn('min-h-screen', isRTL ? 'mr-64' : 'ml-64')}>
         <DashboardHeader />
 
         <main className="bg-secondary h-[calc(100vh-64px)] px-6 py-8 lg:px-8">
