@@ -115,4 +115,23 @@ export const accessControlService = {
       { role_id: roleId }
     );
   },
+
+  /**
+   * Get a detailed breakdown of a member's permissions
+   * Shows which permissions come from their assigned role vs explicit overrides
+   * Only Owner can view permission breakdowns
+   */
+  getMemberPermissionBreakdown(
+    orgId: string,
+    membershipId: string
+  ): Promise<{
+    data: { rolePermissionIds: string[]; grantedOverrideIds: string[] };
+  }> {
+    return api.get<{
+      rolePermissionIds: string[];
+      grantedOverrideIds: string[];
+    }>(
+      `/organizations/${orgId}/roles/memberships/${membershipId}/permissions-breakdown`
+    );
+  },
 };

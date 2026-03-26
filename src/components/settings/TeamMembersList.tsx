@@ -1,8 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { User, ShieldPlus } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,11 +24,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { orgService, type OrganizationMember } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import { MemberPermissionsSheet } from './MemberPermissionsSheet';
 
 export function TeamMembersList() {
   const activeOrganizationId = useAuthStore(
@@ -34,6 +47,16 @@ export function TeamMembersList() {
   );
   const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+
+  // State for pending role change confirmation
+  const [pendingRoleChange, setPendingRoleChange] = useState<{
+    membershipId: string;
+    newRoleId: string;
+  } | null>(null);
+
+  // State for permission sheet
+  const [selectedMember, setSelectedMember] =
+    useState<OrganizationMember | null>(null);
 
   // Fetch members and roles in parallel
   const {
@@ -98,12 +121,22 @@ export function TeamMembersList() {
     },
   });
 
-  const handleRoleChange = (membershipId: string, roleId: string) => {
-    changeRoleMutation.mutate({ membershipId, roleId });
+  const handleRoleChange = (membershipId: string, newRoleId: string) => {
+    setPendingRoleChange({ membershipId, newRoleId });
   };
 
-  const handleProfileClick = () => {
-    toast.info('Profile view coming soon.');
+  const confirmRoleChange = () => {
+    if (pendingRoleChange) {
+      changeRoleMutation.mutate({
+        membershipId: pendingRoleChange.membershipId,
+        roleId: pendingRoleChange.newRoleId,
+      });
+      setPendingRoleChange(null);
+    }
+  };
+
+  const cancelRoleChange = () => {
+    setPendingRoleChange(null);
   };
 
   // Check if current user is owner
@@ -274,14 +307,29 @@ export function TeamMembersList() {
 
                     {/* Actions Column */}
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleProfileClick}
-                        className="text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
-                      >
-                        Profile (In Dev)
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/dashboard/members/${member.membershipId}`}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
+                            title="View profile"
+                          >
+                            <User className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
+                          title="Permission overrides"
+                          onClick={() => setSelectedMember(member)}
+                        >
+                          <ShieldPlus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -290,6 +338,41 @@ export function TeamMembersList() {
           </div>
         )}
       </section>
+
+      {/* Role Change Confirmation Dialog */}
+      <AlertDialog open={!!pendingRoleChange} onOpenChange={cancelRoleChange}>
+        <AlertDialogContent className="border-white/10 bg-[#161b22]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#dfe2eb]">
+              Change Member Role?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#bacac5]">
+              Are you sure you want to change this member's role? This will
+              immediately alter their access permissions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-white/10 text-[#bacac5] hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRoleChange}
+              className="bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Member Permissions Sheet */}
+      <MemberPermissionsSheet
+        isOpen={!!selectedMember}
+        onOpenChange={(open) => {
+          if (!open) setSelectedMember(null);
+        }}
+        member={selectedMember}
+      />
     </>
   );
 }

@@ -65,7 +65,7 @@ export type RoleInfo = {
 };
 
 export type OrganizationMember = {
-  id: string; // membershipId
+  membershipId: string;
   status: string;
   user: User;
   role: RoleInfo;
