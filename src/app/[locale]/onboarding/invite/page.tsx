@@ -162,46 +162,46 @@ export default function InviteTeamPage() {
 
   if (!_hasHydrated || user == null || activeOrganizationId == null) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
+      <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
         <LoadingSpinner />
       </main>
     );
   }
 
   return (
-    <main className="relative flex min-h-screen flex-col bg-[#0d1117] text-[#dfe2eb]">
+    <main className="bg-background text-foreground relative flex min-h-screen flex-col">
       <OnboardingHeader />
 
-      <section className="flex grow flex-col items-center justify-center bg-[#0a0e14] px-4 pt-24 pb-12">
+      <section className="bg-background flex grow flex-col items-center justify-center px-4 pt-24 pb-12">
         <div className="mb-8 w-full max-w-xl">
           <div className="flex flex-col gap-3">
             <div className="flex items-end justify-between">
-              <span className="font-label text-xs font-bold tracking-widest text-[#57f1db] uppercase">
+              <span className="font-label text-primary text-xs font-bold tracking-widest uppercase">
                 Step 2 of 3: Your Crew
               </span>
-              <span className="font-body text-sm font-medium text-[#bacac5]">
+              <span className="font-body text-muted-foreground text-sm font-medium">
                 Invite Team
               </span>
             </div>
 
-            <div className="h-1 w-full overflow-hidden rounded-full bg-[#1c2026]">
-              <div className="h-full w-2/3 bg-[#57f1db] shadow-[0_0_10px_rgba(87,241,219,0.4)]" />
+            <div className="bg-secondary h-1 w-full overflow-hidden rounded-full">
+              <div className="bg-primary h-full w-2/3 shadow-[0_0_10px_var(--glow-primary-xxl)]" />
             </div>
           </div>
         </div>
 
-        <section className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#161b22] p-8 shadow-2xl shadow-black/30 md:p-12">
-          <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-[#00f0ff]/5 blur-3xl" />
+        <section className="bg-card relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 p-8 shadow-2xl shadow-black/30 md:p-12">
+          <div className="bg-primary/5 absolute -top-24 -right-24 h-48 w-48 rounded-full blur-3xl" />
 
           <header className="mb-10 space-y-3 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#00f0ff]/20 bg-[#00f0ff]/10 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-[#00f0ff] uppercase">
+            <div className="border-primary/20 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase">
               <Sparkles className="h-3.5 w-3.5" />
               Team invites
             </div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight text-[#dfe2eb] md:text-4xl">
+            <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
               Bring your crew on board
             </h1>
-            <p className="text-base leading-6 text-[#bacac5]">
+            <p className="text-muted-foreground text-base leading-6">
               Invite agents and managers now, or continue to preferences and do
               it later.
             </p>
@@ -211,7 +211,7 @@ export default function InviteTeamPage() {
             <div className="flex items-end gap-2 max-md:flex-col">
               <div className="w-full space-y-2">
                 <label
-                  className="font-label block text-xs font-bold tracking-widest text-[#bacac5] uppercase"
+                  className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                   htmlFor="email"
                 >
                   Team Member Email
@@ -222,12 +222,12 @@ export default function InviteTeamPage() {
                   type="email"
                   placeholder="colleague@agency.com"
                   autoComplete="off"
-                  className="h-12 rounded-full border-white/10 bg-[#262a31] px-6 text-[#dfe2eb] placeholder:text-[#859490] focus-visible:ring-1 focus-visible:ring-[#00f0ff]/50"
+                  className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-12 rounded-full border-white/10 px-6 focus-visible:ring-1"
                   {...register('email')}
                 />
 
                 {errors.email?.message ? (
-                  <p className="text-sm text-[#ffb4ab]">
+                  <p className="text-destructive text-sm">
                     {errors.email.message}
                   </p>
                 ) : null}
@@ -235,7 +235,7 @@ export default function InviteTeamPage() {
 
               <div className="w-full">
                 <label
-                  className="font-label mb-2 block text-xs font-bold tracking-widest text-[#bacac5] uppercase"
+                  className="font-label text-muted-foreground mb-2 block text-xs font-bold tracking-widest uppercase"
                   htmlFor="role"
                 >
                   Role
@@ -265,11 +265,11 @@ export default function InviteTeamPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-12 w-full rounded-full bg-[#00f0ff] px-8 text-sm font-bold text-[#003731] hover:bg-[#00f0ff]/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full rounded-full px-8 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#003731]/20 border-t-[#003731]" />
+                      <span className="border-primary-foreground/20 border-t-primary-foreground h-4 w-4 animate-spin rounded-full border-2" />
                       Inviting...
                     </>
                   ) : (
@@ -283,7 +283,7 @@ export default function InviteTeamPage() {
             </div>
 
             {submitError ? (
-              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-[#ffb4ab]">
+              <div className="text-destructive rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm">
                 {submitError}
               </div>
             ) : null}
@@ -291,17 +291,17 @@ export default function InviteTeamPage() {
 
           <div className="mt-10 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#bacac5]/70 uppercase">
+              <h3 className="text-muted-foreground/70 text-[11px] font-bold tracking-[0.2em] uppercase">
                 Invited List
               </h3>
-              <span className="text-[11px] font-semibold tracking-widest text-[#00f0ff] uppercase">
+              <span className="text-primary text-[11px] font-semibold tracking-widest uppercase">
                 {invitedCountLabel}
               </span>
             </div>
 
             <div className="space-y-3">
               {invitedMembers.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 bg-[#181c22]/60 px-5 py-6 text-sm text-[#859490]">
+                <div className="bg-background/60 text-muted-foreground rounded-2xl border border-dashed border-white/10 px-5 py-6 text-sm">
                   No invitations yet. Use the form above to start building your
                   team.
                 </div>
@@ -309,7 +309,7 @@ export default function InviteTeamPage() {
                 invitedMembers.map((member) => (
                   <div
                     key={member.email}
-                    className="flex items-center justify-between rounded-2xl bg-[#181c22]/70 p-4 transition-colors hover:bg-[#262a31]"
+                    className="bg-background/70 hover:bg-secondary flex items-center justify-between rounded-2xl p-4 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div
@@ -318,10 +318,10 @@ export default function InviteTeamPage() {
                         {member.initials}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-[#dfe2eb]">
+                        <span className="text-foreground text-sm font-semibold">
                           {member.email}
                         </span>
-                        <span className="text-[10px] font-bold tracking-wider text-[#00f0ff]/80 uppercase">
+                        <span className="text-primary/80 text-[10px] font-bold tracking-wider uppercase">
                           {member.role}
                         </span>
                       </div>
@@ -330,7 +330,7 @@ export default function InviteTeamPage() {
                     <button
                       type="button"
                       aria-label={`Remove ${member.email}`}
-                      className="rounded-full p-2 text-[#bacac5] transition-colors hover:bg-red-500/10 hover:text-[#ffb4ab]"
+                      className="text-muted-foreground hover:text-destructive rounded-full p-2 transition-colors hover:bg-red-500/10"
                       onClick={() => {
                         setInvitedMembers((currentMembers) =>
                           currentMembers.filter(
@@ -353,7 +353,7 @@ export default function InviteTeamPage() {
               type="button"
               variant="ghost"
               onClick={() => router.push('/onboarding/preferences')}
-              className="rounded-full px-6 py-3 text-sm font-semibold tracking-wide text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
+              className="text-muted-foreground hover:text-foreground rounded-full px-6 py-3 text-sm font-semibold tracking-wide hover:bg-white/5"
             >
               Skip for now
             </Button>
@@ -361,7 +361,7 @@ export default function InviteTeamPage() {
             <Button
               type="button"
               onClick={() => router.push('/onboarding/preferences')}
-              className="rounded-full bg-[#00f0ff] px-8 py-3 text-sm font-bold text-[#003731] hover:bg-[#00f0ff]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-3 text-sm font-bold"
             >
               Continue
             </Button>
@@ -369,7 +369,7 @@ export default function InviteTeamPage() {
         </section>
 
         <div className="pointer-events-none fixed bottom-0 left-0 -z-10 h-1/2 w-full opacity-20">
-          <div className="absolute inset-0 bg-linear-to-t from-[#00f0ff]/10 to-transparent" />
+          <div className="from-primary/10 absolute inset-0 bg-linear-to-t to-transparent" />
         </div>
       </section>
 

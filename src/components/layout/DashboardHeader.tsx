@@ -49,19 +49,19 @@ export function DashboardHeader() {
   const initials = useMemo(() => getUserInitials(user), [user]);
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-white/5 bg-[#0a0e14]/80 px-6 backdrop-blur-xl">
+    <header className="bg-background/80 sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-white/5 px-6 backdrop-blur-xl">
       <div className="flex flex-1 items-center gap-4 lg:max-w-2xl">
         <div className="relative w-full max-w-xl">
-          <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#859490] transition-colors" />
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
           <Input
             type="search"
             placeholder="Search leads, tours, or agencies..."
-            className="h-11 rounded-full border-white/10 bg-[#161b22] pr-4 pl-11 text-sm text-[#dfe2eb] placeholder:text-[#859490] focus-visible:ring-1 focus-visible:ring-[#00f0ff]/40"
+            className="bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/40 h-11 rounded-full border-white/10 pr-4 pl-11 text-sm focus-visible:ring-1"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-[#bacac5]">
+      <div className="text-muted-foreground flex items-center gap-3">
         <ThemeToggle />
         <LanguageToggle />
 
@@ -70,9 +70,9 @@ export function DashboardHeader() {
             <Button
               type="button"
               variant="ghost"
-              className="h-11 rounded-full border border-white/10 bg-[#161b22] px-2.5 text-[#dfe2eb] hover:bg-white/5 hover:text-[#00f0ff]"
+              className="bg-card text-foreground hover:text-primary h-11 rounded-full border border-white/10 px-2.5 hover:bg-white/5"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#00f0ff]/30 to-[#2dd4bf]/20 text-xs font-bold text-[#00f0ff]">
+              <span className="from-primary/30 to-accent/20 text-primary flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold">
                 {initials}
               </span>
               <ChevronDown className="h-4 w-4 opacity-70" />
@@ -81,13 +81,13 @@ export function DashboardHeader() {
 
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-2xl border border-white/10 bg-[#161b22] p-2 text-[#dfe2eb] shadow-2xl shadow-black/40"
+            className="bg-card text-foreground w-56 rounded-2xl border border-white/10 p-2 shadow-2xl shadow-black/40"
           >
-            <div className="px-3 py-2">
-              <p className="text-sm font-semibold text-[#dfe2eb]">
+            <div className="px-2 py-1.5">
+              <p className="text-foreground text-sm font-semibold">
                 Welcome back
               </p>
-              <p className="text-xs text-[#859490]">
+              <p className="text-muted-foreground text-xs">
                 {user && typeof user === 'object'
                   ? ((user as { email?: string }).email ?? 'account')
                   : 'account'}
@@ -95,14 +95,14 @@ export function DashboardHeader() {
             </div>
 
             <DropdownMenuItem
-              className="rounded-xl px-3 py-2 text-sm text-[#dfe2eb] focus:bg-[#262a31] focus:text-[#00f0ff]"
+              className="text-foreground focus:bg-secondary focus:text-primary rounded-xl px-3 py-2 text-sm"
               onClick={() => router.push('/dashboard/settings')}
             >
               Profile settings
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              className="rounded-xl px-3 py-2 text-sm text-[#ffb4ab] focus:bg-red-500/10 focus:text-[#ffb4ab]"
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-xl px-3 py-2 text-sm"
               onClick={() => {
                 logout();
                 router.push('/auth/login');

@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 function LoadingSpinner() {
   return (
-    <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#00f0ff]/30 border-t-[#00f0ff]" />
+    <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-2" />
   );
 }
 
@@ -42,20 +42,22 @@ export default function DashboardLayout({
 
   if (!_hasHydrated || user == null || !activeOrganizationId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
+      <div className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#dfe2eb]">
+    <div className="bg-background text-foreground min-h-screen">
       <Sidebar />
 
       <div className="ml-64 min-h-screen">
         <DashboardHeader />
 
-        <main className="bg-[#0a0e14] px-6 py-8 lg:px-8">{children}</main>
+        <main className="bg-secondary h-[calc(100vh-64px)] px-6 py-8 lg:px-8">
+          {children}
+        </main>
       </div>
     </div>
   );

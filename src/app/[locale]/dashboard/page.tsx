@@ -55,13 +55,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <p className="text-sm font-semibold tracking-[0.2em] text-[#00f0ff] uppercase">
+        <p className="text-primary text-sm font-semibold tracking-[0.2em] uppercase">
           Dashboard Overview
         </p>
-        <h1 className="font-headline text-3xl font-bold tracking-tight text-[#dfe2eb] md:text-4xl">
+        <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
           Welcome back, {firstName}
         </h1>
-        <p className="max-w-2xl text-sm leading-6 text-[#bacac5] md:text-base">
+        <p className="text-muted-foreground max-w-2xl text-sm leading-6 md:text-base">
           Here is your agency&apos;s performance overview for today.
         </p>
       </section>
@@ -80,24 +80,24 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-        <article className="rounded-2xl border border-white/5 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+        <article className="bg-card rounded-2xl border border-white/5 p-6 shadow-2xl shadow-black/20">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-[#dfe2eb]">
+              <h2 className="text-foreground text-lg font-bold tracking-tight">
                 Booking Volume
               </h2>
-              <p className="text-xs font-medium text-[#bacac5]">
+              <p className="text-muted-foreground text-xs font-medium">
                 Performance analytics for the last 30 days
               </p>
             </div>
 
-            <div className="rounded-full border border-white/5 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-widest text-[#bacac5] uppercase">
+            <div className="text-muted-foreground rounded-full border border-white/5 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-widest uppercase">
               Live
             </div>
           </div>
 
-          <div className="relative h-72 overflow-hidden rounded-2xl bg-[#0a0e14] p-4">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(0,240,255,0.08),transparent_55%)]" />
+          <div className="bg-background relative h-72 overflow-hidden rounded-2xl p-4">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,var(--glow-primary-sm),transparent_55%)]" />
 
             <div className="relative flex h-full items-end gap-3">
               {[48, 65, 42, 80, 70, 92, 76, 88, 60, 84].map((height, index) => (
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                   className="flex flex-1 flex-col justify-end gap-2"
                 >
                   <div
-                    className="rounded-t-2xl bg-[#00f0ff]/80 shadow-[0_0_22px_rgba(0,240,255,0.12)]"
+                    className="bg-primary/80 rounded-t-2xl shadow-[0_0_22px_var(--glow-primary-md)]"
                     style={{ height: `${height}%` }}
                   />
                 </div>
@@ -115,12 +115,12 @@ export default function DashboardPage() {
           </div>
         </article>
 
-        <article className="space-y-6 rounded-2xl border border-white/5 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+        <article className="bg-card space-y-6 rounded-2xl border border-white/5 p-6 shadow-2xl shadow-black/20">
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-[#dfe2eb]">
+            <h2 className="text-foreground text-lg font-bold tracking-tight">
               Recent Inquiries
             </h2>
-            <p className="text-xs font-medium text-[#bacac5]">
+            <p className="text-muted-foreground text-xs font-medium">
               High intent requests from the last 24 hours
             </p>
           </div>
@@ -137,25 +137,25 @@ export default function DashboardPage() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-[#dfe2eb]">{name}</p>
-                    <p className="text-sm text-[#bacac5]">{destination}</p>
+                    <p className="text-foreground font-semibold">{name}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {destination}
+                    </p>
                   </div>
-                  <p className="text-sm font-semibold text-[#00f0ff]">
-                    {value}
-                  </p>
+                  <p className="text-primary text-sm font-semibold">{value}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-[#00f0ff]/10 bg-[#00f0ff]/5 p-5">
-            <div className="mb-3 flex items-center gap-2 text-[#00f0ff]">
+          <div className="border-primary/10 bg-primary/5 rounded-2xl border p-5">
+            <div className="text-primary mb-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               <p className="text-xs font-semibold tracking-[0.2em] uppercase">
                 Intelligence Prompt
               </p>
             </div>
-            <p className="text-sm leading-6 text-[#dfe2eb]">
+            <p className="text-foreground text-sm leading-6">
               AI predicts a 15% surge in US-based inquiries for Boutique
               Istanbul tours next week.
             </p>

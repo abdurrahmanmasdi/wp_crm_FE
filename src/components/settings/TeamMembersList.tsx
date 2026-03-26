@@ -177,15 +177,15 @@ export function TeamMembersList() {
   if (error) {
     return (
       <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 shadow-2xl shadow-black/20">
-        <div className="flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 text-center">
+        <div className="bg-background flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
           <div className="max-w-md space-y-3">
             <p className="text-xs font-bold tracking-[0.2em] text-red-400 uppercase">
               Error
             </p>
-            <h2 className="text-xl font-semibold text-[#dfe2eb]">
+            <h2 className="text-foreground text-xl font-semibold">
               Failed to load team members
             </h2>
-            <p className="text-sm leading-6 text-[#bacac5]">
+            <p className="text-muted-foreground text-sm leading-6">
               {getErrorMessage(error)}
             </p>
           </div>
@@ -196,39 +196,47 @@ export function TeamMembersList() {
 
   return (
     <>
-      <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 shadow-2xl shadow-black/20">
+      <section className="bg-card rounded-2xl border border-white/5 p-8 shadow-2xl shadow-black/20">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-[#dfe2eb]">Team Members</h2>
-          <p className="mt-1 text-sm text-[#bacac5]">
+          <h2 className="text-foreground text-lg font-semibold">
+            Team Members
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
             Manage organization members and their roles
           </p>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 py-12">
-            <p className="text-sm text-[#bacac5]">Loading team members...</p>
+          <div className="bg-background flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 py-12">
+            <p className="text-muted-foreground text-sm">
+              Loading team members...
+            </p>
           </div>
         ) : members.length === 0 ? (
-          <div className="flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 text-center">
+          <div className="bg-background flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
             <div className="max-w-md space-y-2">
-              <p className="text-sm text-[#bacac5]">No team members yet.</p>
-              <p className="text-xs text-[#8b949e]">
+              <p className="text-muted-foreground text-sm">
+                No team members yet.
+              </p>
+              <p className="text-muted-foreground/70 text-xs">
                 Team members will appear here once added to the organization
               </p>
             </div>
           </div>
         ) : (
           /* Members Table */
-          <div className="overflow-x-auto rounded-lg border border-white/5 bg-[#0a0e14]">
+          <div className="bg-background overflow-x-auto rounded-lg border border-white/5">
             <Table>
               <TableHeader>
                 <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="text-[#bacac5]">User</TableHead>
-                  <TableHead className="text-[#bacac5]">Status</TableHead>
-                  <TableHead className="text-[#bacac5]">Role</TableHead>
-                  <TableHead className="text-right text-[#bacac5]">
+                  <TableHead className="text-muted-foreground">User</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">Role</TableHead>
+                  <TableHead className="text-muted-foreground text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -243,7 +251,7 @@ export function TeamMembersList() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10 border border-white/10">
-                          <AvatarFallback className="bg-[#00f0ff]/10 font-semibold text-[#00f0ff]">
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                             {getInitials(
                               member.user.firstName,
                               member.user.lastName
@@ -251,10 +259,10 @@ export function TeamMembersList() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col gap-1">
-                          <p className="font-medium text-[#dfe2eb]">
+                          <p className="text-foreground font-medium">
                             {member.user.firstName} {member.user.lastName}
                           </p>
-                          <p className="text-xs text-[#8b949e]">
+                          <p className="text-muted-foreground text-xs">
                             {member.user.email}
                           </p>
                         </div>
@@ -283,7 +291,7 @@ export function TeamMembersList() {
                         }
                       >
                         <SelectTrigger
-                          className={`w-40 border-white/10 text-[#dfe2eb] ${
+                          className={`text-foreground w-40 border-white/10 ${
                             isRoleSelectDisabled(member)
                               ? 'cursor-not-allowed opacity-50'
                               : ''
@@ -291,12 +299,12 @@ export function TeamMembersList() {
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="border-white/10 bg-[#0a0e14]">
+                        <SelectContent className="bg-background border-white/10">
                           {roles.map((role) => (
                             <SelectItem
                               key={role.id}
                               value={role.id}
-                              className="text-[#dfe2eb] focus:bg-white/10 focus:text-[#dfe2eb]"
+                              className="text-foreground focus:text-foreground focus:bg-white/10"
                             >
                               {role.name}
                             </SelectItem>
@@ -314,7 +322,7 @@ export function TeamMembersList() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
+                            className="text-muted-foreground hover:text-foreground hover:bg-white/5"
                             title="View profile"
                           >
                             <User className="h-4 w-4" />
@@ -323,7 +331,7 @@ export function TeamMembersList() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-[#bacac5] hover:bg-white/5 hover:text-[#dfe2eb]"
+                          className="text-muted-foreground hover:text-foreground hover:bg-white/5"
                           title="Permission overrides"
                           onClick={() => setSelectedMember(member)}
                         >
@@ -341,23 +349,23 @@ export function TeamMembersList() {
 
       {/* Role Change Confirmation Dialog */}
       <AlertDialog open={!!pendingRoleChange} onOpenChange={cancelRoleChange}>
-        <AlertDialogContent className="border-white/10 bg-[#161b22]">
+        <AlertDialogContent className="bg-card border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#dfe2eb]">
+            <AlertDialogTitle className="text-foreground">
               Change Member Role?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#bacac5]">
+            <AlertDialogDescription className="text-muted-foreground">
               Are you sure you want to change this member's role? This will
               immediately alter their access permissions.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 text-[#bacac5] hover:bg-white/5">
+            <AlertDialogCancel className="text-muted-foreground border-white/10 hover:bg-white/5">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmRoleChange}
-              className="bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Continue
             </AlertDialogAction>

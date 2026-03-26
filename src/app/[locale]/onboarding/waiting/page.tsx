@@ -139,25 +139,25 @@ export default function WaitingPage() {
 
   if (!_hasHydrated || user == null || activeOrganizationId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#00f0ff]/30 border-t-[#00f0ff]" />
+      <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
+        <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-2" />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#161b22] p-8 text-center shadow-2xl shadow-black/30">
-        <div className="absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-[#00f0ff]/5 blur-3xl" />
+    <main className="bg-background text-foreground flex min-h-screen flex-col items-center justify-center px-6">
+      <div className="bg-card relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 p-8 text-center shadow-2xl shadow-black/30">
+        <div className="bg-primary/5 absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl" />
 
         <div className="mb-6 flex justify-center">
-          <Clock3 className="h-14 w-14 animate-pulse text-[#00f0ff]" />
+          <Clock3 className="text-primary h-14 w-14 animate-pulse" />
         </div>
 
-        <h1 className="mb-3 text-2xl font-bold tracking-tight text-[#dfe2eb]">
+        <h1 className="text-foreground mb-3 text-2xl font-bold tracking-tight">
           Your request has been sent.
         </h1>
-        <p className="mx-auto max-w-sm text-sm leading-6 text-[#bacac5]">
+        <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-6">
           We are waiting for a workspace admin to approve your access. You will
           be redirected automatically when approved.
         </p>

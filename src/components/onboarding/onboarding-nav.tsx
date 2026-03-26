@@ -4,8 +4,8 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 export function OnboardingNav() {
   return (
-    <nav className="fixed top-0 z-50 flex w-full items-center justify-between bg-[#181c22] px-6 py-4">
-      <div className="text-xl font-bold tracking-tighter text-[#57f1db]">
+    <nav className="bg-background fixed top-0 z-50 flex w-full items-center justify-between px-6 py-4">
+      <div className="text-primary text-xl font-bold tracking-tighter">
         TourCRM
       </div>
 

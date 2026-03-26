@@ -213,7 +213,7 @@ export function AccessRequestsList() {
 
   if (requestsQuery.isLoading) {
     return (
-      <section className="rounded-2xl border border-white/5 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+      <section className="bg-card rounded-2xl border border-white/5 p-6 shadow-2xl shadow-black/20">
         <div className="space-y-4">
           <div className="h-4 w-32 animate-pulse rounded-full bg-white/10" />
           <div className="space-y-3">
@@ -231,14 +231,14 @@ export function AccessRequestsList() {
 
   if (requests.length === 0) {
     return (
-      <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 text-center shadow-2xl shadow-black/20">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#00f0ff]/10 text-[#00f0ff]">
+      <section className="bg-card rounded-2xl border border-white/5 p-8 text-center shadow-2xl shadow-black/20">
+        <div className="bg-primary/10 text-primary mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
           <Clock3 className="h-6 w-6" />
         </div>
-        <h3 className="text-lg font-semibold text-[#dfe2eb]">
+        <h3 className="text-foreground text-lg font-semibold">
           No pending requests
         </h3>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#859490]">
+        <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">
           New access requests will appear here when teammates ask to join this
           workspace.
         </p>
@@ -247,17 +247,17 @@ export function AccessRequestsList() {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/5 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+    <section className="bg-card space-y-4 rounded-2xl border border-white/5 p-6 shadow-2xl shadow-black/20">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold tracking-[0.2em] text-[#00f0ff] uppercase">
+          <p className="text-primary text-[11px] font-bold tracking-[0.2em] uppercase">
             Access Requests
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-[#dfe2eb]">
+          <h3 className="text-foreground mt-1 text-lg font-semibold">
             Review pending approvals
           </h3>
         </div>
-        <span className="rounded-full border border-white/5 bg-white/5 px-3 py-1 text-xs font-semibold text-[#bacac5]">
+        <span className="text-muted-foreground rounded-full border border-white/5 bg-white/5 px-3 py-1 text-xs font-semibold">
           {requests.length} pending
         </span>
       </div>
@@ -284,13 +284,13 @@ export function AccessRequestsList() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-[#dfe2eb]">
+                    <p className="text-foreground text-sm font-semibold">
                       {getRequestName(request)}
                     </p>
-                    <p className="mt-1 text-sm text-[#bacac5]">
+                    <p className="text-muted-foreground mt-1 text-sm">
                       {getRequestEmail(request)}
                     </p>
-                    <p className="mt-1 flex items-center gap-2 text-xs text-[#859490]">
+                    <p className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
                       <Mail className="h-3.5 w-3.5" />
                       Requested {getRequestDate(request)}
                     </p>
@@ -313,7 +313,7 @@ export function AccessRequestsList() {
                     type="button"
                     onClick={() => setRequestToApprove(requestId)}
                     disabled={isActionPending}
-                    className="rounded-full bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full"
                   >
                     {isApprovePending ? 'Approving...' : 'Approve'}
                     <CheckCircle2 className="h-4 w-4" />
@@ -330,24 +330,24 @@ export function AccessRequestsList() {
         open={!!requestToApprove}
         onOpenChange={() => setRequestToApprove(null)}
       >
-        <DialogContent className="border-white/10 bg-[#161b22]">
+        <DialogContent className="bg-card border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-[#dfe2eb]">
+            <DialogTitle className="text-foreground">
               Assign a Role to Approve
             </DialogTitle>
-            <DialogDescription className="text-[#bacac5]">
+            <DialogDescription className="text-muted-foreground">
               Select a role for this user before approving their access request.
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <label className="text-sm font-medium text-[#dfe2eb]">Role</label>
+            <label className="text-foreground text-sm font-medium">Role</label>
             <Select
               value={selectedRoleId}
               onValueChange={setSelectedRoleId}
               disabled={rolesQuery.isLoading || !rolesQuery.data}
             >
-              <SelectTrigger className="mt-2 border-white/10 bg-white/5 text-[#bacac5]">
+              <SelectTrigger className="text-muted-foreground mt-2 border-white/10 bg-white/5">
                 <SelectValue placeholder="Select a role..." />
               </SelectTrigger>
               <SelectContent>
@@ -371,7 +371,7 @@ export function AccessRequestsList() {
                 setSelectedRoleId('');
               }}
               disabled={approveMutation.isPending}
-              className="border-white/10 text-[#bacac5]"
+              className="text-muted-foreground border-white/10"
             >
               Cancel
             </Button>
@@ -388,7 +388,7 @@ export function AccessRequestsList() {
                 });
               }}
               disabled={approveMutation.isPending || !selectedRoleId}
-              className="bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {approveMutation.isPending ? 'Confirming...' : 'Confirm Approval'}
             </Button>

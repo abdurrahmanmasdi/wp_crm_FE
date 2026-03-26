@@ -45,7 +45,7 @@ export function LanguageToggle({ className }: { className?: string }) {
           aria-label="Language menu"
           disabled={isPending}
           className={cn(
-            'h-10 rounded-full px-3 text-[#bacac5] transition-colors duration-200 hover:bg-white/5 hover:text-[#57f1db]',
+            'text-muted-foreground hover:text-primary h-10 rounded-full px-3 transition-colors duration-200 hover:bg-white/5',
             className
           )}
         >
@@ -64,7 +64,7 @@ export function LanguageToggle({ className }: { className?: string }) {
 
       <DropdownMenuContent
         align="end"
-        className="w-52 rounded-2xl border border-white/10 bg-[#161b22] p-2 text-[#dfe2eb] shadow-2xl shadow-black/40"
+        className="bg-card text-foreground w-52 rounded-2xl border border-white/10 p-2 shadow-2xl shadow-black/40"
       >
         <div className="flex flex-col gap-1">
           {languageOptions.map(({ value, label }) => (
@@ -75,8 +75,8 @@ export function LanguageToggle({ className }: { className?: string }) {
               className={cn(
                 'cursor-pointer rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150',
                 locale === value
-                  ? 'bg-[#57f1db] font-semibold text-[#161b22]'
-                  : 'text-[#dfe2eb] hover:bg-[#262a31] hover:text-[#57f1db]',
+                  ? 'bg-primary text-primary-foreground font-semibold'
+                  : 'text-foreground hover:bg-secondary hover:text-primary',
                 isPending && 'cursor-not-allowed opacity-50'
               )}
             >

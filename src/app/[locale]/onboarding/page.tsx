@@ -114,7 +114,7 @@ export default function OnboardingPage() {
 
   if (!_hasHydrated || !user || activeOrganizationId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
+      <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
         <LoadingSpinner />
       </main>
     );
@@ -123,17 +123,17 @@ export default function OnboardingPage() {
   const displayName = getDisplayName(user);
 
   return (
-    <main className="relative flex min-h-screen flex-col bg-[#0d1117] text-[#dfe2eb]">
+    <main className="bg-background text-foreground relative flex min-h-screen flex-col">
       <OnboardingNav />
 
       <section className="flex grow flex-col items-center justify-center px-6 pt-24 pb-32">
         <div className="w-full max-w-4xl space-y-16 text-center">
           <header className="space-y-4">
-            <h1 className="font-headline text-[3.5rem] leading-none font-bold tracking-[-0.04em] text-[#dfe2eb]">
+            <h1 className="font-headline text-foreground text-[3.5rem] leading-none font-bold tracking-[-0.04em]">
               Welcome to TourCRM,{' '}
-              <span className="text-[#2dd4bf]">{displayName}</span>.
+              <span className="text-primary">{displayName}</span>.
             </h1>
-            <p className="font-body text-[1.125rem] font-medium tracking-[-0.01em] text-[#bacac5]">
+            <p className="font-body text-muted-foreground text-[1.125rem] font-medium tracking-[-0.01em]">
               How would you like to get started?
             </p>
           </header>
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
         }}
       />
 
-      <div className="pointer-events-none fixed top-1/2 left-1/2 -z-10 h-200 w-200 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2dd4bf]/5 blur-[120px]" />
+      <div className="bg-accent/5 pointer-events-none fixed top-1/2 left-1/2 -z-10 h-200 w-200 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" />
     </main>
   );
 }

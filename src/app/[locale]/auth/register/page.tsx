@@ -114,20 +114,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0d1117] px-6 py-10 text-[#dfe2eb]">
+    <main className="bg-background text-foreground min-h-screen px-6 py-10">
       <div className="absolute top-6 right-6 flex items-center gap-2">
         <ThemeToggle />
         <LanguageToggle />
       </div>
 
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md items-center">
-        <div className="w-full rounded-2xl border border-white/10 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+        <div className="bg-card w-full rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="mb-6 space-y-2">
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#00f0ff] uppercase">
+            <p className="text-primary text-xs font-semibold tracking-[0.2em] uppercase">
               Private Beta
             </p>
             <h1 className="text-2xl font-semibold">Create your account</h1>
-            <p className="text-sm text-[#8b949e]">
+            <p className="text-muted-foreground text-sm">
               Register, sign in automatically, and continue to onboarding.
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function RegisterPage() {
               <Input
                 id="first_name"
                 placeholder="Jane"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('first_name')}
               />
               {errors.first_name && (
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               <Input
                 id="last_name"
                 placeholder="Doe"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('last_name')}
               />
               {errors.last_name && (
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="work@company.com"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('email')}
               />
               {errors.email && (
@@ -191,7 +191,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('password')}
               />
               {errors.password && (
@@ -208,15 +208,15 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-11 w-full rounded-2xl bg-[#00f0ff] text-black hover:bg-[#00f0ff]/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full rounded-2xl disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Creating account...' : 'Register'}
             </Button>
           </form>
 
-          <p className="mt-6 text-sm text-[#8b949e]">
+          <p className="text-muted-foreground mt-6 text-sm">
             Already have an account?{' '}
-            <Link className="text-[#00f0ff] hover:underline" href="/auth/login">
+            <Link className="text-primary hover:underline" href="/auth/login">
               Login
             </Link>
           </p>

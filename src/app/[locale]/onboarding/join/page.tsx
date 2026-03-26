@@ -78,25 +78,25 @@ export default function JoinWorkspacePage() {
 
   if (!_hasHydrated || user == null || activeOrganizationId) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0d1117] px-6 text-[#dfe2eb]">
+      <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
         <LoadingSpinner />
       </main>
     );
   }
 
   return (
-    <main className="relative flex min-h-screen flex-col bg-[#0d1117] text-[#dfe2eb]">
+    <main className="bg-background text-foreground relative flex min-h-screen flex-col">
       <OnboardingHeader />
 
-      <section className="flex flex-1 flex-col items-center justify-center bg-[#0d1117] px-4 pt-24 pb-12">
-        <section className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#181c22] p-8 shadow-2xl shadow-black/30 md:p-12">
-          <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-[#57f1db]/5 blur-3xl" />
+      <section className="bg-background flex flex-1 flex-col items-center justify-center px-4 pt-24 pb-12">
+        <section className="bg-background relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 p-8 shadow-2xl shadow-black/30 md:p-12">
+          <div className="bg-primary/5 absolute -top-24 -right-24 h-48 w-48 rounded-full blur-3xl" />
 
           <header className="mb-10 space-y-2">
-            <h1 className="font-headline text-3xl font-bold tracking-tight text-[#dfe2eb] md:text-4xl">
+            <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
               Let&apos;s join your workspace
             </h1>
-            <p className="text-base text-[#bacac5]">
+            <p className="text-muted-foreground text-base">
               Enter the workspace URL or slug you were invited to.
             </p>
           </header>
@@ -104,14 +104,14 @@ export default function JoinWorkspacePage() {
           <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-3">
               <label
-                className="font-label block text-xs font-bold tracking-widest text-[#bacac5] uppercase"
+                className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                 htmlFor="slug"
               >
                 Workspace URL
               </label>
 
               <div className="group flex items-stretch">
-                <div className="rounded-l-2xl border border-r-0 border-white/10 bg-[#31353c]/40 px-4 py-4 font-medium whitespace-nowrap text-[#bacac5]">
+                <div className="bg-secondary/40 text-muted-foreground rounded-l-2xl border border-r-0 border-white/10 px-4 py-4 font-medium whitespace-nowrap">
                   tourcrm.com/
                 </div>
 
@@ -120,19 +120,19 @@ export default function JoinWorkspacePage() {
                     id="slug"
                     placeholder="bosphorus"
                     autoComplete="off"
-                    className="h-auto rounded-l-none rounded-r-2xl border-white/10 bg-[#262a31] px-4 py-4 text-[#dfe2eb] placeholder:text-[#859490] focus-visible:ring-1 focus-visible:ring-[#57f1db]/50"
+                    className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-auto rounded-l-none rounded-r-2xl border-white/10 px-4 py-4 focus-visible:ring-1"
                     {...register('slug')}
                   />
-                  <div className="absolute bottom-0 left-0 h-px w-0 bg-[#57f1db] shadow-[0_0_8px_rgba(87,241,219,0.8)] transition-all duration-500 group-focus-within:w-full" />
+                  <div className="bg-primary absolute bottom-0 left-0 h-px w-0 shadow-[0_0_8px_var(--glow-primary-full)] transition-all duration-500 group-focus-within:w-full" />
                 </div>
               </div>
 
-              <p className="mt-2 text-[10px] text-[#859490] italic">
+              <p className="text-muted-foreground mt-2 text-[10px] italic">
                 This will be the permanent URL for your workspace.
               </p>
 
               {errors.slug?.message ? (
-                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-[#ffb4ab]">
+                <div className="text-destructive rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm">
                   {errors.slug.message}
                 </div>
               ) : null}
@@ -143,7 +143,7 @@ export default function JoinWorkspacePage() {
                 type="button"
                 variant="ghost"
                 onClick={() => router.push('/onboarding')}
-                className="rounded-full px-6 py-3 text-sm font-bold tracking-wide text-[#bacac5] transition-colors duration-200 hover:bg-white/5 hover:text-[#dfe2eb]"
+                className="text-muted-foreground hover:text-foreground rounded-full px-6 py-3 text-sm font-bold tracking-wide transition-colors duration-200 hover:bg-white/5"
               >
                 Back
               </Button>
@@ -151,11 +151,11 @@ export default function JoinWorkspacePage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="glow-button rounded-2xl bg-[#57f1db] px-10 py-3 text-sm font-bold tracking-tight text-[#003731] transition-all duration-200 hover:bg-[#57f1db]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="glow-button bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl px-10 py-3 text-sm font-bold tracking-tight transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#003731]/20 border-t-[#003731]" />
+                    <span className="border-primary-foreground/20 border-t-primary-foreground h-4 w-4 animate-spin rounded-full border-2" />
                     Joining...
                   </>
                 ) : (
@@ -170,7 +170,7 @@ export default function JoinWorkspacePage() {
         </section>
 
         <div className="pointer-events-none fixed bottom-0 left-0 -z-10 h-1/2 w-full opacity-20">
-          <div className="absolute inset-0 bg-linear-to-t from-[#57f1db]/10 to-transparent" />
+          <div className="from-primary/10 absolute inset-0 bg-linear-to-t to-transparent" />
         </div>
       </section>
 

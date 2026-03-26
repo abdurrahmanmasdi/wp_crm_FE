@@ -90,16 +90,16 @@ export function RolesList() {
 
   if (error) {
     return (
-      <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 shadow-2xl shadow-black/20">
-        <div className="flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 text-center">
+      <section className="bg-card rounded-2xl border border-white/5 p-8 shadow-2xl shadow-black/20">
+        <div className="bg-background flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
           <div className="max-w-md space-y-3">
             <p className="text-xs font-bold tracking-[0.2em] text-red-400 uppercase">
               Error
             </p>
-            <h2 className="text-xl font-semibold text-[#dfe2eb]">
+            <h2 className="text-foreground text-xl font-semibold">
               Failed to load roles
             </h2>
-            <p className="text-sm leading-6 text-[#bacac5]">
+            <p className="text-muted-foreground text-sm leading-6">
               {getErrorMessage(error)}
             </p>
           </div>
@@ -110,14 +110,14 @@ export function RolesList() {
 
   return (
     <>
-      <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 shadow-2xl shadow-black/20">
+      <section className="bg-card rounded-2xl border border-white/5 p-8 shadow-2xl shadow-black/20">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-[#dfe2eb]">
+            <h2 className="text-foreground text-lg font-semibold">
               Roles & Permissions
             </h2>
-            <p className="mt-1 text-sm text-[#bacac5]">
+            <p className="text-muted-foreground mt-1 text-sm">
               Manage organization roles and their permissions
             </p>
           </div>
@@ -129,27 +129,33 @@ export function RolesList() {
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 py-12">
-            <p className="text-sm text-[#bacac5]">Loading roles...</p>
+          <div className="bg-background flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 py-12">
+            <p className="text-muted-foreground text-sm">Loading roles...</p>
           </div>
         ) : roles.length === 0 ? (
-          <div className="flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 text-center">
+          <div className="bg-background flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
             <div className="max-w-md space-y-2">
-              <p className="text-sm text-[#bacac5]">No roles created yet.</p>
-              <p className="text-xs text-[#8b949e]">
+              <p className="text-muted-foreground text-sm">
+                No roles created yet.
+              </p>
+              <p className="text-muted-foreground/70 text-xs">
                 Create your first role to get started
               </p>
             </div>
           </div>
         ) : (
           /* Roles Table */
-          <div className="overflow-x-auto rounded-lg border border-white/5 bg-[#0a0e14]">
+          <div className="bg-background overflow-x-auto rounded-lg border border-white/5">
             <Table>
               <TableHeader>
                 <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="text-[#bacac5]">Role Name</TableHead>
-                  <TableHead className="text-[#bacac5]">Permissions</TableHead>
-                  <TableHead className="text-right text-[#bacac5]">
+                  <TableHead className="text-muted-foreground">
+                    Role Name
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    Permissions
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -160,12 +166,12 @@ export function RolesList() {
                     key={role.id}
                     className="border-white/5 hover:bg-white/5"
                   >
-                    <TableCell className="font-medium text-[#dfe2eb]">
+                    <TableCell className="text-foreground font-medium">
                       {role.name}
                       {isSystemRole(role.name) && (
                         <Badge
                           variant="secondary"
-                          className="ml-2 bg-[#00f0ff]/10 text-[#00f0ff]"
+                          className="bg-primary/10 text-primary ml-2"
                         >
                           System
                         </Badge>
@@ -174,7 +180,7 @@ export function RolesList() {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className="border-[#00f0ff]/30 text-[#00f0ff]"
+                        className="border-primary/30 text-primary"
                       >
                         {role.rolePermissions?.length ?? 0} permission
                         {(role.rolePermissions?.length ?? 0) !== 1 ? 's' : ''}
@@ -190,7 +196,7 @@ export function RolesList() {
                             deleteRoleMutation.isPending
                           }
                           onClick={() => handleEditRole(role)}
-                          className="border-white/10 text-[#bacac5] hover:text-[#dfe2eb]"
+                          className="text-muted-foreground hover:text-foreground border-white/10"
                         >
                           Edit
                         </Button>

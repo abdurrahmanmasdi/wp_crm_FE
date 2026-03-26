@@ -84,20 +84,20 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0d1117] px-6 py-10 text-[#dfe2eb]">
+    <main className="bg-background text-foreground min-h-screen px-6 py-10">
       <div className="absolute top-6 right-6 flex items-center gap-2">
         <ThemeToggle />
         <LanguageToggle />
       </div>
 
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md items-center">
-        <div className="w-full rounded-2xl border border-white/10 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
+        <div className="bg-card w-full rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="mb-6 space-y-2">
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#00f0ff] uppercase">
+            <p className="text-primary text-xs font-semibold tracking-[0.2em] uppercase">
               Private Beta
             </p>
             <h1 className="text-2xl font-semibold">Login to continue</h1>
-            <p className="text-sm text-[#8b949e]">
+            <p className="text-muted-foreground text-sm">
               Sign in to continue to onboarding.
             </p>
           </div>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 placeholder="work@company.com"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('email')}
               />
               {errors.email && (
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="h-11 rounded-2xl border-white/10 bg-[#0d1117]"
+                className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('password')}
               />
               {errors.password && (
@@ -144,16 +144,16 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-11 w-full rounded-2xl bg-[#00f0ff] text-black hover:bg-[#00f0ff]/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full rounded-2xl disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Signing in...' : 'Login'}
             </Button>
           </form>
 
-          <p className="mt-6 text-sm text-[#8b949e]">
+          <p className="text-muted-foreground mt-6 text-sm">
             Need an account?{' '}
             <Link
-              className="text-[#00f0ff] hover:underline"
+              className="text-primary hover:underline"
               href="/auth/register"
             >
               Register
