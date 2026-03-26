@@ -1,0 +1,52 @@
+/**
+ * Access Control Module - Types & Interfaces
+ * Defines data structures for roles, permissions, and related payloads
+ */
+
+export type Permission = {
+  id: string;
+  action: string;
+  description: string | null;
+};
+
+export type RolePermission = {
+  permission: Permission;
+};
+
+export type Role = {
+  id: string;
+  name: string;
+  organization_id: string;
+  created_at: string;
+  rolePermissions: RolePermission[];
+};
+
+export type CreateRolePayload = {
+  name: string;
+  permissionIds: string[];
+};
+
+export type UpdateRolePayload = {
+  name?: string;
+  permissionIds?: string[];
+};
+
+export type DeleteRoleResponse = {
+  message: string;
+};
+
+export type AssignRolePayload = {
+  role_id: string;
+};
+
+export type CreatePermissionOverridePayload = {
+  permission_id: string;
+  is_granted: boolean;
+};
+
+export type PermissionOverride = {
+  id: string;
+  permission_id: string;
+  is_granted: boolean;
+  message?: string;
+};
