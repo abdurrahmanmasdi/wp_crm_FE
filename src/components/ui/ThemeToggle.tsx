@@ -6,60 +6,46 @@ import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const themeOptions = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
-] as const;
-
 export function ThemeToggle({ className }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
-  const currentTheme = theme ?? 'system';
-  const CurrentIcon =
-    themeOptions.find((option) => option.value === currentTheme)?.icon ?? Moon;
+  const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          type="button"
           variant="ghost"
-          aria-label="Theme menu"
+          size="icon"
           className={cn(
-            'h-10 w-10 rounded-full text-[#bacac5] transition-colors duration-200 hover:bg-white/5 hover:text-[#57f1db]',
+            'text-muted-foreground hover:text-primary h-10 rounded-full transition-colors duration-200',
             className
           )}
+          aria-label="Toggle theme"
         >
-          <CurrentIcon className="h-4 w-4" />
+          <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="end"
-        className="w-44 rounded-2xl border border-white/10 bg-[#161b22] p-2 text-[#dfe2eb] shadow-2xl shadow-black/40"
-      >
-        <DropdownMenuRadioGroup
-          value={currentTheme}
-          onValueChange={(value) => setTheme(value)}
-        >
-          {themeOptions.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuRadioItem
-              key={value}
-              value={value}
-              className="cursor-pointer rounded-xl px-3 py-2 text-sm text-[#dfe2eb] focus:bg-[#262a31] focus:text-[#57f1db]"
-            >
-              <Icon className="mr-2 h-4 w-4" />
-              {label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
+      <DropdownMenuContent align="end" className="rounded-xl">
+        <DropdownMenuItem onClick={() => setTheme('light')}>
+          <Sun className="mr-2 h-4 w-4" />
+          <span>Light</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('dark')}>
+          <Moon className="mr-2 h-4 w-4" />
+          <span>Dark</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('system')}>
+          <Monitor className="mr-2 h-4 w-4" />
+          <span>System</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

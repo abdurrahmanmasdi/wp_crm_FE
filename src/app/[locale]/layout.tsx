@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { getLocale } from 'next-intl/server';
+import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/components/query-provider';
 import { Toaster } from '@/components/ui/sonner';
 import '@/app/globals.css';
@@ -38,16 +39,23 @@ export default async function RootLocaleLayout({ children }: RootLayoutProps) {
     <html
       lang={locale}
       dir={direction}
-      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body>
-        <NextIntlClientProvider messages={messages}>
-          <QueryProvider>
-            {children}
-            <Toaster theme="dark" />
-          </QueryProvider>
-        </NextIntlClientProvider>
+      <body suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem={true}
+          disableTransitionOnChange={true}
+        >
+          <NextIntlClientProvider messages={messages}>
+            <QueryProvider>
+              {children}
+              <Toaster theme="dark" />
+            </QueryProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
