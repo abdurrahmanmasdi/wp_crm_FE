@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { AccessRequestsList } from '@/components/settings/AccessRequestsList';
 import { RolesList } from '@/components/settings/RolesList';
+import { TeamMembersList } from '@/components/settings/TeamMembersList';
 
 export default function SettingsPage() {
   return (
@@ -45,22 +46,7 @@ export default function SettingsPage() {
         </div>
 
         <TabsContent value="team" className="mt-0">
-          <section className="rounded-2xl border border-white/5 bg-[#161b22] p-8 shadow-2xl shadow-black/20">
-            <div className="flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-[#0a0e14] px-6 text-center">
-              <div className="max-w-md space-y-3">
-                <p className="text-[11px] font-bold tracking-[0.2em] text-[#00f0ff] uppercase">
-                  Team Members
-                </p>
-                <h2 className="text-xl font-semibold text-[#dfe2eb]">
-                  Team management coming soon.
-                </h2>
-                <p className="text-sm leading-6 text-[#bacac5]">
-                  This tab will host member roles, invitations, and workspace
-                  access controls once the team management flow is ready.
-                </p>
-              </div>
-            </div>
-          </section>
+          <TeamMembersList />
         </TabsContent>
 
         <TabsContent value="roles" className="mt-0">

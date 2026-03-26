@@ -99,4 +99,20 @@ export const accessControlService = {
       payload
     );
   },
+
+  /**
+   * Change a member's role within an organization
+   * Updates the membership to assign a new role
+   * Only Owner can perform this action
+   */
+  changeMemberRole(
+    orgId: string,
+    membershipId: string,
+    roleId: string
+  ): Promise<{ data: { id: string; role_id: string; message: string } }> {
+    return api.patch(
+      `/organizations/${orgId}/roles/memberships/${membershipId}/role`,
+      { role_id: roleId }
+    );
+  },
 };

@@ -50,3 +50,23 @@ export type PermissionOverride = {
   is_granted: boolean;
   message?: string;
 };
+
+export type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatarUrl?: string;
+};
+
+export type RoleInfo = {
+  id: string;
+  name: string;
+};
+
+export type OrganizationMember = {
+  id: string; // membershipId
+  status: string;
+  user: User;
+  role: RoleInfo;
+};

@@ -67,6 +67,22 @@ export type CancelRequestResponse = {
   success?: boolean;
 };
 
+export type OrganizationMember = {
+  membershipId: string;
+  organizationId: string;
+  status: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  role: {
+    id: string;
+    name: string;
+  };
+};
+
 export const orgService = {
   /**
    * Fetch the current organization's pending access requests.
@@ -122,5 +138,15 @@ export const orgService = {
   },
   getMyMemberships() {
     return api.get<MyMembershipsResponse>('/users/me/organizations');
+  },
+
+  /**
+   * Fetch all active members of an organization
+   * Returns a list of members with their roles and user information
+   */
+  getOrganizationMembers(
+    orgId: string
+  ): Promise<{ data: OrganizationMember[] }> {
+    return api.get<OrganizationMember[]>(`/organizations/${orgId}/members`);
   },
 };
