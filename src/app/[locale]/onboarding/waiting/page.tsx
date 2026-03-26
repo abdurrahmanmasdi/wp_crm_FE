@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
@@ -40,6 +41,7 @@ function getMembershipId(membership: OrganizationMembership | null) {
 export default function WaitingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const t = useTranslations('Onboarding.Waiting');
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -155,11 +157,10 @@ export default function WaitingPage() {
         </div>
 
         <h1 className="text-foreground mb-3 text-2xl font-bold tracking-tight">
-          Your request has been sent.
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-6">
-          We are waiting for a workspace admin to approve your access. You will
-          be redirected automatically when approved.
+          {t('description')}
         </p>
 
         <div className="flex flex-col justify-center gap-4">
@@ -172,7 +173,7 @@ export default function WaitingPage() {
                 return;
               }
 
-              toast.error('Could not find a pending request to cancel.');
+              toast.error(t('cancelError'));
             }}
             disabled={cancelRequestMutation.isPending}
             className="mt-8 rounded-full border-white/10 bg-transparent px-5 text-red-200 hover:bg-red-500/5 hover:text-red-400"
@@ -180,7 +181,7 @@ export default function WaitingPage() {
             {cancelRequestMutation.isPending ? (
               <span className="mr-2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-300/30 border-t-red-200" />
             ) : null}
-            Cancel Request
+            {t('cancelButton')}
           </Button>
 
           <Button
@@ -192,7 +193,7 @@ export default function WaitingPage() {
             }}
             className="rounded-full border-white/10 bg-transparent px-5 text-red-200 hover:bg-red-500/5 hover:text-red-400"
           >
-            Logout
+            {t('logoutButton')}
           </Button>
         </div>
       </div>

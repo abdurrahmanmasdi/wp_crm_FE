@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, LogOut, Search } from 'lucide-react';
 
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -45,6 +46,7 @@ export function DashboardHeader() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const t = useTranslations('Common');
 
   const initials = useMemo(() => getUserInitials(user), [user]);
 
@@ -98,7 +100,7 @@ export function DashboardHeader() {
               className="text-foreground focus:bg-secondary focus:text-primary rounded-xl px-3 py-2 text-sm"
               onClick={() => router.push('/dashboard/settings')}
             >
-              Profile settings
+              {t('profileSettings')}
             </DropdownMenuItem>
 
             <DropdownMenuItem
@@ -109,7 +111,7 @@ export function DashboardHeader() {
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Sign out
+              {t('logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

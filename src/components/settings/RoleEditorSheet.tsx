@@ -4,6 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -69,6 +70,7 @@ export function RoleEditorSheet({
   orgId,
 }: RoleEditorSheetProps) {
   const queryClient = useQueryClient();
+  const t = useTranslations('Settings.Roles');
   // Fetch all permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
     queryKey: ['permissions'],
@@ -130,16 +132,16 @@ export function RoleEditorSheet({
         permissionIds: data.permissionIds,
       }),
     onSuccess: () => {
-      toast.success('Role created successfully');
+      toast.success(t('roleCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
       onOpenChange(false);
     },
     onError: (error) => {
       try {
         const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage || 'Failed to create role');
+        toast.error(errorMessage || t('failedToCreateRole'));
       } catch {
-        toast.error('An unexpected error occurred while creating the role');
+        toast.error(t('unexpectedErrorCreating'));
       }
     },
   });
@@ -152,16 +154,16 @@ export function RoleEditorSheet({
         permissionIds: data.permissionIds,
       }),
     onSuccess: () => {
-      toast.success('Role updated successfully');
+      toast.success(t('roleUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
       onOpenChange(false);
     },
     onError: (error) => {
       try {
         const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage || 'Failed to update role');
+        toast.error(errorMessage || t('failedToUpdateRole'));
       } catch {
-        toast.error('An unexpected error occurred while updating the role');
+        toast.error(t('unexpectedErrorUpdating'));
       }
     },
   });
@@ -207,7 +209,7 @@ export function RoleEditorSheet({
       <SheetContent className="max-w-2xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>
-            {roleToEdit ? 'Edit Role' : 'Create New Role'}
+            {roleToEdit ? t('editorEdit') : t('editorCreate')}
           </SheetTitle>
         </SheetHeader>
 
@@ -215,18 +217,18 @@ export function RoleEditorSheet({
           {/* Role Name Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="name">
-              Role Name
+              {t('roleName')}
             </label>
             <Input
               id="name"
               {...register('name')}
-              placeholder="e.g., Team Lead, Support Agent"
+              placeholder={t('rolePlaceholder')}
               disabled={Boolean(isSystemRole)}
               className={isSystemRole ? 'bg-muted cursor-not-allowed' : ''}
             />
             {isSystemRole && (
               <p className="text-muted-foreground text-xs">
-                System roles cannot be renamed
+                {t('systemRoleNotice')}
               </p>
             )}
             {errors.name && (
@@ -237,14 +239,14 @@ export function RoleEditorSheet({
           {/* Grouped Permissions */}
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-sm font-semibold">Permissions</h3>
+              <h3 className="mb-4 text-sm font-semibold">{t('permissions')}</h3>
               {isLoadingPermissions ? (
                 <p className="text-muted-foreground text-sm">
-                  Loading permissions...
+                  {t('loadingPermissions')}
                 </p>
               ) : Object.entries(groupedPermissions).length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  No permissions available
+                  {t('noPermissions')}
                 </p>
               ) : (
                 <div className="space-y-6">
@@ -313,16 +315,16 @@ export function RoleEditorSheet({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading} className="gap-2">
               {isLoading ? (
                 <>
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Saving...
+                  {t('saving')}
                 </>
               ) : (
-                'Save Role'
+                t('saveRole')
               )}
             </Button>
           </div>

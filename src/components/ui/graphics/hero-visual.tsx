@@ -1,10 +1,14 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 type HeroVisualProps = {
   imageAlt: string;
 };
 
 export function HeroVisual({ imageAlt }: HeroVisualProps) {
+  const t = useTranslations('HeroVisual');
   return (
     <div className="group bg-background relative mx-auto mb-24 aspect-4/5 w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 sm:mb-32 sm:aspect-video">
       <div className="from-primary/10 absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] via-transparent to-transparent opacity-50" />
@@ -28,17 +32,19 @@ export function HeroVisual({ imageAlt }: HeroVisualProps) {
       </div>
       <div className="glass-panel border-primary/20 absolute top-4 left-4 rounded-xl border p-3 text-left transition-transform duration-500 hover:translate-y-0 sm:top-1/4 sm:left-1/4 sm:translate-y-4 sm:p-4">
         <div className="text-primary mb-1 text-[10px] font-bold uppercase">
-          Active Tours
+          {t('activeTours')}
         </div>
         <div className="text-foreground text-lg font-bold sm:text-2xl">
-          1,284
+          {t('activeTourValue')}
         </div>
       </div>
       <div className="glass-panel absolute right-4 bottom-4 rounded-xl border border-white/20 p-3 text-left transition-transform duration-500 hover:translate-y-0 sm:right-1/4 sm:bottom-1/4 sm:-translate-y-4 sm:p-4">
         <div className="text-muted-foreground mb-1 text-[10px] font-bold uppercase">
-          Lead Conversion
+          {t('leadConversion')}
         </div>
-        <div className="text-primary text-lg font-bold sm:text-2xl">+24.8%</div>
+        <div className="text-primary text-lg font-bold sm:text-2xl">
+          {t('leadConversionValue')}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { User, ShieldPlus } from 'lucide-react';
 
@@ -47,6 +48,9 @@ export function TeamMembersList() {
   );
   const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+  const t = useTranslations('Settings.Team');
+  const tAlerts = useTranslations('Settings.Alerts');
+  const tCommon = useTranslations('Common');
 
   // State for pending role change confirmation
   const [pendingRoleChange, setPendingRoleChange] = useState<{
@@ -110,7 +114,7 @@ export function TeamMembersList() {
           )
         : Promise.reject(new Error('No organization selected')),
     onSuccess: () => {
-      toast.success('Member role updated successfully');
+      toast.success(t('roleUpdateSuccess'));
       queryClient.invalidateQueries({
         queryKey: ['members', activeOrganizationId],
       });
@@ -200,28 +204,22 @@ export function TeamMembersList() {
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-foreground text-lg font-semibold">
-            Team Members
+            {t('title')}
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Manage organization members and their roles
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{t('subtitle')}</p>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
           <div className="bg-background flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 py-12">
-            <p className="text-muted-foreground text-sm">
-              Loading team members...
-            </p>
+            <p className="text-muted-foreground text-sm">{t('loading')}</p>
           </div>
         ) : members.length === 0 ? (
           <div className="bg-background flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
             <div className="max-w-md space-y-2">
-              <p className="text-muted-foreground text-sm">
-                No team members yet.
-              </p>
+              <p className="text-muted-foreground text-sm">{t('noMembers')}</p>
               <p className="text-muted-foreground/70 text-xs">
-                Team members will appear here once added to the organization
+                {t('noMembersHint')}
               </p>
             </div>
           </div>
@@ -231,13 +229,17 @@ export function TeamMembersList() {
             <Table>
               <TableHeader>
                 <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="text-muted-foreground">User</TableHead>
                   <TableHead className="text-muted-foreground">
-                    Status
+                    {t('tableHeaders.user')}
                   </TableHead>
-                  <TableHead className="text-muted-foreground">Role</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    {t('tableHeaders.status')}
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    {t('tableHeaders.role')}
+                  </TableHead>
                   <TableHead className="text-muted-foreground text-right">
-                    Actions
+                    {t('tableHeaders.actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -323,7 +325,7 @@ export function TeamMembersList() {
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                            title="View profile"
+                            title={t('viewProfile')}
                           >
                             <User className="h-4 w-4" />
                           </Button>
@@ -332,7 +334,7 @@ export function TeamMembersList() {
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                          title="Permission overrides"
+                          title={t('permissionOverrides')}
                           onClick={() => setSelectedMember(member)}
                         >
                           <ShieldPlus className="h-4 w-4" />
@@ -352,22 +354,21 @@ export function TeamMembersList() {
         <AlertDialogContent className="bg-card border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">
-              Change Member Role?
+              {tAlerts('changeRoleTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              Are you sure you want to change this member's role? This will
-              immediately alter their access permissions.
+              {tAlerts('changeRoleDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="text-muted-foreground border-white/10 hover:bg-white/5">
-              Cancel
+              {tCommon('cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmRoleChange}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Continue
+              {tAlerts('confirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

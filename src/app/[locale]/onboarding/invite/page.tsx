@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
@@ -44,7 +45,7 @@ const pastelGradients = [
   'from-[#86efac] to-[#34d399]',
 ] as const;
 
-function getApiErrorMessage(error: unknown) {
+function getApiErrorMessage(error: unknown, t: any) {
   if (axios.isAxiosError(error)) {
     const responseMessage =
       error.response?.data?.message ?? error.response?.data?.error;
@@ -64,7 +65,7 @@ function getApiErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return 'Something went wrong. Please try again.';
+  return t('errorFallback');
 }
 
 function buildInitials(email: string) {
@@ -84,6 +85,7 @@ function getAvatarGradient(index: number) {
 
 export default function InviteTeamPage() {
   const router = useRouter();
+  const t = useTranslations('Onboarding.Invite');
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
@@ -122,12 +124,6 @@ export default function InviteTeamPage() {
     }
   }, [_hasHydrated, activeOrganizationId, router, user]);
 
-  const invitedCountLabel = useMemo(() => {
-    return invitedMembers.length === 1
-      ? '1 invited teammate'
-      : `${invitedMembers.length} invited teammates`;
-  }, [invitedMembers.length]);
-
   const onSubmit = async (values: InviteFormValues) => {
     if (!activeOrganizationId) {
       router.push('/onboarding/create');
@@ -156,7 +152,7 @@ export default function InviteTeamPage() {
 
       reset({ email: '', role: values.role });
     } catch (error) {
-      setSubmitError(getApiErrorMessage(error));
+      setSubmitError(getApiErrorMessage(error, t));
     }
   };
 
@@ -177,10 +173,10 @@ export default function InviteTeamPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-end justify-between">
               <span className="font-label text-primary text-xs font-bold tracking-widest uppercase">
-                Step 2 of 3: Your Crew
+                {t('step')}
               </span>
               <span className="font-body text-muted-foreground text-sm font-medium">
-                Invite Team
+                {t('subtitle')}
               </span>
             </div>
 
@@ -196,14 +192,13 @@ export default function InviteTeamPage() {
           <header className="mb-10 space-y-3 text-center sm:text-left">
             <div className="border-primary/20 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase">
               <Sparkles className="h-3.5 w-3.5" />
-              Team invites
+              {t('badge')}
             </div>
             <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-              Bring your crew on board
+              {t('title')}
             </h1>
             <p className="text-muted-foreground text-base leading-6">
-              Invite agents and managers now, or continue to preferences and do
-              it later.
+              {t('description')}
             </p>
           </header>
 
@@ -214,13 +209,13 @@ export default function InviteTeamPage() {
                   className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                   htmlFor="email"
                 >
-                  Team Member Email
+                  {t('emailLabel')}
                 </label>
 
                 <Input
                   id="email"
                   type="email"
-                  placeholder="colleague@agency.com"
+                  placeholder={t('emailPlaceholder')}
                   autoComplete="off"
                   className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-12 rounded-full border-white/10 px-6 focus-visible:ring-1"
                   {...register('email')}
@@ -238,7 +233,7 @@ export default function InviteTeamPage() {
                   className="font-label text-muted-foreground mb-2 block text-xs font-bold tracking-widest uppercase"
                   htmlFor="role"
                 >
-                  Role
+                  {t('roleLabel')}
                 </label>
 
                 <Controller
@@ -250,11 +245,13 @@ export default function InviteTeamPage() {
                         id="role"
                         className="h-12 rounded-full px-6"
                       >
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue placeholder={t('rolePlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="agent">{t('roleAgent')}</SelectItem>
+                        <SelectItem value="manager">
+                          {t('roleManager')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -270,11 +267,11 @@ export default function InviteTeamPage() {
                   {isSubmitting ? (
                     <>
                       <span className="border-primary-foreground/20 border-t-primary-foreground h-4 w-4 animate-spin rounded-full border-2" />
-                      Inviting...
+                      {t('loadingButton')}
                     </>
                   ) : (
                     <>
-                      Invite
+                      {t('inviteButton')}
                       <MailPlus className="h-4 w-4" />
                     </>
                   )}
@@ -292,18 +289,19 @@ export default function InviteTeamPage() {
           <div className="mt-10 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-muted-foreground/70 text-[11px] font-bold tracking-[0.2em] uppercase">
-                Invited List
+                {t('listTitle')}
               </h3>
               <span className="text-primary text-[11px] font-semibold tracking-widest uppercase">
-                {invitedCountLabel}
+                {invitedMembers.length === 1
+                  ? t('listCountOne')
+                  : t('listCountMany', { count: invitedMembers.length })}
               </span>
             </div>
 
             <div className="space-y-3">
               {invitedMembers.length === 0 ? (
                 <div className="bg-background/60 text-muted-foreground rounded-2xl border border-dashed border-white/10 px-5 py-6 text-sm">
-                  No invitations yet. Use the form above to start building your
-                  team.
+                  {t('emptyState')}
                 </div>
               ) : (
                 invitedMembers.map((member) => (
@@ -329,7 +327,7 @@ export default function InviteTeamPage() {
 
                     <button
                       type="button"
-                      aria-label={`Remove ${member.email}`}
+                      aria-label={t('removeAriaLabel', { email: member.email })}
                       className="text-muted-foreground hover:text-destructive rounded-full p-2 transition-colors hover:bg-red-500/10"
                       onClick={() => {
                         setInvitedMembers((currentMembers) =>
@@ -355,7 +353,7 @@ export default function InviteTeamPage() {
               onClick={() => router.push('/onboarding/preferences')}
               className="text-muted-foreground hover:text-foreground rounded-full px-6 py-3 text-sm font-semibold tracking-wide hover:bg-white/5"
             >
-              Skip for now
+              {t('skipButton')}
             </Button>
 
             <Button
@@ -363,7 +361,7 @@ export default function InviteTeamPage() {
               onClick={() => router.push('/onboarding/preferences')}
               className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-3 text-sm font-bold"
             >
-              Continue
+              {t('continueButton')}
             </Button>
           </div>
         </section>

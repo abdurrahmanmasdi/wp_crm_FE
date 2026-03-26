@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -10,6 +11,7 @@ export default function MemberProfilePage({
   params: { id: string };
 }) {
   const router = useRouter();
+  const t = useTranslations('MemberProfile');
 
   return (
     <div className="from-background to-card flex min-h-screen items-center justify-center bg-gradient-to-br px-4 py-8">
@@ -23,19 +25,20 @@ export default function MemberProfilePage({
 
         {/* Title */}
         <h1 className="text-foreground mb-2 text-center text-2xl font-bold">
-          Member Profile
+          {t('title')}
         </h1>
 
         {/* Description */}
         <p className="text-muted-foreground mb-8 text-center text-sm">
-          Detailed user activity and performance metrics are currently in
-          development.
+          {t('developmentDescription')}
         </p>
 
         {/* Info Box */}
         <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
           <p className="text-muted-foreground text-xs">
-            <span className="text-foreground font-semibold">Member ID:</span>{' '}
+            <span className="text-foreground font-semibold">
+              {t('memberIdLabel')}
+            </span>{' '}
             {params.id}
           </p>
         </div>
@@ -46,7 +49,7 @@ export default function MemberProfilePage({
           className="bg-primary text-primary-foreground hover:bg-primary/90 w-full font-semibold"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Team
+          {t('backToTeam')}
         </Button>
 
         {/* Alternative Link */}
@@ -55,7 +58,7 @@ export default function MemberProfilePage({
           className="text-muted-foreground mt-3 w-full border-white/10 hover:bg-white/5"
           onClick={() => router.push('/dashboard/settings')}
         >
-          Go to Settings
+          {t('goToSettings')}
         </Button>
       </div>
     </div>

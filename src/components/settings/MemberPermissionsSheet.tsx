@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { accessControlService } from '@/lib/access-control.service';
@@ -38,6 +39,7 @@ export function MemberPermissionsSheet({
   onOpenChange,
   member,
 }: MemberPermissionsSheetProps) {
+  const t = useTranslations('Settings.MemberPermissions');
   const orgId = useAuthStore((state) => state.activeOrganizationId);
   const queryClient = useQueryClient();
   const [selectedOverrideIds, setSelectedOverrideIds] = useState<string[]>([]);
@@ -128,7 +130,7 @@ export function MemberPermissionsSheet({
       );
     },
     onSuccess: () => {
-      toast.success('Permissions updated successfully');
+      toast.success(t('permissionsUpdatedSuccess'));
       queryClient.invalidateQueries({
         queryKey: ['members', orgId],
       });
@@ -140,9 +142,9 @@ export function MemberPermissionsSheet({
     onError: (error) => {
       try {
         const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage || 'Failed to update permissions');
+        toast.error(errorMessage || t('failedToUpdatePermissions'));
       } catch {
-        toast.error('An unexpected error occurred while updating permissions');
+        toast.error(t('unexpectedErrorUpdating'));
       }
     },
   });
@@ -219,21 +221,23 @@ export function MemberPermissionsSheet({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="max-w-2xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Extra Permissions for {member.user.firstName}</SheetTitle>
+          <SheetTitle>{t('title', { name: member.user.firstName })}</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
           {/* Grouped Permissions */}
           <div className="space-y-6">
             <div>
-              <h3 className="mb-4 text-sm font-semibold">Permissions</h3>
+              <h3 className="mb-4 text-sm font-semibold">
+                {t('permissionsLabel')}
+              </h3>
               {isLoadingPermissions ? (
                 <p className="text-muted-foreground text-sm">
-                  Loading permissions...
+                  {t('loadingPermissions')}
                 </p>
               ) : Object.entries(groupedPermissions).length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  No permissions available
+                  {t('noPermissions')}
                 </p>
               ) : (
                 <div className="space-y-6">
@@ -286,7 +290,7 @@ export function MemberPermissionsSheet({
                                     {permission.action}
                                     {isInherited && (
                                       <span className="text-muted-foreground ml-2 text-xs">
-                                        (from role)
+                                        {t('fromRole')}
                                       </span>
                                     )}
                                   </label>
@@ -315,10 +319,10 @@ export function MemberPermissionsSheet({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isPending ? 'Saving...' : 'Save Overrides'}
+              {isPending ? t('saving') : t('saveOverrides')}
             </Button>
           </div>
         </form>

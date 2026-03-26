@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { getLocale } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/components/query-provider';
@@ -18,11 +18,15 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'WP CRM - Manage Your Business',
-  description:
-    'A comprehensive CRM solution for managing organizations and team members',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Navigation');
+  const commonT = await getTranslations('Common');
+
+  return {
+    title: `${t('dashboard')} - TourCRM`,
+    description: commonT('appDescription'),
+  };
+}
 
 interface RootLayoutProps {
   children: React.ReactNode;

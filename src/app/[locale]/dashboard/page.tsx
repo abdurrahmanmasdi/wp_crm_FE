@@ -7,43 +7,15 @@ import {
   ChartColumn,
   Sparkles,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const metricCards = [
-  {
-    title: 'Active Leads',
-    value: 142,
-    trend: '+12% from last week',
-    trendDirection: 'up' as const,
-    icon: <Activity className="h-5 w-5" />,
-  },
-  {
-    title: 'Conversion Rate',
-    value: '24.8%',
-    trend: '+2.1% from last month',
-    trendDirection: 'up' as const,
-    icon: <ArrowUpRight className="h-5 w-5" />,
-  },
-  {
-    title: 'Upcoming Tours',
-    value: 28,
-    trend: '4 tours leaving this week',
-    trendDirection: 'neutral' as const,
-    icon: <CalendarDays className="h-5 w-5" />,
-  },
-  {
-    title: 'Revenue Pipeline',
-    value: '$84.2K',
-    trend: '-3% from last period',
-    trendDirection: 'down' as const,
-    icon: <ChartColumn className="h-5 w-5" />,
-  },
-] as const;
-
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
+  const t = useTranslations('Dashboard');
+  const navT = useTranslations('Navigation');
 
   const firstName =
     user && typeof user === 'object'
@@ -56,25 +28,54 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <section className="space-y-2">
         <p className="text-primary text-sm font-semibold tracking-[0.2em] uppercase">
-          Dashboard Overview
+          {navT('dashboard')} {t('overview')}
         </p>
         <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-          Welcome back, {firstName}
+          {t('welcomeBack', { name: firstName })}
         </h1>
         <p className="text-muted-foreground max-w-2xl text-sm leading-6 md:text-base">
-          Here is your agency&apos;s performance overview for today.
+          {t('performanceOverview')}
         </p>
       </section>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {metricCards.map((metric) => (
+        {[
+          {
+            title: 'activeLeads',
+            value: 142,
+            trendKey: 'activeLeasTrend',
+            trendDirection: 'up' as const,
+            icon: <Activity className="h-5 w-5" />,
+          },
+          {
+            title: 'conversionRate',
+            value: '24.8%',
+            trendKey: 'conversionRateTrend',
+            trendDirection: 'up' as const,
+            icon: <ArrowUpRight className="h-5 w-5" />,
+          },
+          {
+            title: 'upcomingTours',
+            value: 28,
+            trendKey: 'upcomingToursTrend',
+            trendDirection: 'neutral' as const,
+            icon: <CalendarDays className="h-5 w-5" />,
+          },
+          {
+            title: 'revenuePipeline',
+            value: '$84.2K',
+            trendKey: 'revenuePipelineTrend',
+            trendDirection: 'down' as const,
+            icon: <ChartColumn className="h-5 w-5" />,
+          },
+        ].map(({ title, value, trendKey, trendDirection, icon }) => (
           <MetricCard
-            key={metric.title}
-            title={metric.title}
-            value={metric.value}
-            trend={metric.trend}
-            trendDirection={metric.trendDirection}
-            icon={metric.icon}
+            key={title}
+            title={t(title as any)}
+            value={value}
+            trend={t(trendKey as any)}
+            trendDirection={trendDirection}
+            icon={icon}
           />
         ))}
       </section>
@@ -84,15 +85,15 @@ export default function DashboardPage() {
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 className="text-foreground text-lg font-bold tracking-tight">
-                Booking Volume
+                {t('bookingVolume')}
               </h2>
               <p className="text-muted-foreground text-xs font-medium">
-                Performance analytics for the last 30 days
+                {t('bookingAnalyticsText')}
               </p>
             </div>
 
             <div className="text-muted-foreground rounded-full border border-white/5 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-widest uppercase">
-              Live
+              {t('live')}
             </div>
           </div>
 
@@ -118,19 +119,31 @@ export default function DashboardPage() {
         <article className="bg-card space-y-6 rounded-2xl border border-white/5 p-6 shadow-2xl shadow-black/20">
           <div>
             <h2 className="text-foreground text-lg font-bold tracking-tight">
-              Recent Inquiries
+              {t('recentInquiries')}
             </h2>
             <p className="text-muted-foreground text-xs font-medium">
-              High intent requests from the last 24 hours
+              {t('recentInquiriesText')}
             </p>
           </div>
 
           <div className="space-y-3">
             {[
-              ['Julianne Moore', 'Cappadocia 3-Day Luxury', '$4,250'],
-              ['Marcus Holloway', 'Bosphorus Private Yacht', '$1,800'],
-              ['Sarah Jenkins', 'Antalya Coast Explorer', '$2,900'],
-            ].map(([name, destination, value]) => (
+              {
+                name: t('sampleInquiry1Name'),
+                destination: t('sampleInquiry1Destination'),
+                value: t('sampleInquiry1Value'),
+              },
+              {
+                name: t('sampleInquiry2Name'),
+                destination: t('sampleInquiry2Destination'),
+                value: t('sampleInquiry2Value'),
+              },
+              {
+                name: t('sampleInquiry3Name'),
+                destination: t('sampleInquiry3Destination'),
+                value: t('sampleInquiry3Value'),
+              },
+            ].map(({ name, destination, value }) => (
               <div
                 key={name}
                 className="rounded-2xl border border-white/5 bg-white/5 p-4 transition-colors hover:bg-white/[0.07]"
@@ -152,12 +165,11 @@ export default function DashboardPage() {
             <div className="text-primary mb-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               <p className="text-xs font-semibold tracking-[0.2em] uppercase">
-                Intelligence Prompt
+                {t('intelligencePrompt')}
               </p>
             </div>
             <p className="text-foreground text-sm leading-6">
-              AI predicts a 15% surge in US-based inquiries for Boutique
-              Istanbul tours next week.
+              {t('aiPrediction')}
             </p>
           </div>
         </article>

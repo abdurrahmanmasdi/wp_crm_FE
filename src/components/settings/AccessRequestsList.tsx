@@ -3,6 +3,7 @@
 import { CheckCircle2, Clock3, Mail, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -126,6 +127,7 @@ export function AccessRequestsList() {
     (state) => state.activeOrganizationId
   );
   const queryClient = useQueryClient();
+  const t = useTranslations('Settings.AccessRequests');
   const [requestToApprove, setRequestToApprove] = useState<string | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
 
@@ -168,7 +170,7 @@ export function AccessRequestsList() {
       );
     },
     onSuccess: () => {
-      toast.success('Access request approved');
+      toast.success(t('approveSuccess'));
       queryClient.invalidateQueries({
         queryKey: ['organization-access-requests', activeOrganizationId],
       });
@@ -192,7 +194,7 @@ export function AccessRequestsList() {
       return orgService.rejectRequest(activeOrganizationId, membershipId);
     },
     onSuccess: () => {
-      toast.success('Access request rejected');
+      toast.success(t('rejectSuccess'));
       queryClient.invalidateQueries({
         queryKey: ['organization-access-requests', activeOrganizationId],
       });
@@ -236,11 +238,10 @@ export function AccessRequestsList() {
           <Clock3 className="h-6 w-6" />
         </div>
         <h3 className="text-foreground text-lg font-semibold">
-          No pending requests
+          {t('noRequests')}
         </h3>
         <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">
-          New access requests will appear here when teammates ask to join this
-          workspace.
+          {t('noRequestsDescription')}
         </p>
       </section>
     );
@@ -251,14 +252,14 @@ export function AccessRequestsList() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-primary text-[11px] font-bold tracking-[0.2em] uppercase">
-            Access Requests
+            {t('title')}
           </p>
           <h3 className="text-foreground mt-1 text-lg font-semibold">
-            Review pending approvals
+            {t('subtitle')}
           </h3>
         </div>
         <span className="text-muted-foreground rounded-full border border-white/5 bg-white/5 px-3 py-1 text-xs font-semibold">
-          {requests.length} pending
+          {requests.length} {t('pending')}
         </span>
       </div>
 
@@ -292,7 +293,7 @@ export function AccessRequestsList() {
                     </p>
                     <p className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
                       <Mail className="h-3.5 w-3.5" />
-                      Requested {getRequestDate(request)}
+                      {t('requested', { date: getRequestDate(request) })}
                     </p>
                   </div>
                 </div>
@@ -305,7 +306,7 @@ export function AccessRequestsList() {
                     disabled={isActionPending}
                     className="rounded-full"
                   >
-                    {isRejectPending ? 'Rejecting...' : 'Reject'}
+                    {isRejectPending ? t('rejecting') : t('reject')}
                     <XCircle className="h-4 w-4" />
                   </Button>
 
@@ -315,7 +316,7 @@ export function AccessRequestsList() {
                     disabled={isActionPending}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full"
                   >
-                    {isApprovePending ? 'Approving...' : 'Approve'}
+                    {isApprovePending ? t('approving') : t('approve')}
                     <CheckCircle2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -333,22 +334,24 @@ export function AccessRequestsList() {
         <DialogContent className="bg-card border-white/10">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              Assign a Role to Approve
+              {t('assignRole')}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Select a role for this user before approving their access request.
+              {t('assignRoleDescription')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <label className="text-foreground text-sm font-medium">Role</label>
+            <label className="text-foreground text-sm font-medium">
+              {t('roleLabel')}
+            </label>
             <Select
               value={selectedRoleId}
               onValueChange={setSelectedRoleId}
               disabled={rolesQuery.isLoading || !rolesQuery.data}
             >
               <SelectTrigger className="text-muted-foreground mt-2 border-white/10 bg-white/5">
-                <SelectValue placeholder="Select a role..." />
+                <SelectValue placeholder={t('selectRolePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {rolesQuery.data?.data
@@ -373,13 +376,13 @@ export function AccessRequestsList() {
               disabled={approveMutation.isPending}
               className="text-muted-foreground border-white/10"
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               type="button"
               onClick={() => {
                 if (!selectedRoleId) {
-                  toast.error('Please select a role');
+                  toast.error(t('selectRoleError'));
                   return;
                 }
                 approveMutation.mutate({
@@ -390,7 +393,9 @@ export function AccessRequestsList() {
               disabled={approveMutation.isPending || !selectedRoleId}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {approveMutation.isPending ? 'Confirming...' : 'Confirm Approval'}
+              {approveMutation.isPending
+                ? t('confirming')
+                : t('confirmApproval')}
             </Button>
           </DialogFooter>
         </DialogContent>

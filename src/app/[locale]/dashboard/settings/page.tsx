@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { AccessRequestsList } from '@/components/settings/AccessRequestsList';
@@ -7,17 +8,18 @@ import { RolesList } from '@/components/settings/RolesList';
 import { TeamMembersList } from '@/components/settings/TeamMembersList';
 
 export default function SettingsPage() {
+  const t = useTranslations('Settings');
   return (
     <div className="space-y-6">
       <section className="space-y-2">
         <p className="text-primary text-sm font-semibold tracking-[0.2em] uppercase">
-          Workspace
+          {t('workspaceLabel')}
         </p>
         <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-          Workspace Settings
+          {t('pageTitle')}
         </h1>
         <p className="text-muted-foreground max-w-2xl text-sm leading-6 md:text-base">
-          Manage your workspace access and team configuration from one place.
+          {t('pageDescription')}
         </p>
       </section>
 
@@ -28,19 +30,19 @@ export default function SettingsPage() {
               value="team"
               className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-[1rem] px-4 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-[0_12px_30px_var(--glow-primary-lg)]"
             >
-              Team Members
+              {t('tabs.team')}
             </TabsTrigger>
             <TabsTrigger
               value="roles"
               className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-[1rem] px-4 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-[0_12px_30px_var(--glow-primary-lg)]"
             >
-              Roles & Permissions
+              {t('tabs.roles')}
             </TabsTrigger>
             <TabsTrigger
               value="requests"
               className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-[1rem] px-4 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-[0_12px_30px_var(--glow-primary-lg)]"
             >
-              Access Requests
+              {t('tabs.requests')}
             </TabsTrigger>
           </TabsList>
         </div>

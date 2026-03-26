@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ export function RolesList() {
     (state) => state.activeOrganizationId
   );
   const queryClient = useQueryClient();
+  const t = useTranslations('Settings.Roles');
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
@@ -52,7 +54,7 @@ export function RolesList() {
         ? accessControlService.deleteRole(activeOrganizationId, roleId)
         : Promise.reject(new Error('No organization selected')),
     onSuccess: () => {
-      toast.success('Role deleted successfully');
+      toast.success(t('deleteSuccess'));
       queryClient.invalidateQueries({
         queryKey: ['roles', activeOrganizationId],
       });
@@ -74,11 +76,7 @@ export function RolesList() {
   };
 
   const handleDeleteRole = (role: Role) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the role "${role.name}"?`
-      )
-    ) {
+    if (!window.confirm(t('deleteConfirm', { name: role.name }))) {
       return;
     }
     deleteRoleMutation.mutate(role.id);
@@ -94,10 +92,10 @@ export function RolesList() {
         <div className="bg-background flex min-h-60 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
           <div className="max-w-md space-y-3">
             <p className="text-xs font-bold tracking-[0.2em] text-red-400 uppercase">
-              Error
+              {t('errorLabel')}
             </p>
             <h2 className="text-foreground text-xl font-semibold">
-              Failed to load roles
+              {t('failedToLoad')}
             </h2>
             <p className="text-muted-foreground text-sm leading-6">
               {getErrorMessage(error)}
@@ -115,31 +113,29 @@ export function RolesList() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-foreground text-lg font-semibold">
-              Roles & Permissions
+              {t('title')}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Manage organization roles and their permissions
+              {t('subtitle')}
             </p>
           </div>
           <Button onClick={handleCreateNewRole} className="gap-2">
             <span>+</span>
-            Create New Role
+            {t('editorCreate')}
           </Button>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
           <div className="bg-background flex items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 py-12">
-            <p className="text-muted-foreground text-sm">Loading roles...</p>
+            <p className="text-muted-foreground text-sm">{t('loading')}</p>
           </div>
         ) : roles.length === 0 ? (
           <div className="bg-background flex min-h-40 items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 px-6 text-center">
             <div className="max-w-md space-y-2">
-              <p className="text-muted-foreground text-sm">
-                No roles created yet.
-              </p>
+              <p className="text-muted-foreground text-sm">{t('noRoles')}</p>
               <p className="text-muted-foreground/70 text-xs">
-                Create your first role to get started
+                {t('noRolesHint')}
               </p>
             </div>
           </div>
@@ -150,13 +146,13 @@ export function RolesList() {
               <TableHeader>
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="text-muted-foreground">
-                    Role Name
+                    {t('tableHeaders.roleName')}
                   </TableHead>
                   <TableHead className="text-muted-foreground">
-                    Permissions
+                    {t('tableHeaders.permissions')}
                   </TableHead>
                   <TableHead className="text-muted-foreground text-right">
-                    Actions
+                    {t('tableHeaders.actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -173,7 +169,7 @@ export function RolesList() {
                           variant="secondary"
                           className="bg-primary/10 text-primary ml-2"
                         >
-                          System
+                          {t('systemBadge')}
                         </Badge>
                       )}
                     </TableCell>
@@ -198,7 +194,7 @@ export function RolesList() {
                           onClick={() => handleEditRole(role)}
                           className="text-muted-foreground hover:text-foreground border-white/10"
                         >
-                          Edit
+                          {t('edit')}
                         </Button>
                         <Button
                           variant="outline"
@@ -217,12 +213,12 @@ export function RolesList() {
                           {deleteRoleMutation.isPending ? (
                             <>
                               <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                              Deleting...
+                              {t('deleting')}
                             </>
                           ) : (
                             <>
                               <Trash2 className="h-4 w-4" />
-                              Delete
+                              {t('delete')}
                             </>
                           )}
                         </Button>

@@ -2,6 +2,7 @@
 
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { setTheme } = useTheme();
+  const t = useTranslations('Common');
 
   return (
     <DropdownMenu>
@@ -25,7 +27,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             'text-muted-foreground hover:text-primary h-10 rounded-full transition-colors duration-200',
             className
           )}
-          aria-label="Toggle theme"
+          aria-label={t('toggleTheme')}
         >
           <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
           <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />

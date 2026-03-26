@@ -2,19 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { LayoutDashboard, Settings, MapPinned, Users } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/leads', label: 'Leads', icon: Users },
-  { href: '/dashboard/tours', label: 'Tours', icon: MapPinned },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/leads', labelKey: 'leads', icon: Users },
+  { href: '/dashboard/tours', labelKey: 'tours', icon: MapPinned },
+  { href: '/dashboard/settings', labelKey: 'settings', icon: Settings },
 ] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations('Navigation');
 
   return (
     <aside className="bg-background text-foreground fixed top-0 left-0 flex h-screen w-64 flex-col border-r border-white/5 px-4 py-6 shadow-2xl shadow-black/30">
@@ -28,13 +30,13 @@ export function Sidebar() {
             TourCRM
           </h1>
           <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
-            Dashboard Suite
+            {t('Sidebar.dashboardSuite')}
           </p>
         </div>
       </div>
 
       <nav className="space-y-1">
-        {navigationItems.map(({ href, label, icon: Icon }) => {
+        {navigationItems.map(({ href, labelKey, icon: Icon }) => {
           const isActive = pathname === href;
 
           return (
@@ -59,7 +61,7 @@ export function Sidebar() {
                     : 'group-hover:scale-110 group-hover:drop-shadow-[0_0_4px_var(--glow-primary-md)]'
                 )}
               />
-              <span className="relative z-10">{label}</span>
+              <span className="relative z-10">{t(labelKey)}</span>
             </Link>
           );
         })}
@@ -67,10 +69,10 @@ export function Sidebar() {
 
       <div className="mt-auto rounded-2xl border border-white/5 bg-white/5 p-4">
         <p className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
-          Live mode
+          {t('Sidebar.liveMode')}
         </p>
         <p className="text-foreground mt-2 text-sm leading-6">
-          Track leads, tours, and pipeline movement from one place.
+          {t('Sidebar.liveDescription')}
         </p>
       </div>
     </aside>

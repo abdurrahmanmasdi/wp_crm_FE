@@ -4,6 +4,7 @@ import { Building2, PlusCircle } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingChoiceCard } from '@/components/onboarding/onboarding-choice-card';
@@ -46,6 +47,7 @@ function getOrganizationId(membership: OrganizationMembership) {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const t = useTranslations('Onboarding');
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const user = useAuthStore((state) => state.user);
   const activeOrganizationId = useAuthStore(
@@ -130,11 +132,10 @@ export default function OnboardingPage() {
         <div className="w-full max-w-4xl space-y-16 text-center">
           <header className="space-y-4">
             <h1 className="font-headline text-foreground text-[3.5rem] leading-none font-bold tracking-[-0.04em]">
-              Welcome to TourCRM,{' '}
-              <span className="text-primary">{displayName}</span>.
+              {t('Greeting.welcome', { displayName })}{' '}
             </h1>
             <p className="font-body text-muted-foreground text-[1.125rem] font-medium tracking-[-0.01em]">
-              How would you like to get started?
+              {t('Greeting.question')}
             </p>
           </header>
 
@@ -142,16 +143,16 @@ export default function OnboardingPage() {
             <OnboardingChoiceCard
               href="/onboarding/join"
               icon={Building2}
-              title="Join an Existing Agency"
-              description="I have an invite code or workspace URL"
-              ctaLabel="Proceed"
+              title={t('ChoiceCards.joinTitle')}
+              description={t('ChoiceCards.joinDescription')}
+              ctaLabel={t('ChoiceCards.joinCta')}
             />
             <OnboardingChoiceCard
               href="/onboarding/create"
               icon={PlusCircle}
-              title="Create New Workspace"
-              description="I am setting up TourCRM for my company"
-              ctaLabel="Get Started"
+              title={t('ChoiceCards.createTitle')}
+              description={t('ChoiceCards.createDescription')}
+              ctaLabel={t('ChoiceCards.createCta')}
             />
           </div>
         </div>

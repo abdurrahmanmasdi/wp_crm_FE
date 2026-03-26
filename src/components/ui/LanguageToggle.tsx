@@ -42,7 +42,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         <Button
           type="button"
           variant="ghost"
-          aria-label="Language menu"
+          aria-label="Select language"
           disabled={isPending}
           className={cn(
             'text-muted-foreground hover:text-primary h-10 rounded-full px-3 transition-colors duration-200 hover:bg-white/5',

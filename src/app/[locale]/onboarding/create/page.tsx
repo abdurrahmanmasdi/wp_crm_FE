@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
@@ -42,6 +43,7 @@ function slugifyWorkspaceName(value: string) {
 
 export default function CreateWorkspacePage() {
   const router = useRouter();
+  const t = useTranslations('Onboarding.Create');
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const user = useAuthStore((state) => state.user);
   const activeOrganizationId = useAuthStore(
@@ -138,10 +140,10 @@ export default function CreateWorkspacePage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-end justify-between">
               <span className="font-label text-primary text-xs font-bold tracking-widest uppercase">
-                Step 1 of 3
+                {t('step')}
               </span>
               <span className="font-body text-muted-foreground text-sm font-medium">
-                Company Profile
+                {t('subtitle')}
               </span>
             </div>
 
@@ -157,14 +159,13 @@ export default function CreateWorkspacePage() {
           <header className="mb-10 space-y-3">
             <div className="border-primary/20 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase">
               <Sparkles className="h-3.5 w-3.5" />
-              Workspace setup
+              {t('badge')}
             </div>
             <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-              Let&apos;s set up your workspace
+              {t('title')}
             </h1>
             <p className="text-muted-foreground text-base">
-              Give your company a name and we&apos;ll suggest a clean workspace
-              URL you can use right away.
+              {t('description')}
             </p>
           </header>
 
@@ -174,13 +175,13 @@ export default function CreateWorkspacePage() {
                 className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                 htmlFor="name"
               >
-                Company Name
+                {t('companyNameLabel')}
               </label>
 
               <div className="group relative">
                 <Input
                   id="name"
-                  placeholder="Bosphorus Travel"
+                  placeholder={t('companyNamePlaceholder')}
                   autoComplete="organization"
                   className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-auto rounded-2xl border-white/10 px-4 py-4 focus-visible:ring-1"
                   {...register('name')}
@@ -200,18 +201,18 @@ export default function CreateWorkspacePage() {
                 className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                 htmlFor="slug"
               >
-                Workspace URL
+                {t('slugLabel')}
               </label>
 
               <div className="group relative flex">
                 <div className="bg-secondary/40 text-muted-foreground rounded-l-2xl border border-r-0 border-white/10 px-4 py-4 font-medium whitespace-nowrap">
-                  tourcrm.com/
+                  {t('slugPrefix')}
                 </div>
 
                 <div className="relative w-full">
                   <Input
                     id="slug"
-                    placeholder="bosphorus-travel"
+                    placeholder={t('slugPlaceholder')}
                     autoComplete="off"
                     className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-auto rounded-l-none rounded-r-2xl border-white/10 px-4 py-4 focus-visible:ring-1"
                     {...register('slug', {
@@ -228,8 +229,7 @@ export default function CreateWorkspacePage() {
               </div>
 
               <p className="text-muted-foreground mt-2 text-[10px] italic">
-                Use lowercase letters, numbers, and hyphens only. This URL can
-                be shared with teammates.
+                {t('slugHint')}
               </p>
 
               {errors.slug?.message ? (
@@ -246,7 +246,7 @@ export default function CreateWorkspacePage() {
                 onClick={() => router.push('/onboarding')}
                 className="text-muted-foreground hover:text-foreground rounded-full px-6 py-3 text-sm font-bold tracking-wide transition-colors duration-200 hover:bg-white/5"
               >
-                Back
+                {t('backButton')}
               </Button>
 
               <Button
@@ -257,11 +257,11 @@ export default function CreateWorkspacePage() {
                 {isSubmitting ? (
                   <>
                     <span className="border-primary-foreground/20 border-t-primary-foreground h-4 w-4 animate-spin rounded-full border-2" />
-                    Creating...
+                    {t('loadingButton')}
                   </>
                 ) : (
                   <>
-                    Continue
+                    {t('submitButton')}
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}

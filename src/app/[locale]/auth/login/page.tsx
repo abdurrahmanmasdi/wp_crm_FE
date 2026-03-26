@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,6 +49,7 @@ function getApiErrorMessage(error: unknown) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('Auth');
   const setAuth = useAuthStore((state) => state.setAuth);
   const [submitError, setSubmitError] = useState('');
 
@@ -94,23 +96,23 @@ export default function LoginPage() {
         <div className="bg-card w-full rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/20">
           <div className="mb-6 space-y-2">
             <p className="text-primary text-xs font-semibold tracking-[0.2em] uppercase">
-              Private Beta
+              {t('privateBeta')}
             </p>
-            <h1 className="text-2xl font-semibold">Login to continue</h1>
+            <h1 className="text-2xl font-semibold">{t('loginTitle')}</h1>
             <p className="text-muted-foreground text-sm">
-              Sign in to continue to onboarding.
+              {t('loginDescription')}
             </p>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">
-                Email
+                {t('emailLabel')}
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="work@company.com"
+                placeholder={t('emailPlaceholder')}
                 className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('email')}
               />
@@ -121,12 +123,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="password">
-                Password
+                {t('passwordLabel')}
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 className="bg-secondary h-11 rounded-2xl border-white/10"
                 {...register('password')}
               />
@@ -146,17 +148,17 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full rounded-2xl disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? 'Signing in...' : 'Login'}
+              {isSubmitting ? t('signingIn') : t('loginButton')}
             </Button>
           </form>
 
           <p className="text-muted-foreground mt-6 text-sm">
-            Need an account?{' '}
+            {t('needAccount')}{' '}
             <Link
               className="text-primary hover:underline"
               href="/auth/register"
             >
-              Register
+              {t('registerLink')}
             </Link>
           </p>
         </div>

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
@@ -25,6 +26,7 @@ type JoinWorkspaceFormValues = z.infer<typeof joinWorkspaceSchema>;
 
 export default function JoinWorkspacePage() {
   const router = useRouter();
+  const t = useTranslations('Onboarding.Join');
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const logout = useAuthStore((state) => state.logout);
   const activeOrganizationId = useAuthStore(
@@ -94,10 +96,10 @@ export default function JoinWorkspacePage() {
 
           <header className="mb-10 space-y-2">
             <h1 className="font-headline text-foreground text-3xl font-bold tracking-tight md:text-4xl">
-              Let&apos;s join your workspace
+              {t('title')}
             </h1>
             <p className="text-muted-foreground text-base">
-              Enter the workspace URL or slug you were invited to.
+              {t('description')}
             </p>
           </header>
 
@@ -107,18 +109,18 @@ export default function JoinWorkspacePage() {
                 className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
                 htmlFor="slug"
               >
-                Workspace URL
+                {t('slugLabel')}
               </label>
 
               <div className="group flex items-stretch">
                 <div className="bg-secondary/40 text-muted-foreground rounded-l-2xl border border-r-0 border-white/10 px-4 py-4 font-medium whitespace-nowrap">
-                  tourcrm.com/
+                  {t('slugPrefix')}
                 </div>
 
                 <div className="relative w-full">
                   <Input
                     id="slug"
-                    placeholder="bosphorus"
+                    placeholder={t('slugPlaceholder')}
                     autoComplete="off"
                     className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-auto rounded-l-none rounded-r-2xl border-white/10 px-4 py-4 focus-visible:ring-1"
                     {...register('slug')}
@@ -128,7 +130,7 @@ export default function JoinWorkspacePage() {
               </div>
 
               <p className="text-muted-foreground mt-2 text-[10px] italic">
-                This will be the permanent URL for your workspace.
+                {t('slugHint')}
               </p>
 
               {errors.slug?.message ? (
@@ -145,7 +147,7 @@ export default function JoinWorkspacePage() {
                 onClick={() => router.push('/onboarding')}
                 className="text-muted-foreground hover:text-foreground rounded-full px-6 py-3 text-sm font-bold tracking-wide transition-colors duration-200 hover:bg-white/5"
               >
-                Back
+                {t('backButton')}
               </Button>
 
               <Button
@@ -160,7 +162,7 @@ export default function JoinWorkspacePage() {
                   </>
                 ) : (
                   <>
-                    Continue
+                    {t('submitButton')}
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
