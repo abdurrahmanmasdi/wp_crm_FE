@@ -18,6 +18,10 @@ import {
 } from '@/components/ui/sheet';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import {
+  getResourcePrefix,
+  formatResourceName,
+} from '@/constants/permissions.registry';
 
 interface MemberPermissionsSheetProps {
   isOpen: boolean;
@@ -78,10 +82,9 @@ export function MemberPermissionsSheet({
     const grouped: Record<string, Permission[]> = {};
 
     permissionsData.data.forEach((permission) => {
-      // Split action by ":" to get resource prefix (e.g., "leads:read" -> "leads")
-      const resourcePrefix = permission.action.split(':')[0];
-      const resourceName =
-        resourcePrefix.charAt(0).toUpperCase() + resourcePrefix.slice(1);
+      // Use registry helper to extract resource prefix (e.g., "leads:read" -> "leads")
+      const resourcePrefix = getResourcePrefix(permission.action);
+      const resourceName = formatResourceName(resourcePrefix);
 
       if (!grouped[resourceName]) {
         grouped[resourceName] = [];

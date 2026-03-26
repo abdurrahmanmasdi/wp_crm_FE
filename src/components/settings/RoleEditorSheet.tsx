@@ -19,6 +19,10 @@ import {
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import type { Permission, Role } from '@/types/access-control';
+import {
+  getResourcePrefix,
+  formatResourceName,
+} from '@/constants/permissions.registry';
 
 // Validation schema
 const roleFormSchema = z.object({
@@ -45,10 +49,9 @@ function groupPermissionsByResource(
   const grouped: Record<string, Permission[]> = {};
 
   permissions.forEach((permission) => {
-    // Split action by ":" to get resource prefix (e.g., "leads:read" -> "leads")
-    const resourcePrefix = permission.action.split(':')[0];
-    const resourceName =
-      resourcePrefix.charAt(0).toUpperCase() + resourcePrefix.slice(1);
+    // Use registry helper to extract resource prefix (e.g., "leads:read" -> "leads")
+    const resourcePrefix = getResourcePrefix(permission.action);
+    const resourceName = formatResourceName(resourcePrefix);
 
     if (!grouped[resourceName]) {
       grouped[resourceName] = [];
