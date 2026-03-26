@@ -1,12 +1,12 @@
 'use client';
 
-import axios from 'axios';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
@@ -14,6 +14,7 @@ import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { orgService } from '@/lib/org.service';
+import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const createWorkspaceSchema = z.object({
@@ -29,29 +30,6 @@ const createWorkspaceSchema = z.object({
 });
 
 type CreateWorkspaceFormValues = z.infer<typeof createWorkspaceSchema>;
-
-function getApiErrorMessage(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    const responseMessage =
-      error.response?.data?.message ?? error.response?.data?.error;
-
-    if (typeof responseMessage === 'string') {
-      return responseMessage;
-    }
-
-    if (Array.isArray(responseMessage) && responseMessage.length > 0) {
-      return responseMessage[0];
-    }
-
-    return error.message;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return 'Something went wrong. Please try again.';
-}
 
 function slugifyWorkspaceName(value: string) {
   return value
@@ -134,10 +112,12 @@ export default function CreateWorkspacePage() {
       // Step 2 begins immediately after workspace creation.
       router.push('/onboarding/invite');
     } catch (error) {
+      const message = getErrorMessage(error);
       setError('slug', {
         type: 'server',
-        message: getApiErrorMessage(error),
+        message: message,
       });
+      toast.error(message);
     }
   };
 

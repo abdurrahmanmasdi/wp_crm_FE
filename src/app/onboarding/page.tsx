@@ -10,6 +10,7 @@ import { OnboardingChoiceCard } from '@/components/onboarding/onboarding-choice-
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 import { OnboardingNav } from '@/components/onboarding/onboarding-nav';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
+import { MembershipStatus } from '@/types/enums';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function getDisplayName(user: unknown) {
@@ -40,7 +41,7 @@ function getMemberships(data: unknown): OrganizationMembership[] {
 }
 
 function getOrganizationId(membership: OrganizationMembership) {
-  return membership.organizationId ?? membership.organization?.id ?? null;
+  return membership.organization_id ?? membership.organization?.id ?? null;
 }
 
 export default function OnboardingPage() {
@@ -88,7 +89,7 @@ export default function OnboardingPage() {
     }
 
     const pendingMembership = memberships.find(
-      (membership) => membership.status === 'pending_approval'
+      (membership) => membership.status === MembershipStatus.PENDING
     );
 
     if (pendingMembership) {
@@ -97,7 +98,7 @@ export default function OnboardingPage() {
     }
 
     const activeMembership = memberships.find(
-      (membership) => membership.status === 'active'
+      (membership) => membership.status === MembershipStatus.ACTIVE
     );
 
     if (activeMembership) {

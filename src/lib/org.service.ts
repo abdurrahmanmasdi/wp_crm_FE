@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { MembershipStatus } from '@/types/enums';
 
 export type JoinOrganizationPayload = {
   slug: string;
@@ -21,9 +22,10 @@ export type Organization = {
 };
 
 export type OrganizationMembership = {
-  id?: string;
-  status?: 'active' | 'pending_approval' | string;
+  membership_id?: string;
   organizationId?: string;
+  organization_id?: string;
+  status?: MembershipStatus;
   organization?: {
     id?: string;
   };
@@ -36,7 +38,79 @@ export type MyMembershipsResponse =
       organizations?: OrganizationMembership[];
     };
 
+export type OrganizationAccessRequest = OrganizationMembership & {
+  email?: string;
+  requestedAt?: string;
+  createdAt?: string;
+  user?: {
+    firstName?: string;
+    first_name?: string;
+    lastName?: string;
+    last_name?: string;
+    email?: string;
+  };
+};
+
+export type OrganizationAccessRequestsResponse =
+  | OrganizationAccessRequest[]
+  | {
+      requests?: OrganizationAccessRequest[];
+      memberships?: OrganizationAccessRequest[];
+      organizations?: OrganizationAccessRequest[];
+    };
+
+export type OrganizationAccessRequestActionResponse = {
+  success?: boolean;
+};
+
+export type CancelRequestResponse = {
+  success?: boolean;
+};
+
 export const orgService = {
+  /**
+   * Fetch the current organization's pending access requests.
+   */
+  getPendingRequests(orgId: string): Promise<{
+    data: OrganizationAccessRequestsResponse;
+  }> {
+    return api.get<OrganizationAccessRequestsResponse>(
+      `/organizations/${orgId}/requests`
+    );
+  },
+
+  /**
+   * Approve a pending access request for the current organization.
+   */
+  approveRequest(
+    orgId: string,
+    membershipId: string
+  ): Promise<{ data: OrganizationAccessRequestActionResponse }> {
+    return api.post<OrganizationAccessRequestActionResponse>(
+      `/organizations/${orgId}/requests/${membershipId}/approve`
+    );
+  },
+
+  /**
+   * Reject a pending access request for the current organization.
+   */
+  rejectRequest(
+    orgId: string,
+    membershipId: string
+  ): Promise<{ data: OrganizationAccessRequestActionResponse }> {
+    return api.post<OrganizationAccessRequestActionResponse>(
+      `/organizations/${orgId}/requests/${membershipId}/reject`
+    );
+  },
+
+  cancelRequest(
+    membershipId: string
+  ): Promise<{ data: CancelRequestResponse }> {
+    return api.delete<CancelRequestResponse>(
+      `/users/me/requests/${membershipId}/cancel`
+    );
+  },
+
   joinOrganization(payload: JoinOrganizationPayload) {
     return api.post('/organizations/join', payload);
   },

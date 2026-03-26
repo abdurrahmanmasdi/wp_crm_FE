@@ -3,10 +3,13 @@
 import { Clock3 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
+import { getErrorMessage } from '@/lib/error-utils';
+import { MembershipStatus } from '@/types/enums';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function getMemberships(data: unknown): OrganizationMembership[] {
@@ -27,11 +30,16 @@ function getMemberships(data: unknown): OrganizationMembership[] {
 }
 
 function getOrganizationId(membership: OrganizationMembership) {
-  return membership.organizationId ?? membership.organization?.id ?? null;
+  return membership.organization_id ?? membership.organization?.id ?? null;
+}
+
+function getMembershipId(membership: OrganizationMembership | null) {
+  return membership?.membership_id ?? null;
 }
 
 export default function WaitingPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -50,6 +58,26 @@ export default function WaitingPage() {
     },
     refetchInterval: 5000,
     enabled: _hasHydrated && user != null,
+  });
+
+  const pendingMembershipId = getMembershipId(
+    getMemberships(membershipsQuery.data).find(
+      (membership) => membership.status === MembershipStatus.PENDING
+    ) ?? null
+  );
+
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (membershipId: string) => {
+      return orgService.cancelRequest(membershipId);
+    },
+    onSuccess: async () => {
+      toast.success('Your request has been canceled.');
+      await queryClient.invalidateQueries({ queryKey: ['my-memberships'] });
+      router.push('/onboarding');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
   });
 
   useEffect(() => {
@@ -80,7 +108,7 @@ export default function WaitingPage() {
     }
 
     const activeMembership = memberships.find(
-      (membership) => membership.status === 'active'
+      (membership) => membership.status === MembershipStatus.ACTIVE
     );
 
     if (activeMembership) {
@@ -95,7 +123,7 @@ export default function WaitingPage() {
     }
 
     const hasPendingApproval = memberships.some(
-      (membership) => membership.status === 'pending_approval'
+      (membership) => membership.status === MembershipStatus.PENDING
     );
 
     if (!hasPendingApproval) {
@@ -139,11 +167,19 @@ export default function WaitingPage() {
             type="button"
             variant="outline"
             onClick={() => {
-              console.log('TODO: Call DELETE /cancel-invite API');
-              router.push('/onboarding');
+              if (pendingMembershipId) {
+                cancelRequestMutation.mutate(pendingMembershipId);
+                return;
+              }
+
+              toast.error('Could not find a pending request to cancel.');
             }}
+            disabled={cancelRequestMutation.isPending}
             className="mt-8 rounded-full border-white/10 bg-transparent px-5 text-red-200 hover:bg-red-500/5 hover:text-red-400"
           >
+            {cancelRequestMutation.isPending ? (
+              <span className="mr-2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-300/30 border-t-red-200" />
+            ) : null}
             Cancel Request
           </Button>
 

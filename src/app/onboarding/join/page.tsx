@@ -1,18 +1,19 @@
 'use client';
 
-import axios from 'axios';
 import { ArrowRight } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { orgService } from '@/lib/org.service';
+import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 
@@ -21,29 +22,6 @@ const joinWorkspaceSchema = z.object({
 });
 
 type JoinWorkspaceFormValues = z.infer<typeof joinWorkspaceSchema>;
-
-function getApiErrorMessage(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    const responseMessage =
-      error.response?.data?.message ?? error.response?.data?.error;
-
-    if (typeof responseMessage === 'string') {
-      return responseMessage;
-    }
-
-    if (Array.isArray(responseMessage) && responseMessage.length > 0) {
-      return responseMessage[0];
-    }
-
-    return error.message;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return 'Something went wrong. Please try again.';
-}
 
 export default function JoinWorkspacePage() {
   const router = useRouter();
@@ -89,10 +67,12 @@ export default function JoinWorkspacePage() {
 
       router.push('/onboarding/waiting');
     } catch (error) {
+      const message = getErrorMessage(error);
       setError('slug', {
         type: 'server',
-        message: getApiErrorMessage(error),
+        message: message,
       });
+      toast.error(message);
     }
   };
 
