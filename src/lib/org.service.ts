@@ -97,13 +97,16 @@ export const orgService = {
 
   /**
    * Approve a pending access request for the current organization.
+   * Requires a roleId to assign to the approved member.
    */
   approveRequest(
     orgId: string,
-    membershipId: string
+    membershipId: string,
+    roleId: string
   ): Promise<{ data: OrganizationAccessRequestActionResponse }> {
     return api.post<OrganizationAccessRequestActionResponse>(
-      `/organizations/${orgId}/requests/${membershipId}/approve`
+      `/organizations/${orgId}/requests/${membershipId}/approve`,
+      { roleId }
     );
   },
 

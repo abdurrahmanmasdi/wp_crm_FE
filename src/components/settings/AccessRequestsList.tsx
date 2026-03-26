@@ -1,16 +1,32 @@
 'use client';
 
 import { CheckCircle2, Clock3, Mail, XCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   orgService,
   type OrganizationAccessRequest,
   type OrganizationAccessRequestsResponse,
 } from '@/lib/org.service';
+import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -110,6 +126,8 @@ export function AccessRequestsList() {
     (state) => state.activeOrganizationId
   );
   const queryClient = useQueryClient();
+  const [requestToApprove, setRequestToApprove] = useState<string | null>(null);
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
 
   const requestsQuery = useQuery({
     queryKey: ['organization-access-requests', activeOrganizationId],
@@ -125,22 +143,40 @@ export function AccessRequestsList() {
     enabled: Boolean(activeOrganizationId),
   });
 
+  const rolesQuery = useQuery({
+    queryKey: ['roles', activeOrganizationId],
+    queryFn: () => accessControlService.getRoles(activeOrganizationId!),
+    enabled: Boolean(activeOrganizationId),
+  });
+
   const approveMutation = useMutation({
-    mutationFn: async (membershipId: string) => {
+    mutationFn: async ({
+      membershipId,
+      roleId,
+    }: {
+      membershipId: string;
+      roleId: string;
+    }) => {
       if (!activeOrganizationId) {
         throw new Error('No active organization selected.');
       }
 
-      return orgService.approveRequest(activeOrganizationId, membershipId);
+      return orgService.approveRequest(
+        activeOrganizationId,
+        membershipId,
+        roleId
+      );
     },
     onSuccess: () => {
-      // Invalidating the list query is the key piece here: it forces React Query to
-      // refetch the latest pending access requests immediately after a mutation
-      // succeeds, which keeps the UI in sync without manual state juggling.
       toast.success('Access request approved');
       queryClient.invalidateQueries({
         queryKey: ['organization-access-requests', activeOrganizationId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['members', activeOrganizationId],
+      });
+      setRequestToApprove(null);
+      setSelectedRoleId('');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -275,7 +311,7 @@ export function AccessRequestsList() {
 
                   <Button
                     type="button"
-                    onClick={() => approveMutation.mutate(requestId)}
+                    onClick={() => setRequestToApprove(requestId)}
                     disabled={isActionPending}
                     className="rounded-full bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
                   >
@@ -288,6 +324,77 @@ export function AccessRequestsList() {
           );
         })}
       </div>
+
+      {/* Role Assignment Dialog */}
+      <Dialog
+        open={!!requestToApprove}
+        onOpenChange={() => setRequestToApprove(null)}
+      >
+        <DialogContent className="border-white/10 bg-[#161b22]">
+          <DialogHeader>
+            <DialogTitle className="text-[#dfe2eb]">
+              Assign a Role to Approve
+            </DialogTitle>
+            <DialogDescription className="text-[#bacac5]">
+              Select a role for this user before approving their access request.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <label className="text-sm font-medium text-[#dfe2eb]">Role</label>
+            <Select
+              value={selectedRoleId}
+              onValueChange={setSelectedRoleId}
+              disabled={rolesQuery.isLoading || !rolesQuery.data}
+            >
+              <SelectTrigger className="mt-2 border-white/10 bg-white/5 text-[#bacac5]">
+                <SelectValue placeholder="Select a role..." />
+              </SelectTrigger>
+              <SelectContent>
+                {rolesQuery.data?.data
+                  ?.filter((role) => role.name !== 'Owner')
+                  .map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setRequestToApprove(null);
+                setSelectedRoleId('');
+              }}
+              disabled={approveMutation.isPending}
+              className="border-white/10 text-[#bacac5]"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!selectedRoleId) {
+                  toast.error('Please select a role');
+                  return;
+                }
+                approveMutation.mutate({
+                  membershipId: requestToApprove || '',
+                  roleId: selectedRoleId,
+                });
+              }}
+              disabled={approveMutation.isPending || !selectedRoleId}
+              className="bg-[#00f0ff] text-[#003731] hover:bg-[#00f0ff]/90"
+            >
+              {approveMutation.isPending ? 'Confirming...' : 'Confirm Approval'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
