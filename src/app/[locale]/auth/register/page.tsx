@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { authService } from '@/lib/auth.service';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -113,6 +114,10 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-10 text-[#dfe2eb]">
+      <div className="absolute top-6 right-6">
+        <LanguageToggle />
+      </div>
+
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md items-center">
         <div className="w-full rounded-2xl border border-white/10 bg-[#161b22] p-6 shadow-2xl shadow-black/20">
           <div className="mb-6 space-y-2">

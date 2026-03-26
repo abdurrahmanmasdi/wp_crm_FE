@@ -1,0 +1,21 @@
+{
+  "common": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "back": "Geri",
+    "next": "İleri",
+    "submit": "Gönder",
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarı"
+  },
+  "nav": {
+    "dashboard": "Pano",
+    "settings": "Ayarlar",
+    "profile": "Profil",
+    "logout": "Çıkış"
+  }
+}
