@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Conversation } from '@/lib/chat.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useConversationsQuery } from '@/hooks/useChat';
 import { NewChatDialog } from './NewChatDialog';
+import { NewGroupDialog } from './NewGroupDialog';
 
 /**
  * ConversationList Component
@@ -20,6 +21,7 @@ export function ConversationList() {
   const activeConversationId = searchParams.get('chat');
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
   // Get current user ID from auth store
   const user = useAuthStore((state) => state.user);
@@ -147,13 +149,22 @@ export function ConversationList() {
       <div className="border-border space-y-3 border-b p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-foreground font-semibold">Messages</h2>
-          <button
-            onClick={() => setIsNewChatOpen(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            title="Start new conversation"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsNewChatOpen(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Start direct message"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setIsNewGroupOpen(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Create group chat"
+            >
+              <Users className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -209,7 +220,7 @@ export function ConversationList() {
                       {/* Avatar */}
                       <div
                         className={cn(
-                          'bg-primary text-primary-foreground flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                          'bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
                           isActive && 'ring-primary ring-2 ring-offset-1'
                         )}
                       >
@@ -244,7 +255,7 @@ export function ConversationList() {
 
                       {/* Unread indicator (optional) */}
                       {isActive && (
-                        <div className="bg-primary h-2 w-2 flex-shrink-0 rounded-full" />
+                        <div className="bg-primary h-2 w-2 shrink-0 rounded-full" />
                       )}
                     </div>
                   </button>
@@ -259,6 +270,13 @@ export function ConversationList() {
       <NewChatDialog
         isOpen={isNewChatOpen}
         onClose={() => setIsNewChatOpen(false)}
+        onChatCreated={handleChatCreated}
+      />
+
+      {/* New Group Dialog */}
+      <NewGroupDialog
+        isOpen={isNewGroupOpen}
+        onClose={() => setIsNewGroupOpen(false)}
         onChatCreated={handleChatCreated}
       />
     </div>

@@ -43,3 +43,19 @@ export const createConversation = async (
   );
   return response.data.data;
 };
+
+/**
+ * Create a new group conversation
+ * @param payload - Object containing group name and participant IDs
+ * @returns Promise containing the created conversation
+ */
+export const createGroupConversation = async (payload: {
+  name: string;
+  participantIds: string[];
+}): Promise<Conversation> => {
+  const response = await api.post<{ status: string; data: Conversation }>(
+    '/chat/groups',
+    payload
+  );
+  return response.data.data;
+};
