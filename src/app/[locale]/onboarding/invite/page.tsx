@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { MailPlus, Sparkles, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
@@ -45,6 +45,7 @@ const pastelGradients = [
   'from-[#86efac] to-[#34d399]',
 ] as const;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getApiErrorMessage(error: unknown, t: any) {
   if (axios.isAxiosError(error)) {
     const responseMessage =

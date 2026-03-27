@@ -71,9 +71,9 @@ export default function DashboardPage() {
         ].map(({ title, value, trendKey, trendDirection, icon }) => (
           <MetricCard
             key={title}
-            title={t(title as any)}
+            title={t(title as never)}
             value={value}
-            trend={t(trendKey as any)}
+            trend={t(trendKey as never)}
             trendDirection={trendDirection}
             icon={icon}
           />

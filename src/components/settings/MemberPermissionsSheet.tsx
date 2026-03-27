@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { accessControlService } from '@/lib/access-control.service';
-import { orgService } from '@/lib/org.service';
+
 import type { OrganizationMember, Permission } from '@/types/access-control';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -44,14 +44,14 @@ export function MemberPermissionsSheet({
   const queryClient = useQueryClient();
   const [selectedOverrideIds, setSelectedOverrideIds] = useState<string[]>([]);
 
-  const { register, watch, setValue, reset, handleSubmit } =
-    useForm<PermissionFormData>({
-      defaultValues: {
-        permissionIds: [],
-      },
-    });
+  const { watch, setValue, reset, handleSubmit } = useForm<PermissionFormData>({
+    defaultValues: {
+      permissionIds: [],
+    },
+  });
 
-  const watchedPermissions = watch('permissionIds');
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const _watchedPermissions = watch('permissionIds');
 
   // Fetch permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({

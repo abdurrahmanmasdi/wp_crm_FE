@@ -97,11 +97,12 @@ export function TeamMembersList() {
   // Determine current user's role
   const currentUserRole = useMemo(() => {
     if (!currentUser || !('id' in currentUser)) return null;
-    const currentMember = members.find(
+    const membersList = membersData?.data ?? [];
+    const currentMember = membersList.find(
       (member) => member.user.id === currentUser.id
     );
     return currentMember?.role.name ?? null;
-  }, [members, currentUser]);
+  }, [membersData?.data, currentUser]);
 
   // Change member role mutation
   const changeRoleMutation = useMutation({

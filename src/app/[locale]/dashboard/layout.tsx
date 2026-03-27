@@ -7,6 +7,7 @@ import { useLocale } from 'next-intl';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
+import { ChatSocketProvider } from '@/providers/ChatSocketProvider';
 import { cn } from '@/lib/utils';
 
 function LoadingSpinner() {
@@ -53,16 +54,18 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <Sidebar />
+    <ChatSocketProvider>
+      <div className="bg-background text-foreground min-h-screen">
+        <Sidebar />
 
-      <div className={cn('min-h-screen', isRTL ? 'mr-64' : 'ml-64')}>
-        <DashboardHeader />
+        <div className={cn('min-h-screen', isRTL ? 'mr-64' : 'ml-64')}>
+          <DashboardHeader />
 
-        <main className="bg-secondary h-[calc(100vh-64px)] px-6 py-8 lg:px-8">
-          {children}
-        </main>
+          <main className="bg-secondary h-[calc(100vh-64px)] px-6 py-8 lg:px-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ChatSocketProvider>
   );
 }

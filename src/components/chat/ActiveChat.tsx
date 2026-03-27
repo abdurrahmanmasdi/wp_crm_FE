@@ -1,0 +1,275 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { type Message } from '@/lib/chat.service';
+import { useChatSocket } from '@/providers/ChatSocketProvider';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useChatHistoryQuery } from '@/hooks/useChat';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Loader2, Send } from 'lucide-react';
+
+/**
+ * Format a date to a relative time string (e.g., "5 minutes ago")
+ */
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+
+  return date.toLocaleDateString();
+}
+
+interface ActiveChatProps {
+  conversationId: string;
+}
+
+/**
+ * ActiveChat component that displays the chat message feed for a conversation
+ * Listens to real-time WebSocket events and auto-scrolls to new messages
+ */
+export function ActiveChat({ conversationId }: ActiveChatProps) {
+  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Get current user from auth store
+  const currentUserId = useAuthStore((state) => state.user?.id);
+
+  // Get socket instance and connection status
+  const { socket, isConnected } = useChatSocket();
+
+  /**
+   * Fetch historical messages for the conversation
+   */
+  const {
+    data: messagesData,
+    isLoading,
+    error,
+  } = useChatHistoryQuery(conversationId);
+
+  /**
+   * Sync historical messages when data loads
+   */
+  useEffect(() => {
+    if (messagesData) {
+      setLiveMessages(messagesData);
+    }
+  }, [messagesData]);
+
+  /**
+   * Auto-scroll to bottom when new messages arrive
+   */
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [liveMessages]);
+
+  /**
+   * Setup WebSocket listeners for real-time messages
+   */
+  useEffect(() => {
+    if (!socket || !isConnected || !conversationId) {
+      return;
+    }
+
+    // Join the conversation room
+    socket.emit('join_conversation', { conversationId });
+    console.log(`[ActiveChat] Joined conversation: ${conversationId}`);
+
+    // Listen for new messages
+    const handleNewMessage = (message: Message) => {
+      console.log('[ActiveChat] New message received:', message);
+      setLiveMessages((prev) => [...prev, message]);
+    };
+
+    socket.on('new_message', handleNewMessage);
+
+    /**
+     * Cleanup: Leave conversation and remove listener
+     */
+    return () => {
+      socket.off('new_message', handleNewMessage);
+      socket.emit('leave_conversation', { conversationId });
+      console.log(`[ActiveChat] Left conversation: ${conversationId}`);
+    };
+  }, [socket, isConnected, conversationId]);
+
+  /**
+   * Handle sending a new message
+   */
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!messageInput.trim() || !socket || !isConnected || isSending) {
+      return;
+    }
+
+    const messageContent = messageInput.trim();
+    setMessageInput('');
+    setIsSending(true);
+
+    try {
+      // Emit message through socket
+      socket.emit('send_message', {
+        conversationId,
+        content: messageContent,
+      });
+      console.log('[ActiveChat] Message sent:', messageContent);
+    } catch (error) {
+      console.error('[ActiveChat] Failed to send message:', error);
+      // Restore the input on error
+      setMessageInput(messageContent);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  /**
+   * Get initials from user name
+   */
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.[0]?.toUpperCase() || '';
+    const last = lastName?.[0]?.toUpperCase() || '';
+    return first + last || '?';
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive text-sm font-medium">
+            Failed to load messages
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Please try refreshing the page
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-background flex h-full flex-col">
+      {/* Messages Container */}
+      <ScrollArea className="flex-1" ref={scrollRef}>
+        <div className="flex flex-col gap-4 p-4">
+          {liveMessages.length === 0 ? (
+            <div className="text-muted-foreground flex h-full items-center justify-center">
+              <p className="text-sm">
+                No messages yet. Start the conversation!
+              </p>
+            </div>
+          ) : (
+            liveMessages.map((message) => {
+              const isOwn = message.sender_id === currentUserId;
+              return (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
+                >
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className="text-xs">
+                      {getInitials(
+                        message.sender.first_name,
+                        message.sender.last_name
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* Message Bubble */}
+                  <div
+                    className={`flex flex-col gap-1 ${
+                      isOwn ? 'items-end' : 'items-start'
+                    }`}
+                  >
+                    {/* Sender Name & Timestamp */}
+                    <div className="text-muted-foreground flex gap-2 text-xs">
+                      {!isOwn && (
+                        <span className="font-medium">
+                          {message.sender.first_name} {message.sender.last_name}
+                        </span>
+                      )}
+                      <span>{formatTimeAgo(message.created_at)}</span>
+                    </div>
+
+                    {/* Message Content */}
+                    <div
+                      className={`rounded-lg px-3 py-2 ${
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <p className="max-w-md text-sm break-words">
+                        {message.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Message Input */}
+      <div className="bg-background border-t p-4">
+        {!isConnected && (
+          <div className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-700">
+            Connecting to chat server...
+          </div>
+        )}
+
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <Input
+            placeholder="Type a message..."
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            disabled={!isConnected || isSending}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            disabled={
+              !messageInput.trim() || !isConnected || isSending || isLoading
+            }
+            size="icon"
+          >
+            {isSending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}

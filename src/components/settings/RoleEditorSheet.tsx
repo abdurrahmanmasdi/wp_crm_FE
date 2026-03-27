@@ -77,12 +77,11 @@ export function RoleEditorSheet({
     queryFn: () => accessControlService.getPermissions(),
   });
 
-  const permissions = permissionsData?.data ?? [];
-
   // Group permissions by resource prefix using useMemo
   const groupedPermissions = useMemo(() => {
+    const permissions = permissionsData?.data ?? [];
     return groupPermissionsByResource(permissions);
-  }, [permissions]);
+  }, [permissionsData?.data]);
 
   // Initialize form with empty values
   const {
@@ -100,6 +99,7 @@ export function RoleEditorSheet({
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedPermissions = watch('permissionIds');
 
   // Sync form when roleToEdit changes or sheet opens
