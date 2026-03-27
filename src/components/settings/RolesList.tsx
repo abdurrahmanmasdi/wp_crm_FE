@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 
@@ -19,6 +19,7 @@ import {
 import { RoleEditorSheet } from './RoleEditorSheet';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { getLocalizedRoleName } from '@/lib/utils/translations';
 import type { Role } from '@/types/access-control';
 import { useAuthStore } from '@/store/useAuthStore';
 import { RequirePermission } from '@/components/auth/RequirePermission';
@@ -30,6 +31,7 @@ export function RolesList() {
   );
   const queryClient = useQueryClient();
   const t = useTranslations('Settings.Roles');
+  const locale = useLocale();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
@@ -171,7 +173,7 @@ export function RolesList() {
                     className="border-white/5 hover:bg-white/5"
                   >
                     <TableCell className="text-foreground font-medium">
-                      {role.name}
+                      {getLocalizedRoleName(role, locale)}
                       {isSystemRole(role.name) && (
                         <Badge
                           variant="secondary"

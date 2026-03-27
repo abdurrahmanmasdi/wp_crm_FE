@@ -16,6 +16,7 @@ export type RolePermission = {
 export type Role = {
   id: string;
   name: string;
+  name_translations?: Record<string, string>;
   organization_id: string;
   created_at: string;
   rolePermissions: RolePermission[];
@@ -23,11 +24,13 @@ export type Role = {
 
 export type CreateRolePayload = {
   name: string;
+  name_translations?: Record<string, string>;
   permissionIds: string[];
 };
 
 export type UpdateRolePayload = {
   name?: string;
+  name_translations?: Record<string, string>;
   permissionIds?: string[];
 };
 

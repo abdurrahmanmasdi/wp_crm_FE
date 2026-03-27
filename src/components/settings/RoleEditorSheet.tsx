@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +18,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import type { Permission, Role } from '@/types/access-control';
@@ -31,6 +38,7 @@ const roleFormSchema = z.object({
     .string()
     .min(1, 'Role name is required')
     .min(3, 'Name must be at least 3 characters'),
+  translations: z.record(z.string(), z.optional(z.string())).optional(),
   permissionIds: z.array(z.string()).min(1, 'Select at least one permission'),
 });
 
@@ -71,6 +79,8 @@ export function RoleEditorSheet({
 }: RoleEditorSheetProps) {
   const queryClient = useQueryClient();
   const t = useTranslations('Settings.Roles');
+  const [activeTranslations, setActiveTranslations] = useState<string[]>([]);
+
   // Fetch all permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
     queryKey: ['permissions'],
@@ -90,32 +100,43 @@ export function RoleEditorSheet({
     watch,
     reset,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<RoleFormData>({
     resolver: zodResolver(roleFormSchema),
     defaultValues: {
       name: '',
+      translations: {},
       permissionIds: [],
     },
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  // Watch permission IDs for form state updates
   const watchedPermissions = watch('permissionIds');
 
   // Sync form when roleToEdit changes or sheet opens
   useEffect(() => {
     if (isOpen) {
       if (roleToEdit) {
+        const translations = roleToEdit.name_translations ?? {};
+        const activeLanguages = Object.keys(translations);
+
         reset({
           name: roleToEdit.name,
+          translations,
           permissionIds:
             roleToEdit.rolePermissions?.map((rp) => rp.permission.id) ?? [],
         });
+
+        setActiveTranslations(activeLanguages);
       } else {
         reset({
           name: '',
+          translations: {},
           permissionIds: [],
         });
+
+        setActiveTranslations([]);
       }
     }
   }, [isOpen, roleToEdit, reset]);
@@ -126,11 +147,25 @@ export function RoleEditorSheet({
 
   // Mutation for creating a new role
   const createRoleMutation = useMutation({
-    mutationFn: (data: RoleFormData) =>
-      accessControlService.createRole(orgId, {
+    mutationFn: (data: RoleFormData) => {
+      // Build name_translations from form data, filtering out empty values
+      const name_translations: Record<string, string> = {};
+      if (data.translations) {
+        Object.entries(data.translations).forEach(([lang, value]) => {
+          if (value && value.trim()) {
+            name_translations[lang] = value;
+          }
+        });
+      }
+
+      return accessControlService.createRole(orgId, {
         name: data.name,
+        ...(Object.keys(name_translations).length > 0 && {
+          name_translations,
+        }),
         permissionIds: data.permissionIds,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('roleCreateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
@@ -148,11 +183,25 @@ export function RoleEditorSheet({
 
   // Mutation for updating an existing role
   const updateRoleMutation = useMutation({
-    mutationFn: (data: RoleFormData) =>
-      accessControlService.updateRole(orgId, roleToEdit!.id, {
+    mutationFn: (data: RoleFormData) => {
+      // Build name_translations from form data, filtering out empty values
+      const name_translations: Record<string, string> = {};
+      if (data.translations) {
+        Object.entries(data.translations).forEach(([lang, value]) => {
+          if (value && value.trim()) {
+            name_translations[lang] = value;
+          }
+        });
+      }
+
+      return accessControlService.updateRole(orgId, roleToEdit!.id, {
         name: !isSystemRole ? data.name : undefined,
+        ...(Object.keys(name_translations).length > 0 && {
+          name_translations,
+        }),
         permissionIds: data.permissionIds,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('roleUpdateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
@@ -179,6 +228,39 @@ export function RoleEditorSheet({
   const isPending =
     createRoleMutation.isPending || updateRoleMutation.isPending;
   const isLoading = isLoadingPermissions || isPending;
+
+  // Define available translation languages
+  const availableLanguages = [
+    { code: 'en', label: 'English' },
+    { code: 'ar', label: 'العربية (Arabic)' },
+  ];
+
+  // Get languages that are not yet added
+  const availableToAdd = availableLanguages.filter(
+    (lang) => !activeTranslations.includes(lang.code)
+  );
+
+  // Handle adding a new translation language
+  const handleAddTranslation = (languageCode: string) => {
+    if (!activeTranslations.includes(languageCode)) {
+      setActiveTranslations([...activeTranslations, languageCode]);
+      // Initialize the form field for this language
+      const currentTranslations = getValues('translations') ?? {};
+      setValue('translations', {
+        ...currentTranslations,
+        [languageCode]: '',
+      });
+    }
+  };
+
+  // Handle removing a translation language
+  const handleRemoveTranslation = (languageCode: string) => {
+    setActiveTranslations(activeTranslations.filter((l) => l !== languageCode));
+    const currentTranslations = getValues('translations') ?? {};
+    const updated = { ...currentTranslations };
+    delete updated[languageCode];
+    setValue('translations', updated);
+  };
 
   // Handle permission checkbox change
   const handlePermissionChange = (
@@ -215,24 +297,93 @@ export function RoleEditorSheet({
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
           {/* Role Name Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="name">
-              {t('roleName')}
-            </label>
-            <Input
-              id="name"
-              {...register('name')}
-              placeholder={t('rolePlaceholder')}
-              disabled={Boolean(isSystemRole)}
-              className={isSystemRole ? 'bg-muted cursor-not-allowed' : ''}
-            />
-            {isSystemRole && (
-              <p className="text-muted-foreground text-xs">
-                {t('systemRoleNotice')}
-              </p>
+          <div className="space-y-4">
+            {/* Default Name (Turkish) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="name">
+                Role Name (Default / Turkish)
+              </label>
+              <Input
+                id="name"
+                {...register('name')}
+                placeholder={t('rolePlaceholder')}
+                disabled={Boolean(isSystemRole)}
+                className={isSystemRole ? 'bg-muted cursor-not-allowed' : ''}
+              />
+              {isSystemRole && (
+                <p className="text-muted-foreground text-xs">
+                  {t('systemRoleNotice')}
+                </p>
+              )}
+              {errors.name && (
+                <p className="text-destructive text-xs">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            {/* Translation Inputs */}
+            {activeTranslations.length > 0 && (
+              <div className="space-y-3">
+                {activeTranslations.map((language) => {
+                  const langLabel =
+                    availableLanguages.find((l) => l.code === language)
+                      ?.label || language;
+                  return (
+                    <div key={language} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label
+                          className="text-sm font-medium"
+                          htmlFor={`translation-${language}`}
+                        >
+                          Role Name ({langLabel})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTranslation(language)}
+                          className="text-xs text-red-400 hover:text-red-300"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <Input
+                        id={`translation-${language}`}
+                        {...register(`translations.${language}`)}
+                        placeholder={`Role name in ${langLabel}`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             )}
-            {errors.name && (
-              <p className="text-destructive text-xs">{errors.name.message}</p>
+
+            {/* Add Translation Button */}
+            {availableToAdd.length > 0 && (
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2"
+                    >
+                      <span>➕</span>
+                      Add Translation
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    {availableToAdd.map((lang) => (
+                      <DropdownMenuItem
+                        key={lang.code}
+                        onClick={() => handleAddTranslation(lang.code)}
+                      >
+                        {lang.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </div>
 

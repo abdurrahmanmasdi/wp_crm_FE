@@ -3,7 +3,7 @@
 import { CheckCircle2, Clock3, Mail, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import {
 } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { getLocalizedRoleName } from '@/lib/utils/translations';
 import { useAuthStore } from '@/store/useAuthStore';
 
 type AccessRequestListItem = OrganizationAccessRequest & {
@@ -127,6 +128,7 @@ export function AccessRequestsList() {
     (state) => state.activeOrganizationId
   );
   const queryClient = useQueryClient();
+  const locale = useLocale();
   const t = useTranslations('Settings.AccessRequests');
   const [requestToApprove, setRequestToApprove] = useState<string | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
@@ -355,10 +357,10 @@ export function AccessRequestsList() {
               </SelectTrigger>
               <SelectContent>
                 {rolesQuery.data?.data
-                  ?.filter((role) => role.name !== 'Owner')
+                  ?.filter((role) => role.name !== 'Kurucu')
                   .map((role) => (
                     <SelectItem key={role.id} value={role.id}>
-                      {role.name}
+                      {getLocalizedRoleName(role, locale)}
                     </SelectItem>
                   ))}
               </SelectContent>

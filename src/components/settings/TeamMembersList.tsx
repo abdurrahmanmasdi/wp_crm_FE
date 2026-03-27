@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { MoreHorizontal, Eye, Shield } from 'lucide-react';
 
@@ -49,6 +49,7 @@ import {
 import { orgService, type OrganizationMember } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { getLocalizedRoleName } from '@/lib/utils/translations';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MemberPermissionsSheet } from './MemberPermissionsSheet';
 
@@ -61,6 +62,7 @@ export function TeamMembersList() {
   const t = useTranslations('Settings.Team');
   const tAlerts = useTranslations('Settings.Alerts');
   const tCommon = useTranslations('Common');
+  const locale = useLocale();
 
   // State for pending role change confirmation
   const [pendingRoleChange, setPendingRoleChange] = useState<{
@@ -155,7 +157,7 @@ export function TeamMembersList() {
   };
 
   // Check if current user is owner
-  const isCurrentUserOwner = currentUserRole === 'Owner';
+  const isCurrentUserOwner = currentUserRole === 'Kurucu';
 
   // Get status badge color
   const getStatusColor = (status: string) => {
@@ -173,8 +175,8 @@ export function TeamMembersList() {
 
   // Check if role select should be disabled for a member
   const isRoleSelectDisabled = (member: OrganizationMember) => {
-    // Disable if the member is the Owner
-    if (member.role.name === 'Owner') {
+    // Disable if the member is the Owner (Kurucu)
+    if (member.role.name === 'Kurucu') {
       return true;
     }
     // Disable if current user is not the Owner
@@ -324,7 +326,7 @@ export function TeamMembersList() {
                                 value={role.id}
                                 className="text-foreground focus:text-foreground focus:bg-white/10"
                               >
-                                {role.name}
+                                {getLocalizedRoleName(role, locale)}
                               </SelectItem>
                             ))}
                           </SelectContent>
