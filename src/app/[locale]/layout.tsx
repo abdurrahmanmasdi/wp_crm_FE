@@ -5,6 +5,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { getLocale } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/components/query-provider';
+import { AuthInitializer } from '@/components/AuthInitializer';
 import { Toaster } from '@/components/ui/sonner';
 import '@/app/globals.css';
 
@@ -55,6 +56,7 @@ export default async function RootLocaleLayout({ children }: RootLayoutProps) {
         >
           <NextIntlClientProvider messages={messages}>
             <QueryProvider>
+              <AuthInitializer />
               {children}
               <Toaster theme="dark" />
             </QueryProvider>

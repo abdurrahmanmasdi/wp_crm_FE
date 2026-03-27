@@ -4,9 +4,5 @@ interface RootLayoutProps {
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  return (
-    <html suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
-    </html>
-  );
+  return children;
 }

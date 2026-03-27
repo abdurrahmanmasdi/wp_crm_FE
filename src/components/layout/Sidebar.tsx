@@ -3,15 +3,41 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { LayoutDashboard, Settings, MapPinned, Users } from 'lucide-react';
+import { LayoutDashboard, Settings, Users, MessageSquare } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { usePermissions } from '@/hooks/usePermissions';
+import { AppResource } from '@/constants/permissions.registry';
 
-const navigationItems = [
-  { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/leads', labelKey: 'leads', icon: Users },
-  { href: '/dashboard/tours', labelKey: 'tours', icon: MapPinned },
-  { href: '/dashboard/settings', labelKey: 'settings', icon: Settings },
+interface NavigationItem {
+  href: string;
+  labelKey: string;
+  icon: React.ComponentType<{ className?: string }>;
+  resource?: string;
+}
+
+const navigationItems: NavigationItem[] = [
+  {
+    href: '/dashboard',
+    labelKey: 'dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    href: '/dashboard/leads',
+    labelKey: 'leads',
+    icon: Users,
+    resource: AppResource.LEADS,
+  },
+  {
+    href: '/dashboard/chat',
+    labelKey: 'chat',
+    icon: MessageSquare,
+  },
+  {
+    href: '/dashboard/settings',
+    labelKey: 'settings',
+    icon: Settings,
+  },
 ] as const;
 
 export function Sidebar() {
@@ -19,6 +45,16 @@ export function Sidebar() {
   const locale = useLocale();
   const t = useTranslations('Navigation');
   const isRTL = locale === 'ar';
+  const { hasPermission } = usePermissions();
+
+  // Filter navigation items based on user permissions
+  // If the item doesn't require a resource, show it to everyone
+  // Otherwise, check if the user has permission for that resource
+  const visibleItems = navigationItems.filter((item) => {
+    if (!item.resource) return true;
+    console.log("Checking permission for resource:", item.resource);
+    return hasPermission(item.resource);
+  });
 
   return (
     <aside
@@ -45,7 +81,7 @@ export function Sidebar() {
       </div>
 
       <nav className="space-y-1">
-        {navigationItems.map(({ href, labelKey, icon: Icon }) => {
+        {visibleItems.map(({ href, labelKey, icon: Icon }) => {
           const isActive = pathname === href;
 
           return (

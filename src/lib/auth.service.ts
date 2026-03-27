@@ -14,6 +14,14 @@ export type LoginPayload = {
 
 export type LoginResponse = {
   access_token: string;
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    created_at: Date;
+    permissions: string[];
+  };
 };
 
 export type AuthUserProfile = {
@@ -21,10 +29,16 @@ export type AuthUserProfile = {
   email: string;
   first_name: string;
   last_name: string;
+  created_at?: Date;
+  permissions?: string[];
 };
 
 export type AcceptInviteResponse = {
   success?: boolean;
+};
+
+export type PermissionsResponse = {
+  permissions: string[];
 };
 
 export type UserOrganization = {
@@ -47,6 +61,11 @@ export const authService = {
   },
   me() {
     return api.get<AuthUserProfile>('/users/me');
+  },
+  getPermissions(organizationId: string) {
+    return api.get<PermissionsResponse>('/users/me/permissions', {
+      headers: { 'x-organization-id': organizationId },
+    });
   },
   acceptInvite(inviteId: string) {
     return api.post<AcceptInviteResponse>(`/users/invites/${inviteId}/accept`);
