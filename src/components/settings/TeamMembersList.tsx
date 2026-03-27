@@ -5,11 +5,21 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { User, ShieldPlus } from 'lucide-react';
+import { MoreHorizontal, Eye, Shield } from 'lucide-react';
+
+import { RequirePermission } from '@/components/auth/RequirePermission';
+import { AppResource, AppAction } from '@/constants/permissions.registry';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -283,64 +293,93 @@ export function TeamMembersList() {
 
                     {/* Role Column */}
                     <TableCell>
-                      <Select
-                        value={member.role.id}
-                        onValueChange={(newRoleId) =>
-                          handleRoleChange(member.membershipId, newRoleId)
-                        }
-                        disabled={
-                          isRoleSelectDisabled(member) ||
-                          changeRoleMutation.isPending
-                        }
+                      <RequirePermission
+                        resource={AppResource.ROLES}
+                        action={AppAction.EDIT_ALL}
+                        fallback="disable"
                       >
-                        <SelectTrigger
-                          className={`text-foreground w-40 border-white/10 ${
-                            isRoleSelectDisabled(member)
-                              ? 'cursor-not-allowed opacity-50'
-                              : ''
-                          }`}
+                        <Select
+                          value={member.role.id}
+                          onValueChange={(newRoleId) =>
+                            handleRoleChange(member.membershipId, newRoleId)
+                          }
+                          disabled={
+                            isRoleSelectDisabled(member) ||
+                            changeRoleMutation.isPending
+                          }
                         >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border-white/10">
-                          {roles.map((role) => (
-                            <SelectItem
-                              key={role.id}
-                              value={role.id}
-                              className="text-foreground focus:text-foreground focus:bg-white/10"
-                            >
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          <SelectTrigger
+                            className={`text-foreground w-40 border-white/10 ${
+                              isRoleSelectDisabled(member)
+                                ? 'cursor-not-allowed opacity-50'
+                                : ''
+                            }`}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border-white/10">
+                            {roles.map((role) => (
+                              <SelectItem
+                                key={role.id}
+                                value={role.id}
+                                className="text-foreground focus:text-foreground focus:bg-white/10"
+                              >
+                                {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </RequirePermission>
                     </TableCell>
 
                     {/* Actions Column */}
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/dashboard/members/${member.membershipId}`}
-                        >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                            title={t('viewProfile')}
                           >
-                            <User className="h-4 w-4" />
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">{t('actions')}</span>
                           </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                          title={t('permissionOverrides')}
-                          onClick={() => setSelectedMember(member)}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="bg-card border-white/10"
                         >
-                          <ShieldPlus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          <RequirePermission
+                            resource={AppResource.TEAM_MEMBERS}
+                            action={AppAction.READ_ALL}
+                            fallback="hide"
+                          >
+                            <Link
+                              href={`/dashboard/members/${member.membershipId}`}
+                            >
+                              <DropdownMenuItem className="text-foreground cursor-pointer hover:bg-white/5 focus:bg-white/5">
+                                <Eye className="mr-2 h-4 w-4" />
+                                {t('viewDetails')}
+                              </DropdownMenuItem>
+                            </Link>
+                          </RequirePermission>
+
+                          <RequirePermission
+                            resource={AppResource.ROLES}
+                            action={AppAction.EDIT_ALL}
+                            fallback="hide"
+                          >
+                            <DropdownMenuSeparator className="bg-white/10" />
+                            <DropdownMenuItem
+                              className="text-foreground cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                              onClick={() => setSelectedMember(member)}
+                            >
+                              <Shield className="mr-2 h-4 w-4" />
+                              {t('editPermissions')}
+                            </DropdownMenuItem>
+                          </RequirePermission>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

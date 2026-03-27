@@ -18,6 +18,9 @@
     "tours": "Tours",
     "chat": "Chat",
     "settings": "Settings",
+    "teamManagement": "Team Management",
+    "rolesPermissions": "Roles & Permissions",
+    "orgSettings": "Organization Settings",
     "logout": "Log Out",
     "Sidebar": {
       "dashboardSuite": "Dashboard Suite",
@@ -58,7 +61,10 @@
       "noMembersHint": "Team members will appear here once added to the organization",
       "loading": "Loading team members...",
       "viewProfile": "View profile",
-      "permissionOverrides": "Permission overrides"
+      "permissionOverrides": "Permission overrides",
+      "actions": "Actions",
+      "viewDetails": "View Details",
+      "editPermissions": "Edit Permissions"
     },
     "Roles": {
       "title": "Roles & Permissions",
@@ -144,7 +150,6 @@
       "confirmAction": "Continue"
     },
     "Toasts": {
-      "roleUpdateSuccess": "Member role updated successfully",
       "roleCreateSuccess": "Role created successfully",
       "roleUpdateSuccess": "Role updated successfully"
     }

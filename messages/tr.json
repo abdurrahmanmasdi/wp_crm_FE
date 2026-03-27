@@ -18,6 +18,9 @@
     "tours": "Turlar",
     "chat": "Sohbet",
     "settings": "Ayarlar",
+    "teamManagement": "Takım Yönetimi",
+    "rolesPermissions": "Roller ve İzinler",
+    "orgSettings": "Kuruluş Ayarları",
     "logout": "Çıkış Yap",
     "Sidebar": {
       "dashboardSuite": "Kontrol Paneli Paketi",
@@ -58,7 +61,10 @@
       "noMembersHint": "Kuruluşa eklenen ekip üyeleri burada görünecektir",
       "loading": "Ekip üyeleri yükleniyor...",
       "viewProfile": "Profili Görüntüle",
-      "permissionOverrides": "İzin Geçersiz Kılmaları"
+      "permissionOverrides": "İzin Geçersiz Kılmaları",
+      "actions": "İşlemler",
+      "viewDetails": "Detayları Görüntüle",
+      "editPermissions": "İzinleri Düzenle"
     },
     "Roles": {
       "title": "Roller & İzinler",
@@ -144,7 +150,6 @@
       "confirmAction": "Devam Et"
     },
     "Toasts": {
-      "roleUpdateSuccess": "Üye rolü başarıyla güncellendi",
       "roleCreateSuccess": "Rol başarıyla oluşturuldu",
       "roleUpdateSuccess": "Rol başarıyla güncellendi"
     }

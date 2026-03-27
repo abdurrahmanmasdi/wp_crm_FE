@@ -18,6 +18,9 @@
     "tours": "الجولات",
     "chat": "الدردشة",
     "settings": "الإعدادات",
+    "teamManagement": "إدارة الفريق",
+    "rolesPermissions": "الأدوار والأذونات",
+    "orgSettings": "إعدادات المنظمة",
     "logout": "تسجيل الخروج",
     "Sidebar": {
       "dashboardSuite": "مجموعة لوحة التحكم",
@@ -58,7 +61,10 @@
       "noMembersHint": "سيظهر أعضاء الفريق هنا بمجرد إضافتهم إلى المنظمة",
       "loading": "جاري تحميل أعضاء الفريق...",
       "viewProfile": "عرض الملف الشخصي",
-      "permissionOverrides": "تجاوز الأذونات"
+      "permissionOverrides": "تجاوز الأذونات",
+      "actions": "الإجراءات",
+      "viewDetails": "عرض التفاصيل",
+      "editPermissions": "تحرير الأذونات"
     },
     "Roles": {
       "title": "الأدوار والأذونات",

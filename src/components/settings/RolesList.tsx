@@ -21,6 +21,8 @@ import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import type { Role } from '@/types/access-control';
 import { useAuthStore } from '@/store/useAuthStore';
+import { RequirePermission } from '@/components/auth/RequirePermission';
+import { AppResource, AppAction } from '@/constants/permissions.registry';
 
 export function RolesList() {
   const activeOrganizationId = useAuthStore(
@@ -119,10 +121,16 @@ export function RolesList() {
               {t('subtitle')}
             </p>
           </div>
-          <Button onClick={handleCreateNewRole} className="gap-2">
-            <span>+</span>
-            {t('editorCreate')}
-          </Button>
+          <RequirePermission
+            resource={AppResource.ROLES}
+            action={AppAction.CREATE}
+            fallback="disable"
+          >
+            <Button onClick={handleCreateNewRole} className="gap-2">
+              <span>+</span>
+              {t('editorCreate')}
+            </Button>
+          </RequirePermission>
         </div>
 
         {/* Loading State */}
@@ -184,44 +192,56 @@ export function RolesList() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={
-                            isSystemRole(role.name) ||
-                            deleteRoleMutation.isPending
-                          }
-                          onClick={() => handleEditRole(role)}
-                          className="text-muted-foreground hover:text-foreground border-white/10"
+                        <RequirePermission
+                          resource={AppResource.ROLES}
+                          action={AppAction.EDIT}
+                          fallback="disable"
                         >
-                          {t('edit')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteRole(role)}
-                          disabled={
-                            isSystemRole(role.name) ||
-                            deleteRoleMutation.isPending
-                          }
-                          className={`border-white/10 ${
-                            isSystemRole(role.name)
-                              ? 'cursor-not-allowed opacity-50'
-                              : 'text-red-400 hover:text-red-300'
-                          }`}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={
+                              isSystemRole(role.name) ||
+                              deleteRoleMutation.isPending
+                            }
+                            onClick={() => handleEditRole(role)}
+                            className="text-muted-foreground hover:text-foreground border-white/10"
+                          >
+                            {t('edit')}
+                          </Button>
+                        </RequirePermission>
+                        <RequirePermission
+                          resource={AppResource.ROLES}
+                          action={AppAction.DELETE}
+                          fallback="disable"
                         >
-                          {deleteRoleMutation.isPending ? (
-                            <>
-                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                              {t('deleting')}
-                            </>
-                          ) : (
-                            <>
-                              <Trash2 className="h-4 w-4" />
-                              {t('delete')}
-                            </>
-                          )}
-                        </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteRole(role)}
+                            disabled={
+                              isSystemRole(role.name) ||
+                              deleteRoleMutation.isPending
+                            }
+                            className={`border-white/10 ${
+                              isSystemRole(role.name)
+                                ? 'cursor-not-allowed opacity-50'
+                                : 'text-red-400 hover:text-red-300'
+                            }`}
+                          >
+                            {deleteRoleMutation.isPending ? (
+                              <>
+                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                {t('deleting')}
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4" />
+                                {t('delete')}
+                              </>
+                            )}
+                          </Button>
+                        </RequirePermission>
                       </div>
                     </TableCell>
                   </TableRow>
