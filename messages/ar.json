@@ -309,6 +309,186 @@
     "hoursAgo": "منذ {count} ساعة",
     "daysAgo": "منذ {count} يوم"
   },
+  "Leads": {
+    "label": "العملاء المحتملون",
+    "pageTitle": "خط العملاء المحتملين",
+    "pageDescription": "تابع الفرص الجديدة وحدد الأولويات ونظف خط المبيعات من مكان واحد.",
+    "addLead": "إضافة عميل محتمل",
+    "createComingSoon": "نموذج إنشاء عميل محتمل قادم قريبًا.",
+    "missingOrganizationTitle": "لا توجد منظمة نشطة محددة",
+    "missingOrganizationDescription": "اختر منظمة أولاً لإدارة العملاء المحتملين.",
+    "tabs": {
+      "list": "قائمة",
+      "board": "لوحة"
+    },
+    "boardTitle": "عرض اللوحة قادم قريبًا",
+    "boardDescription": "استخدم عرض القائمة الآن إلى أن نطلق مراحل خط المبيعات بالسحب والإفلات.",
+    "loading": "جار تحميل العملاء المحتملين...",
+    "loadErrorTitle": "تعذر تحميل العملاء المحتملين",
+    "emptyTitle": "لا يوجد عملاء محتملون بعد",
+    "emptyDescription": "ستظهر العملاء المحتملون الجدد هنا عندما يبدأ فريقك بتسجيل الفرص.",
+    "unknownLeadName": "عميل محتمل غير معروف",
+    "notSet": "غير محدد",
+    "actions": "الإجراءات",
+    "deleteLead": "حذف العميل المحتمل",
+    "deleting": "جار الحذف...",
+    "deletedSuccess": "تم حذف العميل المحتمل بنجاح",
+    "deletedError": "فشل حذف العميل المحتمل",
+    "createSuccess": "تم إنشاء العميل المحتمل بنجاح",
+    "createError": "فشل إنشاء العميل المحتمل",
+    "form": {
+      "title": "إضافة عميل محتمل جديد",
+      "description": "املأ تفاصيل العميل المحتمل لإنشاء فرصة جديدة في خط المبيعات.",
+      "submit": "إنشاء عميل محتمل",
+      "submitting": "جار الإنشاء...",
+      "cancel": "إلغاء",
+      "sections": {
+        "core": "البيانات الأساسية",
+        "advanced": "متقدم"
+      },
+      "searchPlaceholder": "ابحث في الخيارات...",
+      "noResults": "لا توجد خيارات مطابقة",
+      "noneOption": "بدون",
+      "fields": {
+        "first_name": {
+          "label": "الاسم الأول",
+          "placeholder": "John"
+        },
+        "last_name": {
+          "label": "اسم العائلة",
+          "placeholder": "Doe"
+        },
+        "native_name": {
+          "label": "الاسم المحلي",
+          "placeholder": "Juan"
+        },
+        "email": {
+          "label": "البريد الإلكتروني",
+          "placeholder": "john@example.com"
+        },
+        "phone_country_code": {
+          "label": "مفتاح الدولة",
+          "placeholder": "اختر المفتاح"
+        },
+        "phone_number": {
+          "label": "رقم الهاتف",
+          "placeholder": "5551112233"
+        },
+        "country": {
+          "label": "الدولة",
+          "placeholder": "اختر الدولة"
+        },
+        "timezone": {
+          "label": "المنطقة الزمنية",
+          "placeholder": "اختر المنطقة الزمنية"
+        },
+        "primary_language": {
+          "label": "اللغة الأساسية",
+          "placeholder": "اختر اللغة"
+        },
+        "preferred_language": {
+          "label": "اللغة المفضلة",
+          "placeholder": "اختر اللغة المفضلة"
+        },
+        "pipeline_stage_id": {
+          "label": "مرحلة خط المبيعات",
+          "placeholder": "اختر المرحلة"
+        },
+        "assigned_agent_id": {
+          "label": "الموظف المسؤول",
+          "placeholder": "اختر الموظف"
+        },
+        "source_id": {
+          "label": "مصدر العميل",
+          "placeholder": "اختر المصدر"
+        },
+        "expected_service_date": {
+          "label": "تاريخ الخدمة المتوقع",
+          "placeholder": "اختر التاريخ"
+        },
+        "next_follow_up_at": {
+          "label": "تاريخ المتابعة القادم",
+          "placeholder": "اختر التاريخ"
+        },
+        "status": {
+          "label": "الحالة"
+        },
+        "priority": {
+          "label": "الأولوية"
+        },
+        "gender": {
+          "label": "الجنس"
+        },
+        "currency": {
+          "label": "العملة"
+        },
+        "estimated_value": {
+          "label": "القيمة التقديرية",
+          "placeholder": "15000.50"
+        }
+      }
+    },
+    "validation": {
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
+      "phoneCodeRequired": "مفتاح الدولة مطلوب",
+      "phoneNumberRequired": "رقم الهاتف مطلوب",
+      "countryRequired": "الدولة مطلوبة",
+      "timezoneRequired": "المنطقة الزمنية مطلوبة",
+      "primaryLanguageRequired": "اللغة الأساسية مطلوبة",
+      "estimatedValueNumber": "يجب أن تكون القيمة التقديرية رقمًا صالحًا",
+      "estimatedValueMin": "يجب أن تكون القيمة التقديرية صفرًا أو أكثر"
+    },
+    "tableHeaders": {
+      "lead": "العميل المحتمل",
+      "source": "المصدر",
+      "priority": "الأولوية",
+      "status": "الحالة",
+      "estimatedValue": "القيمة التقديرية",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "priority": {
+      "HOT": "مرتفع",
+      "WARM": "متوسط",
+      "COLD": "منخفض"
+    },
+    "gender": {
+      "MALE": "ذكر",
+      "FEMALE": "أنثى",
+      "OTHER": "آخر",
+      "UNKNOWN": "غير معروف"
+    },
+    "currency": {
+      "USD": "USD",
+      "TRY": "TRY",
+      "EUR": "EUR",
+      "GBP": "GBP"
+    },
+    "status": {
+      "OPEN": "مفتوح",
+      "WON": "مغلق - ربح",
+      "LOST": "مغلق - خسارة",
+      "UNQUALIFIED": "غير مؤهل"
+    }
+  },
+  "Timezones": {
+    "Europe/Istanbul": "توقيت إسطنبول",
+    "Asia/Dubai": "توقيت دبي",
+    "Asia/Riyadh": "توقيت الرياض",
+    "Asia/Qatar": "توقيت الدوحة",
+    "Asia/Kuwait": "توقيت مدينة الكويت",
+    "Africa/Cairo": "توقيت القاهرة",
+    "Europe/London": "توقيت لندن",
+    "Europe/Paris": "توقيت باريس",
+    "Europe/Berlin": "توقيت برلين",
+    "America/New_York": "توقيت نيويورك",
+    "America/Los_Angeles": "توقيت لوس أنجلوس",
+    "Asia/Kolkata": "توقيت مومباي",
+    "Asia/Shanghai": "توقيت شنغهاي",
+    "Asia/Tokyo": "توقيت طوكيو"
+  },
   "MemberProfile": {
     "title": "ملف العضو",
     "developmentDescription": "نشاط المستخدم التفصيلي وقياسات الأداء قيد التطوير حالياً.",

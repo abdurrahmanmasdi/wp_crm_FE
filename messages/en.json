@@ -309,6 +309,186 @@
     "hoursAgo": "{count}h ago",
     "daysAgo": "{count}d ago"
   },
+  "Leads": {
+    "label": "Leads",
+    "pageTitle": "Lead Pipeline",
+    "pageDescription": "Track incoming opportunities, prioritize follow-up, and clean your pipeline from one place.",
+    "addLead": "Add Lead",
+    "createComingSoon": "Lead creation form is coming soon.",
+    "missingOrganizationTitle": "No active organization selected",
+    "missingOrganizationDescription": "Select an organization first to manage leads.",
+    "tabs": {
+      "list": "List",
+      "board": "Board"
+    },
+    "boardTitle": "Board view is coming soon",
+    "boardDescription": "Use list view for now while we ship drag-and-drop pipeline stages.",
+    "loading": "Loading leads...",
+    "loadErrorTitle": "Failed to load leads",
+    "emptyTitle": "No leads yet",
+    "emptyDescription": "New leads will appear here once your team starts capturing opportunities.",
+    "unknownLeadName": "Unknown lead",
+    "notSet": "Not set",
+    "actions": "Actions",
+    "deleteLead": "Delete lead",
+    "deleting": "Deleting...",
+    "deletedSuccess": "Lead deleted successfully",
+    "deletedError": "Failed to delete lead",
+    "createSuccess": "Lead created successfully",
+    "createError": "Failed to create lead",
+    "form": {
+      "title": "Add New Lead",
+      "description": "Fill in lead details to create a new opportunity in your pipeline.",
+      "submit": "Create Lead",
+      "submitting": "Creating...",
+      "cancel": "Cancel",
+      "sections": {
+        "core": "Core Details",
+        "advanced": "Advanced"
+      },
+      "searchPlaceholder": "Search options...",
+      "noResults": "No matching options",
+      "noneOption": "None",
+      "fields": {
+        "first_name": {
+          "label": "First Name",
+          "placeholder": "John"
+        },
+        "last_name": {
+          "label": "Last Name",
+          "placeholder": "Doe"
+        },
+        "native_name": {
+          "label": "Native Name",
+          "placeholder": "Juan"
+        },
+        "email": {
+          "label": "Email",
+          "placeholder": "john@example.com"
+        },
+        "phone_country_code": {
+          "label": "Country Code",
+          "placeholder": "Select code"
+        },
+        "phone_number": {
+          "label": "Phone Number",
+          "placeholder": "5551112233"
+        },
+        "country": {
+          "label": "Country",
+          "placeholder": "Select country"
+        },
+        "timezone": {
+          "label": "Timezone",
+          "placeholder": "Select timezone"
+        },
+        "primary_language": {
+          "label": "Primary Language",
+          "placeholder": "Select language"
+        },
+        "preferred_language": {
+          "label": "Preferred Language",
+          "placeholder": "Select preferred language"
+        },
+        "pipeline_stage_id": {
+          "label": "Pipeline Stage",
+          "placeholder": "Select stage"
+        },
+        "assigned_agent_id": {
+          "label": "Assigned Agent",
+          "placeholder": "Select agent"
+        },
+        "source_id": {
+          "label": "Lead Source",
+          "placeholder": "Select source"
+        },
+        "expected_service_date": {
+          "label": "Expected Service Date",
+          "placeholder": "Select date"
+        },
+        "next_follow_up_at": {
+          "label": "Next Follow-up Date",
+          "placeholder": "Select date"
+        },
+        "status": {
+          "label": "Status"
+        },
+        "priority": {
+          "label": "Priority"
+        },
+        "gender": {
+          "label": "Gender"
+        },
+        "currency": {
+          "label": "Currency"
+        },
+        "estimated_value": {
+          "label": "Estimated Value",
+          "placeholder": "15000.50"
+        }
+      }
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailInvalid": "Please enter a valid email address",
+      "phoneCodeRequired": "Country code is required",
+      "phoneNumberRequired": "Phone number is required",
+      "countryRequired": "Country is required",
+      "timezoneRequired": "Timezone is required",
+      "primaryLanguageRequired": "Primary language is required",
+      "estimatedValueNumber": "Estimated value must be a valid number",
+      "estimatedValueMin": "Estimated value must be zero or greater"
+    },
+    "tableHeaders": {
+      "lead": "Lead",
+      "source": "Source",
+      "priority": "Priority",
+      "status": "Status",
+      "estimatedValue": "Estimated Value",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "priority": {
+      "HOT": "Hot",
+      "WARM": "Warm",
+      "COLD": "Cold"
+    },
+    "gender": {
+      "MALE": "Male",
+      "FEMALE": "Female",
+      "OTHER": "Other",
+      "UNKNOWN": "Unknown"
+    },
+    "currency": {
+      "USD": "USD",
+      "TRY": "TRY",
+      "EUR": "EUR",
+      "GBP": "GBP"
+    },
+    "status": {
+      "OPEN": "Open",
+      "WON": "Won",
+      "LOST": "Lost",
+      "UNQUALIFIED": "Unqualified"
+    }
+  },
+  "Timezones": {
+    "Europe/Istanbul": "Istanbul Time",
+    "Asia/Dubai": "Dubai Time",
+    "Asia/Riyadh": "Riyadh Time",
+    "Asia/Qatar": "Doha Time",
+    "Asia/Kuwait": "Kuwait City Time",
+    "Africa/Cairo": "Cairo Time",
+    "Europe/London": "London Time",
+    "Europe/Paris": "Paris Time",
+    "Europe/Berlin": "Berlin Time",
+    "America/New_York": "New York Time",
+    "America/Los_Angeles": "Los Angeles Time",
+    "Asia/Kolkata": "Mumbai Time",
+    "Asia/Shanghai": "Shanghai Time",
+    "Asia/Tokyo": "Tokyo Time"
+  },
   "MemberProfile": {
     "title": "Member Profile",
     "developmentDescription": "Detailed user activity and performance metrics are currently in development.",

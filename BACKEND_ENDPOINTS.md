@@ -361,3 +361,215 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
   }
 ]
 ```
+
+## Leads API
+
+Base route: `/api/v1/organizations/:organizationId/leads`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+Serialization / key casing:
+
+- Lead payload keys are **snake_case** (not camelCase).
+- This applies to request and response bodies for Leads endpoints.
+
+### Lead Enum Values (CRITICAL)
+
+- `gender`:
+  - `MALE`
+  - `FEMALE`
+  - `OTHER`
+  - `UNKNOWN`
+
+- `status`:
+  - `OPEN`
+  - `WON`
+  - `LOST`
+  - `UNQUALIFIED`
+
+- `priority`:
+  - `HOT`
+  - `WARM`
+  - `COLD`
+
+- `currency`:
+  - `USD`
+  - `TRY`
+  - `EUR`
+  - `GBP`
+
+### Lead Object Shape (response)
+
+```json
+{
+  "id": "uuid",
+  "organization_id": "uuid",
+  "pipeline_stage_id": "uuid | null",
+  "assigned_agent_id": "uuid | null",
+  "source_id": "uuid | null",
+  "first_name": "John",
+  "last_name": "Doe",
+  "native_name": "جون دو | null",
+  "gender": "UNKNOWN",
+  "email": "john@company.com | null",
+  "phone_number": "+905551112233",
+  "country": "Turkey",
+  "timezone": "Europe/Istanbul",
+  "primary_language": "en",
+  "preferred_language": "tr | null",
+  "social_links": {
+    "linkedin": "https://linkedin.com/in/john"
+  },
+  "status": "OPEN",
+  "priority": "WARM",
+  "estimated_value": "15000.50",
+  "currency": "USD",
+  "expected_service_date": "2026-04-10T09:00:00.000Z | null",
+  "next_follow_up_at": "2026-04-01T12:00:00.000Z | null",
+  "created_at": "2026-03-28T10:00:00.000Z",
+  "updated_at": "2026-03-28T10:05:00.000Z"
+}
+```
+
+Notes:
+
+- `estimated_value` is the correct field name (not `budget`).
+- `estimated_value` is sent as a string in request DTO and returned as Prisma Decimal JSON value.
+
+### GET /api/v1/organizations/:organizationId/leads
+
+- Query params:
+  - `page` (optional, int, default `1`)
+  - `limit` (optional, int, default `20`, max `100`)
+  - `status` (optional enum)
+  - `priority` (optional enum)
+
+- PBAC behavior:
+  - If user has `leads:read_all` (or elevated equivalent such as `leads:manage`, `team_members:manage`, `organization:manage`), returns all org leads.
+  - Otherwise returns only leads assigned to current user (`assigned_agent_id = currentUserId`).
+
+- Response 200:
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "organization_id": "uuid",
+      "pipeline_stage_id": null,
+      "assigned_agent_id": "uuid",
+      "source_id": null,
+      "first_name": "John",
+      "last_name": "Doe",
+      "native_name": null,
+      "gender": "UNKNOWN",
+      "email": "john@company.com",
+      "phone_number": "+905551112233",
+      "country": "Turkey",
+      "timezone": "Europe/Istanbul",
+      "primary_language": "en",
+      "preferred_language": null,
+      "social_links": null,
+      "status": "OPEN",
+      "priority": "WARM",
+      "estimated_value": "15000.50",
+      "currency": "USD",
+      "expected_service_date": null,
+      "next_follow_up_at": null,
+      "created_at": "2026-03-28T10:00:00.000Z",
+      "updated_at": "2026-03-28T10:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+### POST /api/v1/organizations/:organizationId/leads
+
+- Body DTO: `CreateLeadDto`
+
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "phone_number": "+905551112233",
+  "country": "Turkey",
+  "timezone": "Europe/Istanbul",
+  "primary_language": "en",
+  "native_name": null,
+  "gender": "UNKNOWN",
+  "email": "john@company.com",
+  "preferred_language": null,
+  "social_links": {
+    "linkedin": "https://linkedin.com/in/john"
+  },
+  "status": "OPEN",
+  "priority": "WARM",
+  "estimated_value": "15000.50",
+  "currency": "USD",
+  "expected_service_date": null,
+  "next_follow_up_at": null,
+  "pipeline_stage_id": null,
+  "assigned_agent_id": "uuid",
+  "source_id": null
+}
+```
+
+- Response 201:
+  - Returns created Lead object in snake_case (same shape as Lead Object Shape above).
+
+### GET /api/v1/organizations/:organizationId/leads/:leadId
+
+- PBAC behavior:
+  - Same scope logic as list endpoint.
+  - If user cannot read-all and lead belongs to same org but assigned to another user, returns 403 (forbidden).
+
+- Response 200:
+  - Returns single Lead object in snake_case.
+
+- Possible errors:
+  - `403` when lead exists in org but user is not allowed to access it.
+  - `404` when lead does not exist in organization.
+
+### PATCH /api/v1/organizations/:organizationId/leads/:leadId
+
+- Body DTO: `UpdateLeadDto` (all fields optional, same keys as Create DTO)
+
+```json
+{
+  "status": "WON",
+  "priority": "HOT",
+  "assigned_agent_id": "uuid",
+  "next_follow_up_at": "2026-04-15T09:00:00.000Z"
+}
+```
+
+- Validation rules:
+  - If `assigned_agent_id` is provided, target user must be an ACTIVE member in the same organization.
+  - `pipeline_stage_id` and `source_id` must belong to same organization.
+
+- Response 200:
+  - Returns updated Lead object in snake_case.
+
+### DELETE /api/v1/organizations/:organizationId/leads/:leadId
+
+- Access control:
+  - Requires permission: `leads:delete`.
+
+- Behavior:
+  - Delete is scoped by `organization_id` + `leadId`.
+  - Cross-organization IDs do not delete records.
+
+- Response 204:
+  - No response body.
+
+- Possible errors:
+  - `404` when lead does not exist in the specified organization.

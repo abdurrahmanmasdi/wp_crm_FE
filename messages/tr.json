@@ -309,6 +309,186 @@
     "hoursAgo": "{count} sa önce",
     "daysAgo": "{count} g önce"
   },
+  "Leads": {
+    "label": "Aday Müşteriler",
+    "pageTitle": "Aday Müşteri Hattı",
+    "pageDescription": "Yeni fırsatları takip edin, öncelikleri belirleyin ve satış hattınızı tek yerden yönetin.",
+    "addLead": "Aday Müşteri Ekle",
+    "createComingSoon": "Aday müşteri oluşturma formu yakında eklenecek.",
+    "missingOrganizationTitle": "Aktif kuruluş seçilmedi",
+    "missingOrganizationDescription": "Aday müşterileri yönetmek için önce bir kuruluş seçin.",
+    "tabs": {
+      "list": "Liste",
+      "board": "Pano"
+    },
+    "boardTitle": "Pano görünümü yakında geliyor",
+    "boardDescription": "Sürükle-bırak satış aşamaları yayınlanana kadar liste görünümünü kullanın.",
+    "loading": "Aday müşteriler yükleniyor...",
+    "loadErrorTitle": "Aday müşteriler yüklenemedi",
+    "emptyTitle": "Henüz aday müşteri yok",
+    "emptyDescription": "Ekibiniz fırsat oluşturmaya başladığında yeni aday müşteriler burada görünecek.",
+    "unknownLeadName": "Bilinmeyen aday",
+    "notSet": "Belirtilmedi",
+    "actions": "İşlemler",
+    "deleteLead": "Adayı sil",
+    "deleting": "Siliniyor...",
+    "deletedSuccess": "Aday başarıyla silindi",
+    "deletedError": "Aday silinemedi",
+    "createSuccess": "Aday müşteri başarıyla oluşturuldu",
+    "createError": "Aday müşteri oluşturulamadı",
+    "form": {
+      "title": "Yeni Aday Müşteri Ekle",
+      "description": "Satış hattınıza yeni bir fırsat eklemek için müşteri bilgilerini doldurun.",
+      "submit": "Aday Oluştur",
+      "submitting": "Oluşturuluyor...",
+      "cancel": "İptal",
+      "sections": {
+        "core": "Temel Bilgiler",
+        "advanced": "Gelişmiş"
+      },
+      "searchPlaceholder": "Seçeneklerde ara...",
+      "noResults": "Eşleşen seçenek bulunamadı",
+      "noneOption": "Yok",
+      "fields": {
+        "first_name": {
+          "label": "Ad",
+          "placeholder": "John"
+        },
+        "last_name": {
+          "label": "Soyad",
+          "placeholder": "Doe"
+        },
+        "native_name": {
+          "label": "Yerel Ad",
+          "placeholder": "Juan"
+        },
+        "email": {
+          "label": "E-posta",
+          "placeholder": "john@example.com"
+        },
+        "phone_country_code": {
+          "label": "Ülke Kodu",
+          "placeholder": "Kod seçin"
+        },
+        "phone_number": {
+          "label": "Telefon Numarası",
+          "placeholder": "5551112233"
+        },
+        "country": {
+          "label": "Ülke",
+          "placeholder": "Ülke seçin"
+        },
+        "timezone": {
+          "label": "Saat Dilimi",
+          "placeholder": "Saat dilimi seçin"
+        },
+        "primary_language": {
+          "label": "Birincil Dil",
+          "placeholder": "Dil seçin"
+        },
+        "preferred_language": {
+          "label": "Tercih Edilen Dil",
+          "placeholder": "Tercih edilen dili seçin"
+        },
+        "pipeline_stage_id": {
+          "label": "Satış Aşaması",
+          "placeholder": "Aşama seçin"
+        },
+        "assigned_agent_id": {
+          "label": "Atanan Ajan",
+          "placeholder": "Ajan seçin"
+        },
+        "source_id": {
+          "label": "Aday Kaynağı",
+          "placeholder": "Kaynak seçin"
+        },
+        "expected_service_date": {
+          "label": "Beklenen Hizmet Tarihi",
+          "placeholder": "Tarih seçin"
+        },
+        "next_follow_up_at": {
+          "label": "Sonraki Takip Tarihi",
+          "placeholder": "Tarih seçin"
+        },
+        "status": {
+          "label": "Durum"
+        },
+        "priority": {
+          "label": "Öncelik"
+        },
+        "gender": {
+          "label": "Cinsiyet"
+        },
+        "currency": {
+          "label": "Para Birimi"
+        },
+        "estimated_value": {
+          "label": "Tahmini Değer",
+          "placeholder": "15000.50"
+        }
+      }
+    },
+    "validation": {
+      "firstNameRequired": "Ad zorunludur",
+      "lastNameRequired": "Soyad zorunludur",
+      "emailInvalid": "Lütfen geçerli bir e-posta adresi girin",
+      "phoneCodeRequired": "Ülke kodu zorunludur",
+      "phoneNumberRequired": "Telefon numarası zorunludur",
+      "countryRequired": "Ülke zorunludur",
+      "timezoneRequired": "Saat dilimi zorunludur",
+      "primaryLanguageRequired": "Birincil dil zorunludur",
+      "estimatedValueNumber": "Tahmini değer geçerli bir sayı olmalıdır",
+      "estimatedValueMin": "Tahmini değer sıfır veya daha büyük olmalıdır"
+    },
+    "tableHeaders": {
+      "lead": "Aday",
+      "source": "Kaynak",
+      "priority": "Öncelik",
+      "status": "Durum",
+      "estimatedValue": "Tahmini Değer",
+      "createdAt": "Oluşturulma",
+      "actions": "İşlemler"
+    },
+    "priority": {
+      "HOT": "Yüksek",
+      "WARM": "Orta",
+      "COLD": "Düşük"
+    },
+    "gender": {
+      "MALE": "Erkek",
+      "FEMALE": "Kadın",
+      "OTHER": "Diğer",
+      "UNKNOWN": "Bilinmiyor"
+    },
+    "currency": {
+      "USD": "USD",
+      "TRY": "TRY",
+      "EUR": "EUR",
+      "GBP": "GBP"
+    },
+    "status": {
+      "OPEN": "Açık",
+      "WON": "Kazanıldı",
+      "LOST": "Kaybedildi",
+      "UNQUALIFIED": "Niteliksiz"
+    }
+  },
+  "Timezones": {
+    "Europe/Istanbul": "İstanbul Saati",
+    "Asia/Dubai": "Dubai Saati",
+    "Asia/Riyadh": "Riyad Saati",
+    "Asia/Qatar": "Doha Saati",
+    "Asia/Kuwait": "Kuveyt Şehri Saati",
+    "Africa/Cairo": "Kahire Saati",
+    "Europe/London": "Londra Saati",
+    "Europe/Paris": "Paris Saati",
+    "Europe/Berlin": "Berlin Saati",
+    "America/New_York": "New York Saati",
+    "America/Los_Angeles": "Los Angeles Saati",
+    "Asia/Kolkata": "Mumbai Saati",
+    "Asia/Shanghai": "Şanghay Saati",
+    "Asia/Tokyo": "Tokyo Saati"
+  },
   "MemberProfile": {
     "title": "Üye Profili",
     "developmentDescription": "Ayrıntılı kullanıcı aktivitesi ve performans metrikleri şu anda geliştirilmektedir.",
