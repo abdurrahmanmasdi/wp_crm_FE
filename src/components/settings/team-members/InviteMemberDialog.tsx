@@ -80,22 +80,31 @@ export function InviteMemberDialog({
     },
   });
 
+  const resetDialogState = () => {
+    setGeneratedInvite(null);
+    reset({
+      email: '',
+      roleId: getDefaultRoleId(roles),
+    });
+  };
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetDialogState();
+    }
+
+    onOpenChange(nextOpen);
+  };
+
   useEffect(() => {
-    if (!open) {
-      setGeneratedInvite(null);
-      reset({
-        email: '',
-        roleId: getDefaultRoleId(roles),
-      });
+    if (!open || roles.length === 0) {
       return;
     }
 
-    if (roles.length > 0) {
-      reset((currentValues) => ({
-        email: currentValues.email,
-        roleId: currentValues.roleId || getDefaultRoleId(roles),
-      }));
-    }
+    reset((currentValues) => ({
+      email: currentValues.email,
+      roleId: currentValues.roleId || getDefaultRoleId(roles),
+    }));
   }, [open, roles, reset]);
 
   const resolvedInviteUrl = useMemo(() => {
@@ -143,7 +152,7 @@ export function InviteMemberDialog({
   const isSubmitting = generateInviteMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('dialogTitle')}</DialogTitle>
@@ -187,7 +196,10 @@ export function InviteMemberDialog({
               >
                 {t('inviteAnother')}
               </Button>
-              <Button type="button" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                onClick={() => handleDialogOpenChange(false)}
+              >
                 {tCommon('cancel')}
               </Button>
             </div>
@@ -251,7 +263,7 @@ export function InviteMemberDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleDialogOpenChange(false)}
                 disabled={isSubmitting}
               >
                 {tCommon('cancel')}

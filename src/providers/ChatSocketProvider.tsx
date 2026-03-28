@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -36,28 +37,47 @@ const ChatSocketContext = createContext<ChatSocketContextType | undefined>(
  * @param children - React child components
  */
 export function ChatSocketProvider({ children }: { children: ReactNode }) {
+  const socketRef = useRef<SocketInstance | null>(null);
   const [socket, setSocket] = useState<SocketInstance | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Get user and organization info from auth store - extract as primitives
-  const user = useAuthStore((state) => state.user);
+  // Keep effect dependencies primitive to avoid accidental reconnect loops.
+  const userId = useAuthStore((state) => {
+    const candidate = state.user;
+    if (!candidate || typeof candidate !== 'object' || !('id' in candidate)) {
+      return null;
+    }
+
+    return String((candidate as { id: string }).id);
+  });
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
 
-  // Extract token as a simple string to stabilize dependency array
-  const tokenString = Cookies.get('access_token');
+  // Primitive auth token dependency; changes trigger a fresh socket session.
+  const userToken = Cookies.get('access_token') ?? null;
 
   /**
-   * Effect: Initialize socket connection
-   * STABILIZED: Only depends on tokenString (a primitive string)
-   * This prevents infinite reconnection loops
+   * Effect: Initialize a single socket instance for the active org + token
+   * Uses socket.io built-in backoff and avoids reconnecting from React state changes.
    */
   useEffect(() => {
-    // Do nothing if there is no token or auth is not ready
-    if (!tokenString || !_hasHydrated || !user || !activeOrganizationId) {
+    // Close any existing socket if auth/org context is no longer valid.
+    if (!_hasHydrated || !userId || !activeOrganizationId || !userToken) {
+      if (socketRef.current) {
+        socketRef.current.removeAllListeners();
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
       return;
+    }
+
+    // Ensure we never keep more than one live socket instance.
+    if (socketRef.current) {
+      socketRef.current.removeAllListeners();
+      socketRef.current.disconnect();
+      socketRef.current = null;
     }
 
     // Get the WebSocket URL from environment or use default
@@ -67,50 +87,61 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     // Create socket instance with authentication
     const socketInstance = io(wsUrl, {
       auth: {
-        token: tokenString,
+        token: userToken,
         orgId: activeOrganizationId,
       },
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-      transports: ['websocket'], // CRITICAL: Skips HTTP polling which causes CORS errors
-      upgrade: false, // Prevent downgrading to polling
+      reconnectionDelayMax: 10000,
+      randomizationFactor: 0.5,
+      reconnectionAttempts: 10,
+      timeout: 20000,
+      transports: ['websocket'], // CRITICAL: Skip HTTP polling which causes CORS noise.
+      upgrade: false, // Prevent transport fallback to polling.
     });
+    socketRef.current = socketInstance;
 
-    // Handle successful connection
-    socketInstance.on('connect', () => {
+    const handleConnect = () => {
       console.log(
         `[ChatSocketProvider] Stable connection established: ${socketInstance.id}`
       );
+      setSocket(socketInstance);
       setIsConnected(true);
-    });
+    };
 
-    // Handle disconnection
-    socketInstance.on('disconnect', (reason: string) => {
+    const handleDisconnect = (reason: string) => {
       console.log(
         `[ChatSocketProvider] Disconnected from chat server: ${reason}`
       );
       setIsConnected(false);
-    });
+    };
 
-    // Handle connection errors
-    socketInstance.on('connect_error', (error: Error) => {
-      console.error('[ChatSocketProvider] Connection error:', error);
-    });
+    const handleConnectError = (error: Error) => {
+      // Do not update React state here to avoid triggering reconnection cycles.
+      console.error(
+        `[ChatSocketProvider] Connection error: ${error.message || 'websocket error'}`
+      );
+    };
 
-    // Save to state
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSocket(socketInstance);
+    socketInstance.on('connect', handleConnect);
+    socketInstance.on('disconnect', handleDisconnect);
+    socketInstance.on('connect_error', handleConnectError);
 
     /**
-     * CRITICAL CLEANUP: Disconnect when component unmounts or token changes
-     * This prevents memory leaks and unstable connections
+     * Disconnect and detach listeners on dependency change/unmount.
      */
     return () => {
+      socketInstance.off('connect', handleConnect);
+      socketInstance.off('disconnect', handleDisconnect);
+      socketInstance.off('connect_error', handleConnectError);
       socketInstance.disconnect();
+      if (socketRef.current === socketInstance) {
+        socketRef.current = null;
+      }
+      setSocket((current) => (current === socketInstance ? null : current));
+      setIsConnected(false);
     };
-  }, [tokenString, _hasHydrated, user, activeOrganizationId]);
+  }, [_hasHydrated, userId, activeOrganizationId, userToken]);
 
   return (
     <ChatSocketContext.Provider value={{ socket, isConnected }}>
