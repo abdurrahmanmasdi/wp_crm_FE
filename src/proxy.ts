@@ -1,5 +1,5 @@
 /**
- * Middleware for next-intl
+ * Proxy for next-intl
  * Handles locale detection, redirection, and request configuration
  *
  * Matcher explicitly ignores:

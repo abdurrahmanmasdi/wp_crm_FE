@@ -1,29 +1,20 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useMemo, useEffect } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import type { Permission, Role } from '@/types/access-control';
@@ -31,6 +22,8 @@ import {
   getResourcePrefix,
   formatResourceName,
 } from '@/constants/permissions.registry';
+import { RolePermissionGroups } from '@/components/settings/role-editor/RolePermissionGroups';
+import { RoleTranslationFields } from '@/components/settings/role-editor/RoleTranslationFields';
 
 // Validation schema
 const roleFormSchema = z.object({
@@ -42,7 +35,7 @@ const roleFormSchema = z.object({
   permissionIds: z.array(z.string()).min(1, 'Select at least one permission'),
 });
 
-type RoleFormData = z.infer<typeof roleFormSchema>;
+export type RoleFormData = z.infer<typeof roleFormSchema>;
 
 interface RoleEditorSheetProps {
   isOpen: boolean;
@@ -79,7 +72,6 @@ export function RoleEditorSheet({
 }: RoleEditorSheetProps) {
   const queryClient = useQueryClient();
   const t = useTranslations('Settings.Roles');
-  const [activeTranslations, setActiveTranslations] = useState<string[]>([]);
 
   // Fetch all permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
@@ -97,7 +89,7 @@ export function RoleEditorSheet({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     setValue,
     getValues,
@@ -112,14 +104,15 @@ export function RoleEditorSheet({
   });
 
   // Watch permission IDs for form state updates
-  const watchedPermissions = watch('permissionIds');
+  const watchedPermissions = useWatch({ control, name: 'permissionIds' }) ?? [];
+  const watchedTranslations = useWatch({ control, name: 'translations' });
+  const activeTranslations = Object.keys(watchedTranslations ?? {});
 
   // Sync form when roleToEdit changes or sheet opens
   useEffect(() => {
     if (isOpen) {
       if (roleToEdit) {
         const translations = roleToEdit.name_translations ?? {};
-        const activeLanguages = Object.keys(translations);
 
         reset({
           name: roleToEdit.name,
@@ -127,23 +120,19 @@ export function RoleEditorSheet({
           permissionIds:
             roleToEdit.rolePermissions?.map((rp) => rp.permission.id) ?? [],
         });
-
-        setActiveTranslations(activeLanguages);
       } else {
         reset({
           name: '',
           translations: {},
           permissionIds: [],
         });
-
-        setActiveTranslations([]);
       }
     }
   }, [isOpen, roleToEdit, reset]);
 
-  // Determine if this is a system role (Owner or Admin) - these cannot be renamed
+  // Determine if this is a system role (owner/admin) - these cannot be renamed.
   const isSystemRole =
-    roleToEdit?.name && ['Owner', 'Admin'].includes(roleToEdit.name);
+    roleToEdit?.slug === 'owner' || roleToEdit?.slug === 'admin';
 
   // Mutation for creating a new role
   const createRoleMutation = useMutation({
@@ -242,20 +231,18 @@ export function RoleEditorSheet({
 
   // Handle adding a new translation language
   const handleAddTranslation = (languageCode: string) => {
-    if (!activeTranslations.includes(languageCode)) {
-      setActiveTranslations([...activeTranslations, languageCode]);
-      // Initialize the form field for this language
-      const currentTranslations = getValues('translations') ?? {};
-      setValue('translations', {
-        ...currentTranslations,
-        [languageCode]: '',
-      });
-    }
+    if (activeTranslations.includes(languageCode)) return;
+
+    // Initialize the form field for this language
+    const currentTranslations = getValues('translations') ?? {};
+    setValue('translations', {
+      ...currentTranslations,
+      [languageCode]: '',
+    });
   };
 
   // Handle removing a translation language
   const handleRemoveTranslation = (languageCode: string) => {
-    setActiveTranslations(activeTranslations.filter((l) => l !== languageCode));
     const currentTranslations = getValues('translations') ?? {};
     const updated = { ...currentTranslations };
     delete updated[languageCode];
@@ -296,167 +283,27 @@ export function RoleEditorSheet({
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
-          {/* Role Name Input */}
-          <div className="space-y-4">
-            {/* Default Name (Turkish) */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="name">
-                Role Name (Default / Turkish)
-              </label>
-              <Input
-                id="name"
-                {...register('name')}
-                placeholder={t('rolePlaceholder')}
-                disabled={Boolean(isSystemRole)}
-                className={isSystemRole ? 'bg-muted cursor-not-allowed' : ''}
-              />
-              {isSystemRole && (
-                <p className="text-muted-foreground text-xs">
-                  {t('systemRoleNotice')}
-                </p>
-              )}
-              {errors.name && (
-                <p className="text-destructive text-xs">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            {/* Translation Inputs */}
-            {activeTranslations.length > 0 && (
-              <div className="space-y-3">
-                {activeTranslations.map((language) => {
-                  const langLabel =
-                    availableLanguages.find((l) => l.code === language)
-                      ?.label || language;
-                  return (
-                    <div key={language} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label
-                          className="text-sm font-medium"
-                          htmlFor={`translation-${language}`}
-                        >
-                          Role Name ({langLabel})
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTranslation(language)}
-                          className="text-xs text-red-400 hover:text-red-300"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                      <Input
-                        id={`translation-${language}`}
-                        {...register(`translations.${language}`)}
-                        placeholder={`Role name in ${langLabel}`}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Add Translation Button */}
-            {availableToAdd.length > 0 && (
-              <div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full gap-2"
-                    >
-                      <span>➕</span>
-                      Add Translation
-                      <ChevronDown className="ml-auto h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    {availableToAdd.map((lang) => (
-                      <DropdownMenuItem
-                        key={lang.code}
-                        onClick={() => handleAddTranslation(lang.code)}
-                      >
-                        {lang.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-          </div>
+          <RoleTranslationFields
+            register={register}
+            errors={errors}
+            isSystemRole={Boolean(isSystemRole)}
+            activeTranslations={activeTranslations}
+            availableLanguages={availableLanguages}
+            availableToAdd={availableToAdd}
+            onAddTranslation={handleAddTranslation}
+            onRemoveTranslation={handleRemoveTranslation}
+            rolePlaceholder={t('rolePlaceholder')}
+            systemRoleNotice={t('systemRoleNotice')}
+          />
 
           {/* Grouped Permissions */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="mb-4 text-sm font-semibold">{t('permissions')}</h3>
-              {isLoadingPermissions ? (
-                <p className="text-muted-foreground text-sm">
-                  {t('loadingPermissions')}
-                </p>
-              ) : Object.entries(groupedPermissions).length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  {t('noPermissions')}
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(groupedPermissions)
-                    .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([resourceName, resourcePermissions]) => (
-                      <div key={resourceName}>
-                        {/* Resource Group Header */}
-                        <h4 className="text-foreground mb-3 text-sm font-medium">
-                          {resourceName}
-                        </h4>
-
-                        {/* Permission Checkboxes Grid */}
-                        <div className="grid grid-cols-2 gap-3 pl-2">
-                          {resourcePermissions.map((permission) => (
-                            <div
-                              key={permission.id}
-                              className="flex flex-row items-start space-x-3"
-                            >
-                              <Checkbox
-                                id={permission.id}
-                                checked={Boolean(
-                                  watchedPermissions?.includes(permission.id)
-                                )}
-                                onCheckedChange={(checked) => {
-                                  handlePermissionChange(
-                                    permission.id,
-                                    checked
-                                  );
-                                }}
-                                className="mt-1"
-                              />
-                              <div className="flex flex-col space-y-1">
-                                <label
-                                  htmlFor={permission.id}
-                                  className="cursor-pointer text-sm font-normal"
-                                >
-                                  {permission.action}
-                                </label>
-                                {permission.description && (
-                                  <p className="text-muted-foreground text-xs">
-                                    {permission.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-              {errors.permissionIds && (
-                <p className="text-destructive mt-2 text-xs">
-                  {errors.permissionIds.message}
-                </p>
-              )}
-            </div>
-          </div>
+          <RolePermissionGroups
+            groupedPermissions={groupedPermissions}
+            watchedPermissions={watchedPermissions}
+            onPermissionChange={handlePermissionChange}
+            isLoadingPermissions={isLoadingPermissions}
+            permissionError={errors.permissionIds?.message}
+          />
 
           {/* Submit Button */}
           <div className="flex justify-end gap-3 border-t pt-6">

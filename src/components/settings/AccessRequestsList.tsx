@@ -357,7 +357,7 @@ export function AccessRequestsList() {
               </SelectTrigger>
               <SelectContent>
                 {rolesQuery.data?.data
-                  ?.filter((role) => role.name !== 'Kurucu')
+                  ?.filter((role) => role.slug !== 'owner')
                   .map((role) => (
                     <SelectItem key={role.id} value={role.id}>
                       {getLocalizedRoleName(role, locale)}

@@ -80,6 +80,7 @@ export type OrganizationMember = {
   role: {
     id: string;
     name: string;
+    slug?: string;
   };
 };
 

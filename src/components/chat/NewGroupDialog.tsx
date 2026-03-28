@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { createGroupConversation } from '@/lib/api/chat';
 import { orgService } from '@/lib/org.service';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -33,6 +34,7 @@ export function NewGroupDialog({
   onClose,
   onChatCreated,
 }: NewGroupDialogProps) {
+  const t = useTranslations('Chat');
   const [groupName, setGroupName] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -144,10 +146,8 @@ export function NewGroupDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Group</DialogTitle>
-          <DialogDescription>
-            Give your group a name and select team members
-          </DialogDescription>
+          <DialogTitle>{t('newGroupTitle')}</DialogTitle>
+          <DialogDescription>{t('newGroupDescription')}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -157,11 +157,11 @@ export function NewGroupDialog({
               htmlFor="group-name"
               className="text-foreground mb-2 block text-sm font-medium"
             >
-              Group Name
+              {t('groupName')}
             </label>
             <Input
               id="group-name"
-              placeholder="Enter group name..."
+              placeholder={t('groupNamePlaceholder')}
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               disabled={isMembersLoading || createGroupMutation.isPending}
@@ -172,7 +172,7 @@ export function NewGroupDialog({
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
-              placeholder="Search by name or email..."
+              placeholder={t('searchByNameOrEmail')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -188,9 +188,7 @@ export function NewGroupDialog({
               </div>
             ) : filteredMembers.length === 0 ? (
               <div className="text-muted-foreground py-8 text-center text-sm">
-                {searchQuery
-                  ? 'No members found matching your search'
-                  : 'No team members available'}
+                {searchQuery ? t('noMembersFound') : t('noTeamMembers')}
               </div>
             ) : (
               <div className="space-y-0">
@@ -231,8 +229,9 @@ export function NewGroupDialog({
           {/* Selected count */}
           {selectedUserIds.length > 0 && (
             <p className="text-muted-foreground text-xs">
-              {selectedUserIds.length} member
-              {selectedUserIds.length > 1 ? 's' : ''} selected
+              {selectedUserIds.length === 1
+                ? t('memberSelectedOne')
+                : t('memberSelectedMany', { count: selectedUserIds.length })}
             </p>
           )}
 
@@ -241,7 +240,7 @@ export function NewGroupDialog({
             {createGroupMutation.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Create Group
+            {t('createGroup')}
           </Button>
         </form>
       </DialogContent>

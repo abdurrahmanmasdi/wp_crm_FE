@@ -17,11 +17,11 @@ import { useAuthStore } from '@/store/useAuthStore';
  * 3. Consistent state across tab/window navigation
  */
 export function AuthInitializer() {
-  const user = useAuthStore((state) => state.user);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
   const setAuth = useAuthStore((state) => state.setAuth);
+  const clearAuthState = useAuthStore((state) => state.clearAuthState);
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
@@ -30,14 +30,10 @@ export function AuthInitializer() {
       return;
     }
 
-    // If user data is already loaded, no need to fetch
-    if (user) {
-      return;
-    }
-
     // Check if we have a valid access token
     const token = Cookies.get('access_token');
     if (!token) {
+      clearAuthState();
       return;
     }
 
@@ -66,14 +62,13 @@ export function AuthInitializer() {
         // Save the entire response (including permissions if available) to Zustand
         setAuth(userData);
       } catch {
-        // If /users/me fails (e.g., token expired), clear the cookie
-        // Dashboard layout guard will redirect to login
-        Cookies.remove('access_token', { path: '/' });
+        // If /users/me fails (e.g., token expired), clear all auth state.
+        clearAuthState();
       }
     };
 
     initializeAuth();
-  }, [_hasHydrated, user, activeOrganizationId, setAuth]);
+  }, [_hasHydrated, activeOrganizationId, setAuth, clearAuthState]);
 
   // This component doesn't render anything
   return null;

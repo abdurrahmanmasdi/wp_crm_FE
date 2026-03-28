@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { type Message } from '@/lib/chat.service';
 import { useChatSocket } from '@/providers/ChatSocketProvider';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -11,25 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send } from 'lucide-react';
 
-/**
- * Format a date to a relative time string (e.g., "5 minutes ago")
- */
-function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-
-  return date.toLocaleDateString();
-}
-
 interface ActiveChatProps {
   conversationId: string;
 }
@@ -39,6 +21,7 @@ interface ActiveChatProps {
  * Listens to real-time WebSocket events and auto-scrolls to new messages
  */
 export function ActiveChat({ conversationId }: ActiveChatProps) {
+  const t = useTranslations('Chat');
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -145,13 +128,31 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
     return first + last || '?';
   };
 
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return t('justNow');
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return t('minutesAgo', { count: minutes });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('hoursAgo', { count: hours });
+    const days = Math.floor(hours / 24);
+    if (days < 7) return t('daysAgo', { count: days });
+
+    return date.toLocaleDateString();
+  };
+
   // Loading state
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground text-sm">Loading messages...</p>
+          <p className="text-muted-foreground text-sm">
+            {t('loadingMessages')}
+          </p>
         </div>
       </div>
     );
@@ -163,11 +164,9 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <p className="text-destructive text-sm font-medium">
-            Failed to load messages
+            {t('failedLoadMessages')}
           </p>
-          <p className="text-muted-foreground text-xs">
-            Please try refreshing the page
-          </p>
+          <p className="text-muted-foreground text-xs">{t('refreshPage')}</p>
         </div>
       </div>
     );
@@ -180,9 +179,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
         <div className="flex flex-col gap-4 p-4">
           {liveMessages.length === 0 ? (
             <div className="text-muted-foreground flex h-full items-center justify-center">
-              <p className="text-sm">
-                No messages yet. Start the conversation!
-              </p>
+              <p className="text-sm">{t('startConversationPrompt')}</p>
             </div>
           ) : (
             liveMessages.map((message) => {
@@ -243,13 +240,13 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
       <div className="bg-background border-t p-4">
         {!isConnected && (
           <div className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-700">
-            Connecting to chat server...
+            {t('connecting')}
           </div>
         )}
 
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <Input
-            placeholder="Type a message..."
+            placeholder={t('typeMessage')}
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             disabled={!isConnected || isSending}

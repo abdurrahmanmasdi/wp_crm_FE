@@ -86,8 +86,8 @@ export function RolesList() {
     deleteRoleMutation.mutate(role.id);
   };
 
-  const isSystemRole = (roleName: string) => {
-    return ['Owner', 'Admin'].includes(roleName);
+  const isSystemRole = (roleSlug?: string) => {
+    return roleSlug === 'owner' || roleSlug === 'admin';
   };
 
   if (error) {
@@ -174,7 +174,7 @@ export function RolesList() {
                   >
                     <TableCell className="text-foreground font-medium">
                       {getLocalizedRoleName(role, locale)}
-                      {isSystemRole(role.name) && (
+                      {isSystemRole(role.slug) && (
                         <Badge
                           variant="secondary"
                           className="bg-primary/10 text-primary ml-2"
@@ -203,7 +203,7 @@ export function RolesList() {
                             variant="outline"
                             size="sm"
                             disabled={
-                              isSystemRole(role.name) ||
+                              isSystemRole(role.slug) ||
                               deleteRoleMutation.isPending
                             }
                             onClick={() => handleEditRole(role)}
@@ -222,11 +222,11 @@ export function RolesList() {
                             size="sm"
                             onClick={() => handleDeleteRole(role)}
                             disabled={
-                              isSystemRole(role.name) ||
+                              isSystemRole(role.slug) ||
                               deleteRoleMutation.isPending
                             }
                             className={`border-white/10 ${
-                              isSystemRole(role.name)
+                              isSystemRole(role.slug)
                                 ? 'cursor-not-allowed opacity-50'
                                 : 'text-red-400 hover:text-red-300'
                             }`}

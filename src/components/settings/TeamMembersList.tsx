@@ -1,57 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { MoreHorizontal, Eye, Shield } from 'lucide-react';
-
-import { RequirePermission } from '@/components/auth/RequirePermission';
-import { AppResource, AppAction } from '@/constants/permissions.registry';
-
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 import { orgService, type OrganizationMember } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
-import { getLocalizedRoleName } from '@/lib/utils/translations';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MemberPermissionsSheet } from './MemberPermissionsSheet';
+import { TeamMembersTable } from '@/components/settings/team-members/TeamMembersTable';
+import { RoleChangeConfirmationDialog } from '@/components/settings/team-members/RoleChangeConfirmationDialog';
 
 export function TeamMembersList() {
   const activeOrganizationId = useAuthStore(
@@ -60,9 +20,6 @@ export function TeamMembersList() {
   const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const t = useTranslations('Settings.Team');
-  const tAlerts = useTranslations('Settings.Alerts');
-  const tCommon = useTranslations('Common');
-  const locale = useLocale();
 
   // State for pending role change confirmation
   const [pendingRoleChange, setPendingRoleChange] = useState<{
@@ -106,14 +63,14 @@ export function TeamMembersList() {
   const isLoading = isMembersLoading || isRolesLoading;
   const error = membersError || rolesError;
 
-  // Determine current user's role
-  const currentUserRole = useMemo(() => {
+  // Determine current user's role slug
+  const currentUserRoleSlug = useMemo(() => {
     if (!currentUser || !('id' in currentUser)) return null;
     const membersList = membersData?.data ?? [];
     const currentMember = membersList.find(
       (member) => member.user.id === currentUser.id
     );
-    return currentMember?.role.name ?? null;
+    return currentMember?.role.slug ?? null;
   }, [membersData?.data, currentUser]);
 
   // Change member role mutation
@@ -157,26 +114,12 @@ export function TeamMembersList() {
   };
 
   // Check if current user is owner
-  const isCurrentUserOwner = currentUserRole === 'Kurucu';
-
-  // Get status badge color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'bg-green-500/10 text-green-400';
-      case 'PENDING':
-        return 'bg-yellow-500/10 text-yellow-400';
-      case 'REJECTED':
-        return 'bg-red-500/10 text-red-400';
-      default:
-        return 'bg-gray-500/10 text-gray-400';
-    }
-  };
+  const isCurrentUserOwner = currentUserRoleSlug === 'owner';
 
   // Check if role select should be disabled for a member
   const isRoleSelectDisabled = (member: OrganizationMember) => {
-    // Disable if the member is the Owner (Kurucu)
-    if (member.role.name === 'Kurucu') {
+    // Disable if the member is the owner role.
+    if (member.role.slug === 'owner') {
       return true;
     }
     // Disable if current user is not the Owner
@@ -184,11 +127,6 @@ export function TeamMembersList() {
       return true;
     }
     return false;
-  };
-
-  // Get user initials for avatar
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   if (error) {
@@ -237,184 +175,22 @@ export function TeamMembersList() {
             </div>
           </div>
         ) : (
-          /* Members Table */
-          <div className="bg-background overflow-x-auto rounded-lg border border-white/5">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="text-muted-foreground">
-                    {t('tableHeaders.user')}
-                  </TableHead>
-                  <TableHead className="text-muted-foreground">
-                    {t('tableHeaders.status')}
-                  </TableHead>
-                  <TableHead className="text-muted-foreground">
-                    {t('tableHeaders.role')}
-                  </TableHead>
-                  <TableHead className="text-muted-foreground text-right">
-                    {t('tableHeaders.actions')}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => (
-                  <TableRow
-                    key={member.membershipId}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    {/* User Column */}
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border border-white/10">
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                            {getInitials(
-                              member.user.firstName,
-                              member.user.lastName
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-1">
-                          <p className="text-foreground font-medium">
-                            {member.user.firstName} {member.user.lastName}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {member.user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Status Column */}
-                    <TableCell>
-                      <Badge
-                        className={`${getStatusColor(member.status)} border-0`}
-                      >
-                        {member.status}
-                      </Badge>
-                    </TableCell>
-
-                    {/* Role Column */}
-                    <TableCell>
-                      <RequirePermission
-                        resource={AppResource.ROLES}
-                        action={AppAction.EDIT_ALL}
-                        fallback="disable"
-                      >
-                        <Select
-                          value={member.role.id}
-                          onValueChange={(newRoleId) =>
-                            handleRoleChange(member.membershipId, newRoleId)
-                          }
-                          disabled={
-                            isRoleSelectDisabled(member) ||
-                            changeRoleMutation.isPending
-                          }
-                        >
-                          <SelectTrigger
-                            className={`text-foreground w-40 border-white/10 ${
-                              isRoleSelectDisabled(member)
-                                ? 'cursor-not-allowed opacity-50'
-                                : ''
-                            }`}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border-white/10">
-                            {roles.map((role) => (
-                              <SelectItem
-                                key={role.id}
-                                value={role.id}
-                                className="text-foreground focus:text-foreground focus:bg-white/10"
-                              >
-                                {getLocalizedRoleName(role, locale)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </RequirePermission>
-                    </TableCell>
-
-                    {/* Actions Column */}
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">{t('actions')}</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="bg-card border-white/10"
-                        >
-                          <RequirePermission
-                            resource={AppResource.TEAM_MEMBERS}
-                            action={AppAction.READ_ALL}
-                            fallback="hide"
-                          >
-                            <Link
-                              href={`/dashboard/members/${member.membershipId}`}
-                            >
-                              <DropdownMenuItem className="text-foreground cursor-pointer hover:bg-white/5 focus:bg-white/5">
-                                <Eye className="mr-2 h-4 w-4" />
-                                {t('viewDetails')}
-                              </DropdownMenuItem>
-                            </Link>
-                          </RequirePermission>
-
-                          <RequirePermission
-                            resource={AppResource.ROLES}
-                            action={AppAction.EDIT_ALL}
-                            fallback="hide"
-                          >
-                            <DropdownMenuSeparator className="bg-white/10" />
-                            <DropdownMenuItem
-                              className="text-foreground cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                              onClick={() => setSelectedMember(member)}
-                            >
-                              <Shield className="mr-2 h-4 w-4" />
-                              {t('editPermissions')}
-                            </DropdownMenuItem>
-                          </RequirePermission>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <TeamMembersTable
+            members={members}
+            roles={roles}
+            isRoleSelectDisabled={isRoleSelectDisabled}
+            isChangePending={changeRoleMutation.isPending}
+            onRoleChange={handleRoleChange}
+            onSelectMember={setSelectedMember}
+          />
         )}
       </section>
 
-      {/* Role Change Confirmation Dialog */}
-      <AlertDialog open={!!pendingRoleChange} onOpenChange={cancelRoleChange}>
-        <AlertDialogContent className="bg-card border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">
-              {tAlerts('changeRoleTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              {tAlerts('changeRoleDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-muted-foreground border-white/10 hover:bg-white/5">
-              {tCommon('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmRoleChange}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {tAlerts('confirmAction')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RoleChangeConfirmationDialog
+        open={!!pendingRoleChange}
+        onCancel={cancelRoleChange}
+        onConfirm={confirmRoleChange}
+      />
 
       {/* Member Permissions Sheet */}
       <MemberPermissionsSheet

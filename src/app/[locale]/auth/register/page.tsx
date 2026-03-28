@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { authService } from '@/lib/auth.service';
+import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const registerSchema = z.object({
@@ -87,8 +88,7 @@ export default function RegisterPage() {
 
       Cookies.set('access_token', loginResponse.data.access_token, {
         expires: 7,
-        sameSite: 'lax',
-        path: '/',
+        ...accessTokenCookieAttributes,
       });
 
       const userResponse = await authService.me();

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { createConversation } from '@/lib/api/chat';
 import { orgService } from '@/lib/org.service';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -32,6 +33,7 @@ export function NewChatDialog({
   onClose,
   onChatCreated,
 }: NewChatDialogProps) {
+  const t = useTranslations('Chat');
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
 
@@ -113,10 +115,8 @@ export function NewChatDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>Start New Chat</DialogTitle>
-          <DialogDescription>
-            Select a team member to start a new conversation
-          </DialogDescription>
+          <DialogTitle>{t('newChatTitle')}</DialogTitle>
+          <DialogDescription>{t('newChatDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -124,7 +124,7 @@ export function NewChatDialog({
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
-              placeholder="Search by name or email..."
+              placeholder={t('searchByNameOrEmail')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -142,9 +142,7 @@ export function NewChatDialog({
               </div>
             ) : filteredMembers.length === 0 ? (
               <div className="text-muted-foreground py-8 text-center text-sm">
-                {searchQuery
-                  ? 'No members found matching your search'
-                  : 'No team members available'}
+                {searchQuery ? t('noMembersFound') : t('noTeamMembers')}
               </div>
             ) : (
               <div className="space-y-2">

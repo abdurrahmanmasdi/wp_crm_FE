@@ -16,6 +16,7 @@ export type RolePermission = {
 export type Role = {
   id: string;
   name: string;
+  slug?: string;
   name_translations?: Record<string, string>;
   organization_id: string;
   created_at: string;
@@ -65,6 +66,7 @@ export type User = {
 export type RoleInfo = {
   id: string;
   name: string;
+  slug?: string;
 };
 
 export type OrganizationMember = {

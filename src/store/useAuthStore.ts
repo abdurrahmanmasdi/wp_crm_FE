@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import Cookies from 'js-cookie';
+import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
 
 export type AuthUser = {
   id: string;
@@ -23,6 +24,7 @@ type AuthStore = {
   setActiveOrganizationId: (activeOrganizationId: string | null) => void;
   setPermissions: (permissions: string[]) => void;
   clearPermissions: () => void;
+  clearAuthState: () => void;
   setHasHydrated: (state: boolean) => void;
   logout: () => void;
 };
@@ -40,9 +42,13 @@ export const useAuthStore = create<AuthStore>()(
         set({ activeOrganizationId }),
       setPermissions: (permissions) => set({ permissions }),
       clearPermissions: () => set({ permissions: null }),
+      clearAuthState: () => {
+        Cookies.remove('access_token', accessTokenCookieAttributes);
+        set({ user: null, activeOrganizationId: null, permissions: null });
+      },
       setHasHydrated: (state) => set({ _hasHydrated: state }),
       logout: () => {
-        Cookies.remove('access_token', { path: '/' });
+        Cookies.remove('access_token', accessTokenCookieAttributes);
         set({ user: null, activeOrganizationId: null, permissions: null });
       },
     }),

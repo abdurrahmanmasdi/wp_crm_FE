@@ -47,6 +47,7 @@ export function DashboardHeader() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const t = useTranslations('Common');
+  const tHeader = useTranslations('DashboardHeader');
 
   const initials = useMemo(() => getUserInitials(user), [user]);
 
@@ -57,7 +58,7 @@ export function DashboardHeader() {
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
           <Input
             type="search"
-            placeholder="Search leads, tours, or agencies..."
+            placeholder={tHeader('searchPlaceholder')}
             className="bg-card text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/40 h-11 rounded-full border-white/10 pr-4 pl-11 text-sm focus-visible:ring-1"
           />
         </div>
@@ -87,12 +88,13 @@ export function DashboardHeader() {
           >
             <div className="px-2 py-1.5">
               <p className="text-foreground text-sm font-semibold">
-                Welcome back
+                {tHeader('welcomeBack')}
               </p>
               <p className="text-muted-foreground text-xs">
                 {user && typeof user === 'object'
-                  ? ((user as { email?: string }).email ?? 'account')
-                  : 'account'}
+                  ? ((user as { email?: string }).email ??
+                    tHeader('accountFallback'))
+                  : tHeader('accountFallback')}
               </p>
             </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Search, Plus, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Conversation } from '@/lib/chat.service';
@@ -17,6 +18,7 @@ import { NewGroupDialog } from './NewGroupDialog';
  */
 export function ConversationList() {
   const router = useRouter();
+  const t = useTranslations('Chat');
   const searchParams = useSearchParams();
   const activeConversationId = searchParams.get('chat');
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,12 +82,12 @@ export function ConversationList() {
    */
   const getConversationName = (conversation: Conversation): string => {
     if (conversation.is_group) {
-      return conversation.name || 'Group Chat';
+      return conversation.name || t('groupChatFallback');
     }
 
     // For DMs, show the other user's name
     const otherParticipant = conversation.participants[0];
-    if (!otherParticipant) return 'Unknown';
+    if (!otherParticipant) return t('unknownUser');
 
     return `${otherParticipant.user.first_name} ${otherParticipant.user.last_name}`;
   };
@@ -134,9 +136,9 @@ export function ConversationList() {
     return (
       <div className="text-destructive flex h-full items-center justify-center">
         <div className="text-center">
-          <p className="text-sm font-medium">Failed to load conversations</p>
+          <p className="text-sm font-medium">{t('failedLoadConversations')}</p>
           <p className="text-muted-foreground text-xs">
-            {error instanceof Error ? error.message : 'Unknown error'}
+            {error instanceof Error ? error.message : t('unknownError')}
           </p>
         </div>
       </div>
@@ -148,19 +150,19 @@ export function ConversationList() {
       {/* Header */}
       <div className="border-border space-y-3 border-b p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-foreground font-semibold">Messages</h2>
+          <h2 className="text-foreground font-semibold">{t('messages')}</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setIsNewChatOpen(true)}
               className="text-muted-foreground hover:text-foreground transition-colors"
-              title="Start direct message"
+              title={t('startDirectMessage')}
             >
               <Plus className="h-5 w-5" />
             </button>
             <button
               onClick={() => setIsNewGroupOpen(true)}
               className="text-muted-foreground hover:text-foreground transition-colors"
-              title="Create group chat"
+              title={t('createGroupChat')}
             >
               <Users className="h-5 w-5" />
             </button>
@@ -172,7 +174,7 @@ export function ConversationList() {
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search conversations..."
+            placeholder={t('searchConversations')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-primary/10 border-border placeholder:text-muted-foreground text-foreground focus:border-primary focus:ring-primary w-full rounded-lg border py-2 pr-3 pl-10 text-sm focus:ring-1 focus:outline-none"
@@ -184,18 +186,18 @@ export function ConversationList() {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="text-muted-foreground flex h-full items-center justify-center">
-            <p className="text-sm">Loading conversations...</p>
+            <p className="text-sm">{t('loadingConversations')}</p>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="text-muted-foreground flex h-full items-center justify-center">
             <div className="text-center">
               <p className="text-sm font-medium">
                 {data && data.length === 0
-                  ? 'No conversations yet'
-                  : 'No results found'}
+                  ? t('noConversationsYet')
+                  : t('noResultsFound')}
               </p>
               {searchQuery && (
-                <p className="text-xs">Try a different search term</p>
+                <p className="text-xs">{t('tryDifferentSearch')}</p>
               )}
             </div>
           </div>
@@ -241,7 +243,7 @@ export function ConversationList() {
                           </p>
                         ) : (
                           <p className="text-muted-foreground text-xs italic">
-                            No messages yet
+                            {t('noMessagesYet')}
                           </p>
                         )}
 

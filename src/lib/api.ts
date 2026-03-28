@@ -3,6 +3,8 @@ import Cookies from 'js-cookie';
 
 import { useAuthStore } from '@/store/useAuthStore';
 
+let isHandlingAuthFailure = false;
+
 function readBearerToken() {
   if (typeof window === 'undefined') {
     return null;
@@ -49,3 +51,30 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = axios.isAxiosError(error) ? error.response?.status : null;
+
+    if ((status === 401 || status === 403) && typeof window !== 'undefined') {
+      if (!isHandlingAuthFailure) {
+        isHandlingAuthFailure = true;
+
+        const { clearAuthState } = useAuthStore.getState();
+        clearAuthState();
+
+        if (!window.location.pathname.endsWith('/auth/login')) {
+          window.location.replace('/auth/login');
+        }
+
+        // Prevent permanent lock if auth errors happen while already on /auth/login.
+        window.setTimeout(() => {
+          isHandlingAuthFailure = false;
+        }, 1000);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
