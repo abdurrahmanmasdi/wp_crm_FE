@@ -51,7 +51,8 @@
       "profile": "Profil",
       "team": "Ekip Üyeleri",
       "roles": "Roller & İzinler",
-      "requests": "Erişim Talepleri"
+      "requests": "Erişim Talepleri",
+      "invitations": "Davetler"
     },
     "Team": {
       "title": "Ekip Üyeleri",
@@ -70,6 +71,40 @@
       "actions": "İşlemler",
       "viewDetails": "Detayları Görüntüle",
       "editPermissions": "İzinleri Düzenle"
+    },
+    "Invites": {
+      "dialogTitle": "Ekip Üyesi Davet Et",
+      "dialogDescription": "Yeni bir ekip arkadaşı için güvenli bir davet bağlantısı oluşturun.",
+      "emailLabel": "E-posta",
+      "emailPlaceholder": "isim@sirket.com",
+      "roleLabel": "Rol",
+      "rolePlaceholder": "Bir rol seçin",
+      "sendInvite": "Davet Oluştur",
+      "sendingInvite": "Oluşturuluyor...",
+      "successTitle": "Davet bağlantısı oluşturuldu",
+      "successDescription": "Bu bağlantıyı kopyalayıp ekip arkadaşınızla paylaşın.",
+      "inviteUrlLabel": "Davet URL'si",
+      "copyInviteLink": "Bağlantıyı Kopyala",
+      "inviteAnother": "Başka Birini Davet Et",
+      "copied": "Davet bağlantısı kopyalandı",
+      "copyFailed": "Davet bağlantısı kopyalanamadı",
+      "emailValidation": "Geçerli bir e-posta adresi girin",
+      "roleRequired": "Lütfen bir rol seçin",
+      "loadingInvites": "Bekleyen davetler yükleniyor...",
+      "failedToLoadInvites": "Bekleyen davetler yüklenemedi",
+      "pendingTitle": "Bekleyen Davetler",
+      "pendingSubtitle": "Aktif davet bağlantılarını yönetin",
+      "openInviteDialog": "Üye Davet Et",
+      "emptyTitle": "Aktif davet yok",
+      "emptyDescription": "Davet oluşturduğunuzda burada görünecek.",
+      "tableHeaders": {
+        "email": "E-posta",
+        "role": "Rol",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "unknownEmail": "Bilinmeyen e-posta",
+      "unknownRole": "Bilinmeyen rol"
     },
     "Roles": {
       "title": "Roller & İzinler",
@@ -280,6 +315,26 @@
     "memberIdLabel": "Üye ID:",
     "backToTeam": "Ekibe Dön",
     "goToSettings": "Ayarlara Git"
+  },
+  "InviteLanding": {
+    "badge": "Çalışma Alanı Daveti",
+    "title": "Davet edildiniz",
+    "invitedMessage": "{organization} çalışma alanına {role} olarak katılmanız için davet edildiniz.",
+    "organizationFallback": "bu kuruluşa",
+    "roleFallback": "ekip üyesi",
+    "invitedEmailLabel": "Davet edilen e-posta",
+    "emailFallback": "Bilinmeyen e-posta",
+    "loadingTitle": "Davet kontrol ediliyor",
+    "loadingDescription": "Davet detayları doğrulanırken lütfen bekleyin.",
+    "invalidTitle": "Davet kullanılamıyor",
+    "invalidDescription": "Bu davet geçersiz veya süresi dolmuş.",
+    "errorTitle": "Davet yüklenemedi",
+    "errorDescription": "Lütfen birazdan tekrar deneyin.",
+    "checkingSession": "Oturum kontrol ediliyor...",
+    "acceptButton": "Daveti Kabul Et",
+    "acceptingButton": "Kabul ediliyor...",
+    "loginButton": "Kabul Etmek İçin Giriş Yap",
+    "createAccountButton": "Hesap Oluştur"
   },
   "Onboarding": {
     "Greeting": {

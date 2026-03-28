@@ -59,6 +59,7 @@ export default function RegisterPage() {
     (state) => state.setActiveOrganizationId
   );
   const [submitError, setSubmitError] = useState('');
+  const inviteToken = searchParams.get('inviteToken');
   const inviteId = searchParams.get('inviteId');
 
   const {
@@ -79,7 +80,10 @@ export default function RegisterPage() {
     setSubmitError('');
 
     try {
-      await authService.register(values);
+      await authService.register({
+        ...values,
+        ...(inviteToken ? { inviteToken } : {}),
+      });
 
       const loginResponse = await authService.login({
         email: values.email,
@@ -93,6 +97,18 @@ export default function RegisterPage() {
 
       const userResponse = await authService.me();
       setAuth(userResponse.data);
+
+      if (inviteToken) {
+        const organizationsResponse = await authService.getUserOrganizations();
+        const organizations = Array.isArray(organizationsResponse.data)
+          ? organizationsResponse.data
+          : (organizationsResponse.data.organizations ?? []);
+
+        const resolvedOrganizationId = organizations[0]?.id ?? null;
+        setActiveOrganizationId(resolvedOrganizationId);
+        router.push('/dashboard');
+        return;
+      }
 
       if (inviteId) {
         await authService.acceptInvite(inviteId);

@@ -5,6 +5,7 @@ export type RegisterPayload = {
   last_name: string;
   email: string;
   password: string;
+  inviteToken?: string;
 };
 
 export type LoginPayload = {

@@ -2,7 +2,7 @@
 
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
@@ -50,6 +50,7 @@ function getApiErrorMessage(error: unknown) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('Auth');
   const setAuth = useAuthStore((state) => state.setAuth);
   const [submitError, setSubmitError] = useState('');
@@ -79,7 +80,12 @@ export default function LoginPage() {
 
       const userResponse = await authService.me();
       setAuth(userResponse.data);
-      router.push('/dashboard');
+
+      const returnTo = searchParams.get('returnTo');
+      const safeReturnTo =
+        returnTo && returnTo.startsWith('/') ? returnTo : null;
+
+      router.push(safeReturnTo ?? '/dashboard');
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }

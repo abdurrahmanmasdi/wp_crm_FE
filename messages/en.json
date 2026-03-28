@@ -51,7 +51,8 @@
       "profile": "Profile",
       "team": "Team Members",
       "roles": "Roles & Permissions",
-      "requests": "Access Requests"
+      "requests": "Access Requests",
+      "invitations": "Invitations"
     },
     "Team": {
       "title": "Team Members",
@@ -70,6 +71,40 @@
       "actions": "Actions",
       "viewDetails": "View Details",
       "editPermissions": "Edit Permissions"
+    },
+    "Invites": {
+      "dialogTitle": "Invite a Team Member",
+      "dialogDescription": "Generate a secure invitation link for a new teammate.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "roleLabel": "Role",
+      "rolePlaceholder": "Select a role",
+      "sendInvite": "Generate Invite",
+      "sendingInvite": "Generating...",
+      "successTitle": "Invitation link created",
+      "successDescription": "Copy and share this link with your teammate.",
+      "inviteUrlLabel": "Invitation URL",
+      "copyInviteLink": "Copy Link",
+      "inviteAnother": "Invite Another",
+      "copied": "Invite link copied",
+      "copyFailed": "Could not copy invite link",
+      "emailValidation": "Enter a valid email address",
+      "roleRequired": "Please select a role",
+      "loadingInvites": "Loading pending invitations...",
+      "failedToLoadInvites": "Failed to load pending invitations",
+      "pendingTitle": "Pending Invitations",
+      "pendingSubtitle": "Manage active invitation links",
+      "openInviteDialog": "Invite Member",
+      "emptyTitle": "No active invitations",
+      "emptyDescription": "When you generate invites, they will appear here.",
+      "tableHeaders": {
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "unknownEmail": "Unknown email",
+      "unknownRole": "Unknown role"
     },
     "Roles": {
       "title": "Roles & Permissions",
@@ -280,6 +315,26 @@
     "memberIdLabel": "Member ID:",
     "backToTeam": "Back to Team",
     "goToSettings": "Go to Settings"
+  },
+  "InviteLanding": {
+    "badge": "Workspace Invitation",
+    "title": "You are invited",
+    "invitedMessage": "You have been invited to join {organization} as a {role}.",
+    "organizationFallback": "this organization",
+    "roleFallback": "team member",
+    "invitedEmailLabel": "Invited email",
+    "emailFallback": "Unknown email",
+    "loadingTitle": "Checking invitation",
+    "loadingDescription": "Please wait while we verify your invitation details.",
+    "invalidTitle": "Invitation unavailable",
+    "invalidDescription": "This invitation is invalid or has expired.",
+    "errorTitle": "Could not load invitation",
+    "errorDescription": "Please try again in a moment.",
+    "checkingSession": "Checking session...",
+    "acceptButton": "Accept Invitation",
+    "acceptingButton": "Accepting...",
+    "loginButton": "Log in to Accept",
+    "createAccountButton": "Create Account"
   },
   "Onboarding": {
     "Greeting": {

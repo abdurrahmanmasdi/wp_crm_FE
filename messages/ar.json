@@ -51,7 +51,8 @@
       "profile": "الملف الشخصي",
       "team": "أعضاء الفريق",
       "roles": "الأدوار والأذونات",
-      "requests": "طلبات الوصول"
+      "requests": "طلبات الوصول",
+      "invitations": "الدعوات"
     },
     "Team": {
       "title": "أعضاء الفريق",
@@ -70,6 +71,40 @@
       "actions": "الإجراءات",
       "viewDetails": "عرض التفاصيل",
       "editPermissions": "تحرير الأذونات"
+    },
+    "Invites": {
+      "dialogTitle": "دعوة عضو فريق",
+      "dialogDescription": "أنشئ رابط دعوة آمن لزميل جديد.",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "name@company.com",
+      "roleLabel": "الدور",
+      "rolePlaceholder": "اختر دورا",
+      "sendInvite": "إنشاء دعوة",
+      "sendingInvite": "جار الإنشاء...",
+      "successTitle": "تم إنشاء رابط الدعوة",
+      "successDescription": "انسخ هذا الرابط وشاركه مع زميلك.",
+      "inviteUrlLabel": "رابط الدعوة",
+      "copyInviteLink": "نسخ الرابط",
+      "inviteAnother": "دعوة عضو آخر",
+      "copied": "تم نسخ رابط الدعوة",
+      "copyFailed": "تعذر نسخ رابط الدعوة",
+      "emailValidation": "أدخل عنوان بريد إلكتروني صحيح",
+      "roleRequired": "يرجى اختيار دور",
+      "loadingInvites": "جار تحميل الدعوات المعلقة...",
+      "failedToLoadInvites": "تعذر تحميل الدعوات المعلقة",
+      "pendingTitle": "الدعوات المعلقة",
+      "pendingSubtitle": "إدارة روابط الدعوات النشطة",
+      "openInviteDialog": "دعوة عضو",
+      "emptyTitle": "لا توجد دعوات نشطة",
+      "emptyDescription": "عند إنشاء دعوات، ستظهر هنا.",
+      "tableHeaders": {
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "unknownEmail": "بريد إلكتروني غير معروف",
+      "unknownRole": "دور غير معروف"
     },
     "Roles": {
       "title": "الأدوار والأذونات",
@@ -280,6 +315,26 @@
     "memberIdLabel": "معرف العضو:",
     "backToTeam": "العودة إلى الفريق",
     "goToSettings": "الذهاب إلى الإعدادات"
+  },
+  "InviteLanding": {
+    "badge": "دعوة مساحة العمل",
+    "title": "تمت دعوتك",
+    "invitedMessage": "لقد تمت دعوتك للانضمام إلى {organization} بدور {role}.",
+    "organizationFallback": "هذه المنظمة",
+    "roleFallback": "عضو فريق",
+    "invitedEmailLabel": "البريد الإلكتروني المدعو",
+    "emailFallback": "بريد إلكتروني غير معروف",
+    "loadingTitle": "جار التحقق من الدعوة",
+    "loadingDescription": "يرجى الانتظار أثناء التحقق من تفاصيل الدعوة.",
+    "invalidTitle": "الدعوة غير متاحة",
+    "invalidDescription": "هذه الدعوة غير صالحة أو منتهية الصلاحية.",
+    "errorTitle": "تعذر تحميل الدعوة",
+    "errorDescription": "يرجى المحاولة مرة أخرى بعد قليل.",
+    "checkingSession": "جار التحقق من الجلسة...",
+    "acceptButton": "قبول الدعوة",
+    "acceptingButton": "جار القبول...",
+    "loginButton": "سجل الدخول للقبول",
+    "createAccountButton": "إنشاء حساب"
   },
   "Onboarding": {
     "Greeting": {
