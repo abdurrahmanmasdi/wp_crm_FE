@@ -470,6 +470,8 @@
         "contact": "التواصل",
         "localization": "الإعدادات المحلية",
         "sales": "المبيعات",
+        "demographics": "البيانات الديموغرافية",
+        "timeline": "الجدول الزمني",
         "metadata": "البيانات الوصفية"
       },
       "fields": {
@@ -482,6 +484,7 @@
         "socialLinks": "روابط التواصل",
         "country": "الدولة",
         "timezone": "المنطقة الزمنية",
+        "languages": "اللغات",
         "primaryLanguage": "اللغة الأساسية",
         "preferredLanguage": "اللغة المفضلة",
         "pipelineStage": "مرحلة خط المبيعات",

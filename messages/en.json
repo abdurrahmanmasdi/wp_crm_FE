@@ -470,6 +470,8 @@
         "contact": "Contact",
         "localization": "Localization",
         "sales": "Sales",
+        "demographics": "Demographics",
+        "timeline": "Timeline",
         "metadata": "Metadata"
       },
       "fields": {
@@ -482,6 +484,7 @@
         "socialLinks": "Social links",
         "country": "Country",
         "timezone": "Timezone",
+        "languages": "Languages",
         "primaryLanguage": "Primary language",
         "preferredLanguage": "Preferred language",
         "pipelineStage": "Pipeline stage",

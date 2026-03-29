@@ -470,6 +470,8 @@
         "contact": "İletişim",
         "localization": "Yerelleştirme",
         "sales": "Satış",
+        "demographics": "Demografi",
+        "timeline": "Zaman Çizelgesi",
         "metadata": "Meta veri"
       },
       "fields": {
@@ -482,6 +484,7 @@
         "socialLinks": "Sosyal bağlantılar",
         "country": "Ülke",
         "timezone": "Saat dilimi",
+        "languages": "Diller",
         "primaryLanguage": "Birincil dil",
         "preferredLanguage": "Tercih edilen dil",
         "pipelineStage": "Satış hattı aşaması",
