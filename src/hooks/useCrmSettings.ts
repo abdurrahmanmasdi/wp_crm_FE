@@ -250,6 +250,14 @@ async function deleteLeadSource(
   await crmSettingsService.deleteLeadSource(orgId, sourceId);
 }
 
+/**
+ * Loads pipeline stages for the active organization.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.crmSettings.pipelineStages(activeOrganizationId)`
+ *
+ * @returns Query result for normalized and sorted pipeline stages.
+ */
 export function usePipelineStagesQuery() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
@@ -261,6 +269,14 @@ export function usePipelineStagesQuery() {
   });
 }
 
+/**
+ * Creates a new pipeline stage for the active organization.
+ *
+ * Side effects:
+ * - Invalidates pipeline stages query cache after successful mutation.
+ *
+ * @returns Mutation object for pipeline stage creation.
+ */
 export function useCreatePipelineStageMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -281,6 +297,14 @@ export function useCreatePipelineStageMutation() {
   });
 }
 
+/**
+ * Updates an existing pipeline stage for the active organization.
+ *
+ * Side effects:
+ * - Invalidates pipeline stages query cache after successful mutation.
+ *
+ * @returns Mutation object for pipeline stage updates.
+ */
 export function useUpdatePipelineStageMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -307,6 +331,14 @@ export function useUpdatePipelineStageMutation() {
   });
 }
 
+/**
+ * Deletes a pipeline stage for the active organization.
+ *
+ * Side effects:
+ * - Invalidates pipeline stages query cache after successful mutation.
+ *
+ * @returns Mutation object for pipeline stage deletion.
+ */
 export function useDeletePipelineStageMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -327,6 +359,16 @@ export function useDeletePipelineStageMutation() {
   });
 }
 
+/**
+ * Loads lead sources for the active organization.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.crmSettings.leadSources(activeOrganizationId, scope)`
+ * - Scope can be `active` only or `all`.
+ *
+ * @param options Optional query behavior flags such as `activeOnly`.
+ * @returns Query result for normalized lead source records.
+ */
 export function useLeadSourcesQuery(options?: { activeOnly?: boolean }) {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
   const activeOnly = options?.activeOnly === true;
@@ -345,6 +387,14 @@ export function useLeadSourcesQuery(options?: { activeOnly?: boolean }) {
   });
 }
 
+/**
+ * Creates a lead source for the active organization.
+ *
+ * Side effects:
+ * - Invalidates lead source base cache key so all lead source scopes refresh.
+ *
+ * @returns Mutation object for lead source creation.
+ */
 export function useCreateLeadSourceMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -365,6 +415,14 @@ export function useCreateLeadSourceMutation() {
   });
 }
 
+/**
+ * Updates a lead source for the active organization.
+ *
+ * Side effects:
+ * - Invalidates lead source base cache key so all lead source scopes refresh.
+ *
+ * @returns Mutation object for lead source updates.
+ */
 export function useUpdateLeadSourceMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -391,6 +449,14 @@ export function useUpdateLeadSourceMutation() {
   });
 }
 
+/**
+ * Deletes a lead source for the active organization.
+ *
+ * Side effects:
+ * - Invalidates lead source base cache key so all lead source scopes refresh.
+ *
+ * @returns Mutation object for lead source deletion.
+ */
 export function useDeleteLeadSourceMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);

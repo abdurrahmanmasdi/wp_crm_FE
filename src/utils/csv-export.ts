@@ -23,6 +23,12 @@ type FlatLeadRow = {
   updated_at: string;
 };
 
+/**
+ * Formats an ISO-like date string into a localized date-time string.
+ *
+ * @param value Raw date string (or null) from lead fields.
+ * @returns Localized date-time text, the original value when invalid, or empty string when absent.
+ */
 function formatDate(value: string | null): string {
   if (!value) {
     return '';
@@ -42,6 +48,12 @@ function formatDate(value: string | null): string {
   }).format(parsed);
 }
 
+/**
+ * Escapes a string for safe CSV serialization.
+ *
+ * @param value Plain string cell value.
+ * @returns CSV-safe value with quotes escaped and wrapped when delimiters/newlines exist.
+ */
 function escapeCsvValue(value: string): string {
   if (value.includes('"') || value.includes(',') || value.includes('\n')) {
     return `"${value.replaceAll('"', '""')}"`;
@@ -50,6 +62,12 @@ function escapeCsvValue(value: string): string {
   return value;
 }
 
+/**
+ * Flattens a lead entity into a CSV row shape with display-friendly date values.
+ *
+ * @param lead Lead entity from API/domain models.
+ * @returns Flat row object used by CSV serialization.
+ */
 function toFlatLeadRow(lead: Lead): FlatLeadRow {
   const fullName = `${lead.first_name} ${lead.last_name}`.trim();
 
@@ -77,6 +95,12 @@ function toFlatLeadRow(lead: Lead): FlatLeadRow {
   };
 }
 
+/**
+ * Serializes flat lead rows into CSV text content.
+ *
+ * @param rows Flat lead rows prepared for export.
+ * @returns CSV string with header row plus escaped value rows.
+ */
 function rowsToCsv(rows: FlatLeadRow[]): string {
   if (rows.length === 0) {
     return '';
@@ -91,6 +115,17 @@ function rowsToCsv(rows: FlatLeadRow[]): string {
   return [headerLine, ...valueLines].join('\n');
 }
 
+/**
+ * Triggers a browser download for the provided leads as `leads-export.csv`.
+ *
+ * Transformation flow:
+ * 1. Map lead entities to flat export rows.
+ * 2. Serialize rows into CSV text.
+ * 3. Create an object URL and trigger an anchor download.
+ *
+ * @param leads Lead entities to export.
+ * @returns `void`.
+ */
 export function exportLeadsToCSV(leads: Lead[]) {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return;

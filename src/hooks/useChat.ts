@@ -10,8 +10,18 @@ import { queryKeys } from '@/lib/query-keys';
 import { Conversation, Message } from '@/lib/chat.service';
 import { useAuthStore } from '@/store/useAuthStore';
 
+/**
+ * Number of messages requested per page when fetching chat history.
+ */
 export const CHAT_HISTORY_PAGE_SIZE = 50;
 
+/**
+ * Builds the canonical query key for a conversation's message history.
+ *
+ * @param organizationId Active organization ID used to scope cache entries.
+ * @param conversationId Conversation ID whose message timeline is cached.
+ * @returns A readonly React Query key tuple for conversation messages.
+ */
 export function conversationMessagesQueryKey(
   organizationId: string | null | undefined,
   conversationId: string | null
@@ -31,8 +41,13 @@ function shouldRetryRequest(failureCount: number, error: unknown): boolean {
 }
 
 /**
- * Hook to fetch all conversations for the current user
- * @returns React Query result containing array of conversations
+ * Loads the active organization's conversation list.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.chat.conversations(activeOrganizationId)`
+ * - Retry policy that skips auth/permission failures.
+ *
+ * @returns React Query result object for conversation list loading, errors, and cached data.
  */
 export function useConversationsQuery(): UseQueryResult<Conversation[], Error> {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -47,9 +62,14 @@ export function useConversationsQuery(): UseQueryResult<Conversation[], Error> {
 }
 
 /**
- * Hook to fetch messages for a specific conversation
- * @param conversationId - The conversation ID (query is disabled if not provided)
- * @returns React Query result containing array of messages
+ * Loads message history for a conversation using an infinite query.
+ *
+ * React Query state managed:
+ * - Query key: `conversationMessagesQueryKey(activeOrganizationId, conversationId)`
+ * - Cursor-based pagination via `getNextPageParam`.
+ *
+ * @param conversationId Conversation ID to load. Query remains disabled when absent.
+ * @returns Infinite query result with message pages and paging helpers.
  */
 export function useChatHistoryQuery(conversationId: string | null) {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);

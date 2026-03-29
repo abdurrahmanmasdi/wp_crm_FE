@@ -9,6 +9,12 @@ import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MembershipStatus } from '@/types/enums';
 
+/**
+ * Route protection scope used by `useAuthRedirectGate`.
+ *
+ * - `dashboard`: ensures the user can safely access organization-bound dashboard routes.
+ * - `onboarding`: ensures the user is routed to the appropriate onboarding destination.
+ */
 export type AuthGuardScope = 'dashboard' | 'onboarding';
 
 interface UseAuthRedirectGateResult {
@@ -48,7 +54,14 @@ function isCurrentRoute(pathname: string, route: string): boolean {
 }
 
 /**
- * Central auth gate for protected routes.
+ * Central auth gate for protected route segments.
+ *
+ * React Query state managed:
+ * - Membership resolution query (`queryKeys.auth.routeMemberships`) while auth bootstrap is complete.
+ *
+ * Side effects:
+ * - Syncs resolved active organization ID into the auth store.
+ * - Performs client redirects to login, onboarding, waiting, or dashboard depending on memberships.
  *
  * Redirect flow:
  * 1. Block rendering until persisted auth state is hydrated and `/users/me` initialization is complete.
@@ -58,7 +71,9 @@ function isCurrentRoute(pathname: string, route: string): boolean {
  *    - Pending membership -> `/onboarding/waiting`
  *    - No membership -> `/onboarding`
  *
+ * @param scope Route context where the guard runs (`dashboard` or `onboarding`).
  * Returning `isReady = true` means the caller can safely render page content with no redirect flash.
+ * @returns Readiness flags for rendering and loading-state decisions in guarded layouts/pages.
  */
 export function useAuthRedirectGate(
   scope: AuthGuardScope

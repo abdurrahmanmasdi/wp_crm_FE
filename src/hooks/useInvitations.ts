@@ -4,16 +4,25 @@ import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 
+/**
+ * Payload for generating an invitation link for a member.
+ */
 export type GenerateInvitePayload = {
   email: string;
   roleId: string;
 };
 
+/**
+ * Normalized response returned after creating an invitation.
+ */
 export type GeneratedInvite = {
   inviteUrl: string;
   token: string;
 };
 
+/**
+ * Normalized pending invitation item used by UI surfaces.
+ */
 export type PendingInvite = {
   id: string;
   email: string;
@@ -120,6 +129,18 @@ async function createInvite(
   return normalizeGeneratedInvite(data);
 }
 
+/**
+ * Manages organization invitation data and invite creation mutations.
+ *
+ * React Query state managed:
+ * - Pending invitations query scoped by active organization.
+ * - Invitation creation mutation.
+ *
+ * Side effects:
+ * - Invalidates organization invitations cache after successful invite generation.
+ *
+ * @returns Active organization context, invitations query state, and invite mutation handlers.
+ */
 export function useInvitations() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);

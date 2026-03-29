@@ -1,14 +1,20 @@
 import { api } from '@/lib/api';
 
+/**
+ * Response payload for the effective permission list endpoint.
+ */
 export type PermissionsResponse = {
   permissions: string[];
 };
 
 /**
- * Fetch the current user's effective permissions for a specific organization
- * @param organizationId - The organization ID to fetch permissions for
- * @returns Promise containing the user's permissions array for that organization
- * @throws Error if the request fails (e.g., 400 if organization context is missing)
+ * Fetches the authenticated user's effective permissions in a specific organization context.
+ *
+ * Endpoint: `GET /users/me/permissions`
+ *
+ * @param organizationId Organization ID forwarded as `x-organization-id` header.
+ * @returns A promise resolving to the effective permissions array for the provided organization.
+ * @throws Error if the request fails, such as missing/invalid organization context.
  */
 export async function fetchMyPermissions(
   organizationId: string

@@ -19,11 +19,19 @@ import type {
   UpdateLeadPayload,
 } from '@/types/leads';
 
+/**
+ * Generic value/label option shape used by lead form member selectors.
+ */
 export type SelectOption = {
   value: string;
   label: string;
 };
 
+/**
+ * Payload for bulk lead updates.
+ *
+ * `lead_ids` specifies targets; `update_data` includes writable bulk fields.
+ */
 export type BulkUpdateLeadsPayload = {
   lead_ids: string[];
   update_data: Partial<Pick<UpdateLeadPayload, 'status' | 'assigned_agent_id'>>;
@@ -341,6 +349,14 @@ async function fetchOrganizationMemberOptions(
     .filter((item): item is SelectOption => item !== null);
 }
 
+/**
+ * Creates single leads for the active organization.
+ *
+ * Side effects:
+ * - Invalidates the organization leads base key so list queries refresh.
+ *
+ * @returns Mutation object for creating leads.
+ */
 export function useCreateLeadMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -361,6 +377,14 @@ export function useCreateLeadMutation() {
   });
 }
 
+/**
+ * Updates a lead for the active organization.
+ *
+ * Side effects:
+ * - Invalidates the organization leads base key after successful updates.
+ *
+ * @returns Mutation object for lead updates.
+ */
 export function useUpdateLeadMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -387,6 +411,14 @@ export function useUpdateLeadMutation() {
   });
 }
 
+/**
+ * Applies bulk updates to multiple leads.
+ *
+ * Side effects:
+ * - Invalidates the organization leads base key after successful bulk mutation.
+ *
+ * @returns Mutation object for bulk lead updates.
+ */
 export function useBulkUpdateLeadsMutation() {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
@@ -407,6 +439,14 @@ export function useBulkUpdateLeadsMutation() {
   });
 }
 
+/**
+ * Loads organization members and maps them into select options for lead forms.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.leads.formMembers(activeOrganizationId)`
+ *
+ * @returns Query result containing member select options.
+ */
 export function useOrganizationMembersQuery() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
@@ -418,6 +458,19 @@ export function useOrganizationMembersQuery() {
   });
 }
 
+/**
+ * Aggregates leads query state and core lead mutations for the active organization.
+ *
+ * React Query state managed:
+ * - Leads list query keyed by organization + serialized filters.
+ * - Create/update/delete mutation lifecycle for lead entities.
+ *
+ * Side effects:
+ * - Delete mutation invalidates the organization leads base key on success.
+ *
+ * @param filters Optional server-side list filters and pagination/sort settings.
+ * @returns Organization context, leads query, and create/update/delete mutation objects.
+ */
 export function useLeads(filters?: LeadsQueryFilters) {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);

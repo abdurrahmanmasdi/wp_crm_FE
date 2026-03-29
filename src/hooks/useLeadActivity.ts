@@ -18,10 +18,16 @@ type LeadAttachmentRecord = {
   created_at: string;
 };
 
+/**
+ * Payload used to create a new lead note.
+ */
 export type CreateLeadNotePayload = {
   content: string;
 };
 
+/**
+ * Payload used to create a new lead attachment record.
+ */
 export type CreateLeadAttachmentPayload = {
   file_name: string;
   file_url: string;
@@ -218,6 +224,16 @@ async function createLeadAttachment(
   return normalized;
 }
 
+/**
+ * Loads lead notes for a specific lead in an organization.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.leads.notes(orgId, leadId)`
+ *
+ * @param orgId Organization ID that owns the lead.
+ * @param leadId Lead ID whose notes are requested.
+ * @returns Query result for normalized lead notes ordered by newest first.
+ */
 export function useLeadNotesQuery(orgId: string | null, leadId: string | null) {
   return useQuery({
     queryKey: queryKeys.leads.notes(orgId, leadId),
@@ -226,6 +242,14 @@ export function useLeadNotesQuery(orgId: string | null, leadId: string | null) {
   });
 }
 
+/**
+ * Creates lead notes and refreshes the notes query cache.
+ *
+ * Side effects:
+ * - Invalidates `queryKeys.leads.notes(orgId, leadId)` after successful creation.
+ *
+ * @returns Mutation object for creating lead notes.
+ */
 export function useCreateLeadNoteMutation() {
   const queryClient = useQueryClient();
 
@@ -247,6 +271,16 @@ export function useCreateLeadNoteMutation() {
   });
 }
 
+/**
+ * Loads lead attachments for a specific lead in an organization.
+ *
+ * React Query state managed:
+ * - Query key: `queryKeys.leads.attachments(orgId, leadId)`
+ *
+ * @param orgId Organization ID that owns the lead.
+ * @param leadId Lead ID whose attachments are requested.
+ * @returns Query result for normalized lead attachments ordered by newest first.
+ */
 export function useLeadAttachmentsQuery(
   orgId: string | null,
   leadId: string | null
@@ -258,6 +292,14 @@ export function useLeadAttachmentsQuery(
   });
 }
 
+/**
+ * Creates lead attachments and refreshes the attachments query cache.
+ *
+ * Side effects:
+ * - Invalidates `queryKeys.leads.attachments(orgId, leadId)` after successful creation.
+ *
+ * @returns Mutation object for creating lead attachment records.
+ */
 export function useCreateLeadAttachmentMutation() {
   const queryClient = useQueryClient();
 

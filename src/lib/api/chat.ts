@@ -6,9 +6,11 @@ import {
 } from '@/lib/chat.service';
 
 /**
- * Get all conversations for the current user
- * Automatically includes x-organization-id header from interceptor
- * @returns Promise containing array of conversations
+ * Fetches the authenticated user's conversation list for the active organization.
+ *
+ * Endpoint: `GET /chat/conversations`
+ *
+ * @returns A promise that resolves to the conversation array returned by the API `data` envelope.
  */
 export const getConversations = async () => {
   const response = await api.get<ConversationsResponse>('/chat/conversations');
@@ -16,11 +18,14 @@ export const getConversations = async () => {
 };
 
 /**
- * Get messages for a specific conversation
- * @param conversationId - The UUID of the conversation
- * @param cursor - Optional cursor (message id) for loading older messages
- * @param limit - Page size for cursor pagination
- * @returns Promise containing array of messages
+ * Fetches paginated messages for a conversation using cursor-based pagination.
+ *
+ * Endpoint: `GET /chat/conversations/:conversationId/messages`
+ *
+ * @param conversationId The UUID of the conversation whose messages should be loaded.
+ * @param cursor Optional message ID cursor used to request older messages.
+ * @param limit Maximum number of messages to return in a single request.
+ * @returns A promise that resolves to the messages array returned by the API `data` envelope.
  */
 export const getConversationMessages = async (
   conversationId: string,
@@ -41,9 +46,12 @@ export const getConversationMessages = async (
 };
 
 /**
- * Create a new 1-on-1 conversation with a target user
- * @param targetUserId - The UUID of the user to start a conversation with
- * @returns Promise containing the created conversation
+ * Creates a new direct (1:1) conversation with a target user.
+ *
+ * Endpoint: `POST /chat/conversations`
+ *
+ * @param targetUserId The UUID of the user to start a conversation with.
+ * @returns A promise that resolves to the created conversation from the API `data` envelope.
  */
 export const createConversation = async (
   targetUserId: string
@@ -58,9 +66,12 @@ export const createConversation = async (
 };
 
 /**
- * Create a new group conversation
- * @param payload - Object containing group name and participant IDs
- * @returns Promise containing the created conversation
+ * Creates a new group conversation with a name and participant IDs.
+ *
+ * Endpoint: `POST /chat/groups`
+ *
+ * @param payload Group payload containing `name` and `participantIds`.
+ * @returns A promise that resolves to the created conversation from the API `data` envelope.
  */
 export const createGroupConversation = async (payload: {
   name: string;
