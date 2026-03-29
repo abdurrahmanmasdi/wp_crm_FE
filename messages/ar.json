@@ -406,6 +406,8 @@
     "loadingMessages": "جاري تحميل الرسائل...",
     "failedLoadMessages": "تعذر تحميل الرسائل",
     "refreshPage": "يرجى تحديث الصفحة ثم المحاولة مرة أخرى",
+    "loadOlderMessages": "تحميل الرسائل الأقدم",
+    "loadingOlderMessages": "جار تحميل الرسائل الأقدم...",
     "startConversationPrompt": "لا توجد رسائل بعد. ابدأ المحادثة الآن!",
     "connecting": "جار الاتصال بخادم الدردشة...",
     "typeMessage": "اكتب رسالة...",

@@ -19,6 +19,8 @@ type AuthStore = {
   activeOrganizationId: string | null;
   permissions: string[] | null; // null = not fetched, [] = fetched but no access
   _hasHydrated: boolean;
+  isInitialized: boolean;
+  isLoading: boolean;
   setAuth: (user: AuthUserState | null) => void;
   setUser: (user: AuthUserState | null) => void;
   setActiveOrganizationId: (activeOrganizationId: string | null) => void;
@@ -26,6 +28,8 @@ type AuthStore = {
   clearPermissions: () => void;
   clearAuthState: () => void;
   setHasHydrated: (state: boolean) => void;
+  startInitialization: () => void;
+  finishInitialization: () => void;
   logout: () => void;
 };
 
@@ -36,6 +40,8 @@ export const useAuthStore = create<AuthStore>()(
       activeOrganizationId: null,
       permissions: null,
       _hasHydrated: false,
+      isInitialized: false,
+      isLoading: true,
       setAuth: (user) => set({ user }),
       setUser: (user) => set({ user }),
       setActiveOrganizationId: (activeOrganizationId) =>
@@ -44,16 +50,36 @@ export const useAuthStore = create<AuthStore>()(
       clearPermissions: () => set({ permissions: null }),
       clearAuthState: () => {
         Cookies.remove('access_token', accessTokenCookieAttributes);
-        set({ user: null, activeOrganizationId: null, permissions: null });
+        set({
+          user: null,
+          activeOrganizationId: null,
+          permissions: null,
+          isInitialized: true,
+          isLoading: false,
+        });
       },
       setHasHydrated: (state) => set({ _hasHydrated: state }),
+      startInitialization: () => set({ isInitialized: false, isLoading: true }),
+      finishInitialization: () =>
+        set({ isInitialized: true, isLoading: false }),
       logout: () => {
         Cookies.remove('access_token', accessTokenCookieAttributes);
-        set({ user: null, activeOrganizationId: null, permissions: null });
+        set({
+          user: null,
+          activeOrganizationId: null,
+          permissions: null,
+          isInitialized: true,
+          isLoading: false,
+        });
       },
     }),
     {
       name: 'tourcrm-auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        activeOrganizationId: state.activeOrganizationId,
+        permissions: state.permissions,
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

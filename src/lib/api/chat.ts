@@ -18,11 +18,24 @@ export const getConversations = async () => {
 /**
  * Get messages for a specific conversation
  * @param conversationId - The UUID of the conversation
+ * @param cursor - Optional cursor (message id) for loading older messages
+ * @param limit - Page size for cursor pagination
  * @returns Promise containing array of messages
  */
-export const getConversationMessages = async (conversationId: string) => {
+export const getConversationMessages = async (
+  conversationId: string,
+  cursor?: string,
+  limit = 50
+) => {
+  const params: { cursor?: string; limit: number } = { limit };
+
+  if (cursor) {
+    params.cursor = cursor;
+  }
+
   const response = await api.get<MessagesResponse>(
-    `/chat/conversations/${conversationId}/messages`
+    `/chat/conversations/${conversationId}/messages`,
+    { params }
   );
   return response.data.data;
 };

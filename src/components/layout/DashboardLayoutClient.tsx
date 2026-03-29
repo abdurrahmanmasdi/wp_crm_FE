@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
@@ -22,26 +21,16 @@ export function DashboardLayoutClient({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const router = useRouter();
   const locale = useLocale();
   const isRTL = locale === 'ar';
-  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
   const user = useAuthStore((state) => state.user);
   const permissions = useAuthStore((state) => state.permissions);
   const setPermissions = useAuthStore((state) => state.setPermissions);
-
-  useEffect(() => {
-    if (!_hasHydrated || user == null) {
-      return;
-    }
-
-    if (!activeOrganizationId) {
-      router.push('/onboarding');
-    }
-  }, [_hasHydrated, activeOrganizationId, user, router]);
 
   /**
    * Fetch permissions for the active organization if not yet cached
@@ -68,7 +57,8 @@ export function DashboardLayoutClient({
   }, [activeOrganizationId, permissions, setPermissions]);
 
   if (
-    !_hasHydrated ||
+    !isInitialized ||
+    isLoading ||
     user == null ||
     !activeOrganizationId ||
     permissions === null

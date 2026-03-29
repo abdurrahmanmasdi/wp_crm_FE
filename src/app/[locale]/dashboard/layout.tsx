@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { type ReactNode } from 'react';
 
+import { AuthRouteGuard } from '@/components/auth/AuthRouteGuard';
 import { DashboardLayoutClient } from '@/components/layout/DashboardLayoutClient';
 
 export default async function DashboardLayout({
@@ -15,5 +16,9 @@ export default async function DashboardLayout({
     redirect('/auth/login');
   }
 
-  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
+  return (
+    <AuthRouteGuard scope="dashboard" loadingLabel="Loading your dashboard...">
+      <DashboardLayoutClient>{children}</DashboardLayoutClient>
+    </AuthRouteGuard>
+  );
 }

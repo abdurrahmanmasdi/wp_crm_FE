@@ -413,6 +413,8 @@
     "loadingMessages": "Mesajlar yükleniyor...",
     "failedLoadMessages": "Mesajlar yüklenemedi",
     "refreshPage": "Lütfen sayfayı yenileyip tekrar deneyin",
+    "loadOlderMessages": "Eski mesajları yükle",
+    "loadingOlderMessages": "Eski mesajlar yükleniyor...",
     "startConversationPrompt": "Henüz mesaj yok. Sohbeti başlatın!",
     "connecting": "Sohbet sunucusuna bağlanılıyor...",
     "typeMessage": "Bir mesaj yazın...",

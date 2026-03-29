@@ -406,6 +406,8 @@
     "loadingMessages": "Loading messages...",
     "failedLoadMessages": "Failed to load messages",
     "refreshPage": "Please try refreshing the page",
+    "loadOlderMessages": "Load older messages",
+    "loadingOlderMessages": "Loading older messages...",
     "startConversationPrompt": "No messages yet. Start the conversation!",
     "connecting": "Connecting to chat server...",
     "typeMessage": "Type a message...",

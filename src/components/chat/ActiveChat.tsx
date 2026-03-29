@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { type Message } from '@/lib/chat.service';
 import { useChatSocket } from '@/providers/ChatSocketProvider';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useChatHistoryQuery } from '@/hooks/useChat';
+import {
+  conversationMessagesQueryKey,
+  useChatHistoryQuery,
+} from '@/hooks/useChat';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,11 +26,12 @@ interface ActiveChatProps {
  */
 export function ActiveChat({ conversationId }: ActiveChatProps) {
   const t = useTranslations('Chat');
-  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
+  const queryClient = useQueryClient();
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasAutoScrolledRef = useRef<string | null>(null);
 
   // Get current user from auth store
   const currentUserId = useAuthStore((state) => state.user?.id);
@@ -38,26 +43,43 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
    * Fetch historical messages for the conversation
    */
   const {
-    data: messagesData,
+    data,
     isLoading,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useChatHistoryQuery(conversationId);
 
-  /**
-   * Sync historical messages when data loads
-   */
-  useEffect(() => {
-    if (messagesData) {
-      setLiveMessages(messagesData);
-    }
-  }, [messagesData]);
+  const pagedMessages = useMemo(
+    () => data?.pages.flatMap((page) => page) ?? [],
+    [data?.pages]
+  );
+
+  // API returns newest-first; reverse for chat rendering (oldest at top, newest at bottom).
+  const messages = useMemo(() => [...pagedMessages].reverse(), [pagedMessages]);
 
   /**
    * Auto-scroll to bottom when new messages arrive
    */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [liveMessages]);
+    if (messages.length === 0) {
+      return;
+    }
+
+    if (hasAutoScrolledRef.current === conversationId) {
+      return;
+    }
+
+    hasAutoScrolledRef.current = conversationId;
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    });
+  }, [conversationId, messages.length]);
+
+  useEffect(() => {
+    hasAutoScrolledRef.current = null;
+  }, [conversationId]);
 
   /**
    * Setup WebSocket listeners for real-time messages
@@ -73,8 +95,36 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
 
     // Listen for new messages
     const handleNewMessage = (message: Message) => {
+      if (message.conversation_id !== conversationId) {
+        return;
+      }
+
       console.log('[ActiveChat] New message received:', message);
-      setLiveMessages((prev) => [...prev, message]);
+      queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
+        conversationMessagesQueryKey(conversationId),
+        (previousData) => {
+          if (!previousData) {
+            return {
+              pages: [[message]],
+              pageParams: [undefined],
+            };
+          }
+
+          const firstPage = previousData.pages[0] ?? [];
+          if (firstPage.some((item) => item.id === message.id)) {
+            return previousData;
+          }
+
+          return {
+            ...previousData,
+            pages: [[message, ...firstPage], ...previousData.pages.slice(1)],
+          };
+        }
+      );
+
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
     };
 
     socket.on('new_message', handleNewMessage);
@@ -87,7 +137,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
       socket.emit('leave_conversation', { conversationId });
       console.log(`[ActiveChat] Left conversation: ${conversationId}`);
     };
-  }, [socket, isConnected, conversationId]);
+  }, [socket, isConnected, conversationId, queryClient]);
 
   /**
    * Handle sending a new message
@@ -177,12 +227,33 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
       {/* Messages Container */}
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex flex-col gap-4 p-4">
-          {liveMessages.length === 0 ? (
+          {hasNextPage ? (
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('loadingOlderMessages')}
+                  </>
+                ) : (
+                  t('loadOlderMessages')
+                )}
+              </Button>
+            </div>
+          ) : null}
+
+          {messages.length === 0 ? (
             <div className="text-muted-foreground flex h-full items-center justify-center">
               <p className="text-sm">{t('startConversationPrompt')}</p>
             </div>
           ) : (
-            liveMessages.map((message) => {
+            messages.map((message) => {
               const isOwn = message.sender_id === currentUserId;
               return (
                 <div
@@ -223,7 +294,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
                           : 'bg-muted text-muted-foreground'
                       }`}
                     >
-                      <p className="max-w-md text-sm break-words">
+                      <p className="max-w-md text-sm wrap-break-word">
                         {message.content}
                       </p>
                     </div>
@@ -255,7 +326,11 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
           <Button
             type="submit"
             disabled={
-              !messageInput.trim() || !isConnected || isSending || isLoading
+              !messageInput.trim() ||
+              !isConnected ||
+              isSending ||
+              isLoading ||
+              isFetchingNextPage
             }
             size="icon"
           >

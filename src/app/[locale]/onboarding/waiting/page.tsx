@@ -1,13 +1,13 @@
 'use client';
 
 import { Clock3 } from 'lucide-react';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import { MembershipStatus } from '@/types/enums';
@@ -30,10 +30,6 @@ function getMemberships(data: unknown): OrganizationMembership[] {
   return [];
 }
 
-function getOrganizationId(membership: OrganizationMembership) {
-  return membership.organization_id ?? membership.organization?.id ?? null;
-}
-
 function getMembershipId(membership: OrganizationMembership | null) {
   return membership?.membership_id ?? null;
 }
@@ -42,15 +38,10 @@ export default function WaitingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const t = useTranslations('Onboarding.Waiting');
-  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const activeOrganizationId = useAuthStore(
-    (state) => state.activeOrganizationId
-  );
-  const setActiveOrganizationId = useAuthStore(
-    (state) => state.setActiveOrganizationId
-  );
 
   const membershipsQuery = useQuery({
     queryKey: ['my-memberships'],
@@ -59,7 +50,7 @@ export default function WaitingPage() {
       return response.data;
     },
     refetchInterval: 5000,
-    enabled: _hasHydrated && user != null,
+    enabled: isInitialized && !isLoading && user != null,
   });
 
   const pendingMembershipId = getMembershipId(
@@ -82,67 +73,15 @@ export default function WaitingPage() {
     },
   });
 
-  useEffect(() => {
-    if (!_hasHydrated) {
-      return;
-    }
-
-    if (user == null) {
-      router.push('/auth/login');
-      return;
-    }
-
-    if (activeOrganizationId) {
-      router.push('/dashboard');
-    }
-  }, [_hasHydrated, activeOrganizationId, router, user]);
-
-  useEffect(() => {
-    if (!_hasHydrated || membershipsQuery.isLoading) {
-      return;
-    }
-
-    const memberships = getMemberships(membershipsQuery.data);
-
-    if (memberships.length === 0) {
-      router.push('/onboarding');
-      return;
-    }
-
-    const activeMembership = memberships.find(
-      (membership) => membership.status === MembershipStatus.ACTIVE
-    );
-
-    if (activeMembership) {
-      const organizationId = getOrganizationId(activeMembership);
-
-      if (organizationId) {
-        setActiveOrganizationId(organizationId);
-      }
-
-      router.push('/dashboard');
-      return;
-    }
-
-    const hasPendingApproval = memberships.some(
-      (membership) => membership.status === MembershipStatus.PENDING
-    );
-
-    if (!hasPendingApproval) {
-      router.push('/onboarding');
-    }
-  }, [
-    _hasHydrated,
-    membershipsQuery.data,
-    membershipsQuery.isLoading,
-    router,
-    setActiveOrganizationId,
-  ]);
-
-  if (!_hasHydrated || user == null || activeOrganizationId) {
+  if (
+    !isInitialized ||
+    isLoading ||
+    user == null ||
+    membershipsQuery.isLoading
+  ) {
     return (
       <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-6">
-        <div className="border-primary/30 border-t-primary h-10 w-10 animate-spin rounded-full border-2" />
+        <LoadingSpinner />
       </main>
     );
   }

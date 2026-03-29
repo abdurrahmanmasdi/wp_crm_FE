@@ -8,21 +8,24 @@ import { useAuthStore } from '@/store/useAuthStore';
 /**
  * AuthInitializer Component
  *
- * Fetches the current user's profile on app startup and optionally fetches permissions
- * for the active organization if available.
+ * Fetches the current user's profile once on app startup after persisted auth state
+ * finishes hydration.
  *
  * This ensures:
  * 1. Fresh user data after browser refresh
- * 2. Updated permissions based on active organization context
- * 3. Consistent state across tab/window navigation
+ * 2. A strict `isInitialized=false` window while `/users/me` is in flight
+ * 3. Consistent auth bootstrap state for route guards
  */
 export function AuthInitializer() {
-  const activeOrganizationId = useAuthStore(
-    (state) => state.activeOrganizationId
-  );
   const setAuth = useAuthStore((state) => state.setAuth);
   const clearAuthState = useAuthStore((state) => state.clearAuthState);
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const startInitialization = useAuthStore(
+    (state) => state.startInitialization
+  );
+  const finishInitialization = useAuthStore(
+    (state) => state.finishInitialization
+  );
 
   useEffect(() => {
     // Wait for Zustand hydration to complete
@@ -30,45 +33,51 @@ export function AuthInitializer() {
       return;
     }
 
-    // Check if we have a valid access token
-    const token = Cookies.get('access_token');
-    if (!token) {
-      clearAuthState();
-      return;
-    }
+    let isMounted = true;
 
-    // Fetch user data and optionally permissions
+    // Fetch user data once after hydration to establish auth state.
     const initializeAuth = async () => {
-      try {
-        // Get user profile
-        const userResponse = await authService.me();
-        let userData = userResponse.data;
+      startInitialization();
 
-        // If we have an active organization, fetch its permissions
-        if (activeOrganizationId) {
-          try {
-            const permissionsResponse =
-              await authService.getPermissions(activeOrganizationId);
-            userData = {
-              ...userData,
-              permissions: permissionsResponse.data.permissions,
-            };
-          } catch {
-            // If permissions fetch fails, continue with user data (permissions will be empty)
-            // This prevents blocking user initialization if permission fetch fails
-          }
+      const token = Cookies.get('access_token');
+      if (!token) {
+        if (isMounted) {
+          clearAuthState();
+          finishInitialization();
         }
+        return;
+      }
 
-        // Save the entire response (including permissions if available) to Zustand
-        setAuth(userData);
+      try {
+        const userResponse = await authService.me();
+
+        if (isMounted) {
+          setAuth(userResponse.data);
+        }
       } catch {
-        // If /users/me fails (e.g., token expired), clear all auth state.
-        clearAuthState();
+        if (isMounted) {
+          // If /users/me fails (e.g., token expired), clear all auth state.
+          clearAuthState();
+        }
+      } finally {
+        if (isMounted) {
+          finishInitialization();
+        }
       }
     };
 
     initializeAuth();
-  }, [_hasHydrated, activeOrganizationId, setAuth, clearAuthState]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    _hasHydrated,
+    setAuth,
+    clearAuthState,
+    startInitialization,
+    finishInitialization,
+  ]);
 
   // This component doesn't render anything
   return null;
