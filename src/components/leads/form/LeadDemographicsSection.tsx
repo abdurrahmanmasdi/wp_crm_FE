@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { SearchableSelect } from '@/components/ui/searchable-select';
+import { SharedSearchableSelectField } from '@/components/ui/form-controls/SharedSearchableSelectField';
 import {
   COMMON_ISO_COUNTRIES,
   MAJOR_TIMEZONES,
@@ -87,7 +87,7 @@ export function LeadDemographicsSection({
 
   return (
     <>
-      <SearchableSelect
+      <SharedSearchableSelectField
         control={control}
         name="country"
         label={t('form.fields.country.label')}
@@ -98,7 +98,7 @@ export function LeadDemographicsSection({
         disabled={disabled}
       />
 
-      <SearchableSelect
+      <SharedSearchableSelectField
         control={control}
         name="timezone"
         label={t('form.fields.timezone.label')}
@@ -110,7 +110,7 @@ export function LeadDemographicsSection({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <SearchableSelect
+        <SharedSearchableSelectField
           control={control}
           name="primary_language"
           label={t('form.fields.primary_language.label')}
@@ -121,7 +121,7 @@ export function LeadDemographicsSection({
           disabled={disabled}
         />
 
-        <SearchableSelect
+        <SharedSearchableSelectField
           control={control}
           name="preferred_language"
           label={t('form.fields.preferred_language.label')}

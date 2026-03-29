@@ -44,6 +44,8 @@ export type Lead = {
   updated_at: string;
 };
 
+export type LeadWithRelations = Lead;
+
 export type LeadsQueryFilters = {
   page?: number;
   limit?: number;

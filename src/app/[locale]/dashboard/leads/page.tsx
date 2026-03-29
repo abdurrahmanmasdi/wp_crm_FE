@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Download, LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,15 +9,12 @@ import { toast } from 'sonner';
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
 import { LeadsKanbanBoard } from '@/components/leads/board/LeadsKanbanBoard';
-import { ImportLeadsModal } from '@/components/leads/ImportLeadsModal';
 import {
-  LeadFiltersBar,
   parseLeadFiltersParam,
   serializeLeadFiltersParam,
   type LeadFilterRule,
 } from '@/components/leads/filters';
 import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
@@ -334,33 +331,6 @@ export default function LeadsPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <LeadFiltersBar
-                className="min-w-0 flex-1"
-                initialRules={initialRules}
-                onRulesChange={handleRulesChange}
-              />
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void handleExportCsv()}
-                disabled={isExporting || leadsQuery.isLoading}
-              >
-                <Download className="h-4 w-4" />
-                {isExporting ? t('export.loading') : t('export.button')}
-              </Button>
-
-              <RequirePermission
-                resource={AppResource.LEADS}
-                action={AppAction.CREATE}
-                fallback="disable"
-              >
-                <ImportLeadsModal
-                  organizationId={organizationId}
-                  disabled={leadsQuery.isLoading}
-                />
-              </RequirePermission>
-
               <RequirePermission
                 resource={AppResource.LEADS}
                 action={AppAction.CREATE}
@@ -379,6 +349,11 @@ export default function LeadsPage() {
               leads={leads}
               isLoading={leadsQuery.isLoading}
               error={leadsQuery.error}
+              organizationId={organizationId}
+              initialRules={initialRules}
+              onRulesChange={handleRulesChange}
+              onExportCsv={handleExportCsv}
+              isExporting={isExporting}
               deletingLeadId={deletingLeadId}
               onDeleteLead={handleDeleteLead}
               pagination={paginationMeta}

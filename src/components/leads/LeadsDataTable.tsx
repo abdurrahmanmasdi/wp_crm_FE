@@ -1,10 +1,12 @@
 'use client';
+'use no memo';
 
 import { useMemo, useState } from 'react';
 import {
-  type ColumnDef,
   getCoreRowModel,
+  getFilteredRowModel,
   type OnChangeFn,
+  type RowSelectionState,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table';
@@ -17,7 +19,6 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -34,25 +35,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -71,21 +57,31 @@ import {
 import { usePermissions } from '@/hooks/usePermissions';
 import { getErrorMessage } from '@/lib/error-utils';
 import type {
-  Lead,
+  LeadsMeta,
   LeadSortBy,
   LeadSortDir,
-  LeadsMeta,
   LeadStatus,
+  LeadWithRelations,
 } from '@/types/leads';
 
 import { EditLeadSheet } from './EditLeadSheet';
 import { LeadDetailSheet } from './LeadDetailSheet';
+import type { LeadFilterRule } from './filters';
+import { LeadsBulkActionBar } from './table/LeadsBulkActionBar';
+import { leadsColumns } from './table/columns';
+import { LeadsTablePagination } from './table/LeadsTablePagination';
+import { LeadsTableToolbar } from './table/LeadsTableToolbar';
 
 type LeadsDataTableProps = {
-  leads: Lead[];
+  leads: LeadWithRelations[];
   isLoading: boolean;
   error: unknown;
-  onDeleteLead: (lead: Lead) => void;
+  organizationId: string;
+  initialRules: LeadFilterRule[];
+  onRulesChange: (rules: LeadFilterRule[]) => void;
+  onExportCsv: () => void | Promise<void>;
+  isExporting: boolean;
+  onDeleteLead: (lead: LeadWithRelations) => void;
   deletingLeadId: string | null;
   pagination: LeadsMeta;
   onPageChange: (page: number) => void;
@@ -96,8 +92,6 @@ type LeadsDataTableProps = {
 };
 
 const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
-const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
-const UNASSIGNED_AGENT_VALUE = '__unassigned__';
 
 function getPriorityBadgeClass(priority: string): string {
   switch (priority) {
@@ -184,31 +178,15 @@ function getAgentDisplayName(label: string): string {
   return label.split(' (')[0] || label;
 }
 
-function getVisiblePageNumbers(
-  currentPage: number,
-  totalPages: number
-): number[] {
-  const maxVisiblePages = 5;
-
-  if (totalPages <= maxVisiblePages) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const halfWindow = Math.floor(maxVisiblePages / 2);
-  let start = Math.max(1, currentPage - halfWindow);
-  const end = Math.min(totalPages, start + maxVisiblePages - 1);
-
-  if (end - start + 1 < maxVisiblePages) {
-    start = Math.max(1, end - maxVisiblePages + 1);
-  }
-
-  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-}
-
 export function LeadsDataTable({
   leads,
   isLoading,
   error,
+  organizationId,
+  initialRules,
+  onRulesChange,
+  onExportCsv,
+  isExporting,
   onDeleteLead,
   deletingLeadId,
   pagination,
@@ -224,11 +202,16 @@ export function LeadsDataTable({
   const leadSourcesQuery = useLeadSourcesQuery();
   const updateLeadMutation = useUpdateLeadMutation();
   const bulkUpdateLeadsMutation = useBulkUpdateLeadsMutation();
-  const [editingLead, setEditingLead] = useState<Lead | null>(null);
-  const [viewingLead, setViewingLead] = useState<Lead | null>(null);
+  const [editingLead, setEditingLead] = useState<LeadWithRelations | null>(
+    null
+  );
+  const [viewingLead, setViewingLead] = useState<LeadWithRelations | null>(
+    null
+  );
   const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
   const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState('');
 
   const sortingState = useMemo<SortingState>(() => {
     if (!sortBy || !sortDir) {
@@ -242,32 +225,6 @@ export function LeadsDataTable({
       },
     ];
   }, [sortBy, sortDir]);
-
-  const sortingColumns = useMemo<ColumnDef<Lead>[]>(
-    () => [
-      {
-        id: 'first_name',
-        accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-      },
-      {
-        id: 'status',
-        accessorKey: 'status',
-      },
-      {
-        id: 'priority',
-        accessorKey: 'priority',
-      },
-      {
-        id: 'estimated_value',
-        accessorKey: 'estimated_value',
-      },
-      {
-        id: 'created_at',
-        accessorKey: 'created_at',
-      },
-    ],
-    []
-  );
 
   const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
     const nextSorting =
@@ -287,12 +244,18 @@ export function LeadsDataTable({
 
   const table = useReactTable({
     data: leads,
-    columns: sortingColumns,
+    columns: leadsColumns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     manualSorting: true,
+    enableRowSelection: true,
     onSortingChange: handleSortingChange,
+    onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting: sortingState,
+      rowSelection,
+      globalFilter,
     },
   });
 
@@ -326,34 +289,10 @@ export function LeadsDataTable({
       ? updateLeadMutation.variables.leadId
       : null;
 
-  const currentLimit = pagination.limit > 0 ? pagination.limit : 20;
-  const totalRows = Math.max(0, pagination.total);
-  const totalPagesFromMeta =
-    pagination.totalPages > 0
-      ? pagination.totalPages
-      : totalRows > 0
-        ? Math.ceil(totalRows / currentLimit)
-        : 1;
-  const totalPages = Math.max(1, totalPagesFromMeta);
-  const currentPage = Math.min(Math.max(1, pagination.page), totalPages);
-  const pageNumbers = useMemo(
-    () => getVisiblePageNumbers(currentPage, totalPages),
-    [currentPage, totalPages]
-  );
-
-  const visibleFrom =
-    totalRows === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
-  const visibleTo =
-    totalRows === 0 ? 0 : Math.min(currentPage * currentLimit, totalRows);
-
-  const selectedLeadIds = useMemo(
-    () => leads.filter((lead) => rowSelection[lead.id]).map((lead) => lead.id),
-    [leads, rowSelection]
-  );
-  const selectedRowsCount = selectedLeadIds.length;
-  const allRowsSelected =
-    leads.length > 0 && selectedRowsCount === leads.length;
-  const someRowsSelected = selectedRowsCount > 0 && !allRowsSelected;
+  const tableRows = table.getRowModel().rows;
+  const selectedLeadIds = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original.id);
 
   const handleInlineUpdate = async (
     leadId: string,
@@ -370,7 +309,10 @@ export function LeadsDataTable({
     }
   };
 
-  const handleStatusSelect = async (lead: Lead, status: LeadStatus) => {
+  const handleStatusSelect = async (
+    lead: LeadWithRelations,
+    status: LeadStatus
+  ) => {
     setOpenStatusLeadId(null);
 
     if (lead.status === status) {
@@ -383,7 +325,7 @@ export function LeadsDataTable({
   };
 
   const handleAgentSelect = async (
-    lead: Lead,
+    lead: LeadWithRelations,
     assignedAgentId: string | null
   ) => {
     setOpenAgentLeadId(null);
@@ -404,43 +346,6 @@ export function LeadsDataTable({
     } catch {
       toast.error(t('copyPhoneError'));
     }
-  };
-
-  const handlePageNavigation = (nextPage: number) => {
-    const clampedPage = Math.min(Math.max(nextPage, 1), totalPages);
-
-    if (clampedPage !== currentPage) {
-      onPageChange(clampedPage);
-    }
-  };
-
-  const handleToggleAllRows = (checked: boolean) => {
-    if (!checked) {
-      setRowSelection({});
-      return;
-    }
-
-    const nextSelection: Record<string, boolean> = {};
-    leads.forEach((lead) => {
-      nextSelection[lead.id] = true;
-    });
-
-    setRowSelection(nextSelection);
-  };
-
-  const handleToggleRow = (leadId: string, checked: boolean) => {
-    setRowSelection((previousSelection) => {
-      if (!checked) {
-        const nextSelection = { ...previousSelection };
-        delete nextSelection[leadId];
-        return nextSelection;
-      }
-
-      return {
-        ...previousSelection,
-        [leadId]: true,
-      };
-    });
   };
 
   const handleClearSelection = () => {
@@ -471,15 +376,10 @@ export function LeadsDataTable({
     }
   };
 
-  const handleBulkAgentUpdate = async (assignedAgentIdValue: string) => {
+  const handleBulkAgentUpdate = async (assignedAgentId: string | null) => {
     if (selectedLeadIds.length === 0) {
       return;
     }
-
-    const assignedAgentId =
-      assignedAgentIdValue === UNASSIGNED_AGENT_VALUE
-        ? null
-        : assignedAgentIdValue;
 
     try {
       await bulkUpdateLeadsMutation.mutateAsync({
@@ -546,545 +446,444 @@ export function LeadsDataTable({
     );
   }
 
-  if (leads.length === 0) {
-    return (
-      <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
-        <div className="bg-background w-full rounded-xl border border-dashed border-white/10 p-8 text-center">
-          <p className="text-foreground text-sm font-semibold">
-            {t('emptyTitle')}
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t('emptyDescription')}
-          </p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <>
       <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/5 p-3 shadow-2xl shadow-black/20">
-        <div className="bg-background min-h-0 flex-1 overflow-auto rounded-lg border border-white/5">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/5 hover:bg-transparent">
-                <TableHead className="w-10">
-                  <Checkbox
-                    checked={
-                      allRowsSelected
-                        ? true
-                        : someRowsSelected
-                          ? 'indeterminate'
-                          : false
-                    }
-                    onCheckedChange={(checked) =>
-                      handleToggleAllRows(checked === true)
-                    }
-                    aria-label={t('bulkBar.selectAll')}
-                  />
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => handleSortToggle('first_name')}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {t('tableHeaders.lead')}
-                    {getSortIndicator('first_name')}
-                  </button>
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.source')}
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.assignedTo')}
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => handleSortToggle('priority')}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {t('tableHeaders.priority')}
-                    {getSortIndicator('priority')}
-                  </button>
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => handleSortToggle('status')}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {t('tableHeaders.status')}
-                    {getSortIndicator('status')}
-                  </button>
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => handleSortToggle('estimated_value')}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {t('tableHeaders.estimatedValue')}
-                    {getSortIndicator('estimated_value')}
-                  </button>
-                </TableHead>
-                <TableHead className="text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => handleSortToggle('created_at')}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {t('tableHeaders.createdAt')}
-                    {getSortIndicator('created_at')}
-                  </button>
-                </TableHead>
-                <TableHead className="text-muted-foreground text-right">
-                  {t('tableHeaders.actions')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+        <div className="space-y-4">
+          <LeadsTableToolbar
+            table={table}
+            organizationId={organizationId}
+            initialRules={initialRules}
+            onRulesChange={onRulesChange}
+            onExportCsv={onExportCsv}
+            isExporting={isExporting}
+            isLoading={isLoading}
+          />
 
-            <TableBody>
-              {leads.map((lead) => {
-                const leadName = `${lead.first_name} ${lead.last_name}`.trim();
-                const estimatedValue = formatEstimatedValue(
-                  lead.estimated_value,
-                  lead.currency,
-                  t('notSet')
-                );
-                const createdAt = formatCreatedAt(lead.created_at, t('notSet'));
-                const isDeleting = deletingLeadId === lead.id;
-                const isUpdating = updatingLeadId === lead.id;
+          <div className="rounded-md border border-white/5">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-white/5 hover:bg-transparent">
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        table.getIsAllPageRowsSelected()
+                          ? true
+                          : table.getIsSomePageRowsSelected()
+                            ? 'indeterminate'
+                            : false
+                      }
+                      onCheckedChange={(checked) =>
+                        table.toggleAllPageRowsSelected(checked === true)
+                      }
+                      aria-label={t('bulkBar.selectAll')}
+                    />
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle('first_name')}
+                      className="inline-flex items-center gap-1"
+                    >
+                      {t('tableHeaders.lead')}
+                      {getSortIndicator('first_name')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    {t('tableHeaders.source')}
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    {t('tableHeaders.assignedTo')}
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle('priority')}
+                      className="inline-flex items-center gap-1"
+                    >
+                      {t('tableHeaders.priority')}
+                      {getSortIndicator('priority')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle('status')}
+                      className="inline-flex items-center gap-1"
+                    >
+                      {t('tableHeaders.status')}
+                      {getSortIndicator('status')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle('estimated_value')}
+                      className="inline-flex items-center gap-1"
+                    >
+                      {t('tableHeaders.estimatedValue')}
+                      {getSortIndicator('estimated_value')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => handleSortToggle('created_at')}
+                      className="inline-flex items-center gap-1"
+                    >
+                      {t('tableHeaders.createdAt')}
+                      {getSortIndicator('created_at')}
+                    </button>
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-right">
+                    {t('tableHeaders.actions')}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
 
-                const assignedLabel = lead.assigned_agent_id
-                  ? (agentLabelMap.get(lead.assigned_agent_id) ?? t('notSet'))
-                  : null;
-                const assignedDisplayName = assignedLabel
-                  ? getAgentDisplayName(assignedLabel)
-                  : null;
-                const sourceLabel = lead.source_id
-                  ? sourceLabelMap.get(lead.source_id)
-                  : null;
-
-                return (
-                  <TableRow
-                    key={lead.id}
-                    className="border-white/5 hover:bg-white/5"
-                  >
-                    <TableCell className="w-10">
-                      <Checkbox
-                        checked={Boolean(rowSelection[lead.id])}
-                        onCheckedChange={(checked) =>
-                          handleToggleRow(lead.id, checked === true)
-                        }
-                        aria-label={t('bulkBar.selectLead', {
-                          name: leadName || t('unknownLeadName'),
-                        })}
-                      />
+              <TableBody>
+                {tableRows.length === 0 ? (
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableCell colSpan={9} className="py-10 text-center">
+                      <p className="text-muted-foreground text-sm">
+                        {leads.length === 0
+                          ? t('emptyDescription')
+                          : t('noResultsFound')}
+                      </p>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <p className="text-foreground text-sm font-medium">
-                          {leadName || t('unknownLeadName')}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {lead.email || t('notSet')}
-                        </p>
-                      </div>
-                    </TableCell>
+                  </TableRow>
+                ) : (
+                  tableRows.map((row) => {
+                    const lead = row.original;
+                    const leadName =
+                      `${lead.first_name} ${lead.last_name}`.trim();
+                    const estimatedValue = formatEstimatedValue(
+                      lead.estimated_value,
+                      lead.currency,
+                      t('notSet')
+                    );
+                    const createdAt = formatCreatedAt(
+                      lead.created_at,
+                      t('notSet')
+                    );
+                    const isDeleting = deletingLeadId === lead.id;
+                    const isUpdating = updatingLeadId === lead.id;
 
-                    <TableCell className="text-muted-foreground text-sm">
-                      {sourceLabel ?? t('notSet')}
-                    </TableCell>
+                    const assignedLabel = lead.assigned_agent_id
+                      ? (agentLabelMap.get(lead.assigned_agent_id) ??
+                        t('notSet'))
+                      : null;
+                    const assignedDisplayName = assignedLabel
+                      ? getAgentDisplayName(assignedLabel)
+                      : null;
+                    const sourceLabel = lead.source_id
+                      ? sourceLabelMap.get(lead.source_id)
+                      : null;
 
-                    <TableCell>
-                      {canEditLeads ? (
-                        <Popover
-                          open={openAgentLeadId === lead.id}
-                          onOpenChange={(open) =>
-                            setOpenAgentLeadId(open ? lead.id : null)
-                          }
-                        >
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="group hover:bg-accent flex h-8 w-56 items-center justify-between gap-2 rounded-md px-1.5 text-left"
-                              disabled={isUpdating || membersQuery.isLoading}
-                              aria-label={t('editAction')}
+                    return (
+                      <TableRow
+                        key={row.id}
+                        className="border-white/5 hover:bg-white/5"
+                      >
+                        <TableCell className="w-10">
+                          <Checkbox
+                            checked={row.getIsSelected()}
+                            onCheckedChange={(checked) =>
+                              row.toggleSelected(checked === true)
+                            }
+                            aria-label={t('bulkBar.selectLead', {
+                              name: leadName || t('unknownLeadName'),
+                            })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-0.5">
+                            <p className="text-foreground text-sm font-medium">
+                              {leadName || t('unknownLeadName')}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {lead.email || t('notSet')}
+                            </p>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-muted-foreground text-sm">
+                          {sourceLabel ?? t('notSet')}
+                        </TableCell>
+
+                        <TableCell>
+                          {canEditLeads ? (
+                            <Popover
+                              open={openAgentLeadId === lead.id}
+                              onOpenChange={(open) =>
+                                setOpenAgentLeadId(open ? lead.id : null)
+                              }
                             >
-                              <div className="min-w-0 flex-1">
-                                {assignedDisplayName ? (
-                                  <div className="flex items-center gap-2">
-                                    <Avatar className="h-6 w-6">
-                                      <AvatarFallback className="text-[10px]">
-                                        {toInitials(assignedDisplayName)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-foreground truncate text-xs font-medium">
-                                      {assignedDisplayName}
-                                    </span>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="group hover:bg-accent flex h-8 w-56 items-center justify-between gap-2 rounded-md px-1.5 text-left"
+                                  disabled={
+                                    isUpdating || membersQuery.isLoading
+                                  }
+                                  aria-label={t('editAction')}
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    {assignedDisplayName ? (
+                                      <div className="flex items-center gap-2">
+                                        <Avatar className="h-6 w-6">
+                                          <AvatarFallback className="text-[10px]">
+                                            {toInitials(assignedDisplayName)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-foreground truncate text-xs font-medium">
+                                          {assignedDisplayName}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-muted-foreground text-xs">
+                                        {t('assignAction')}
+                                      </span>
+                                    )}
                                   </div>
-                                ) : (
-                                  <span className="text-muted-foreground text-xs">
-                                    {t('assignAction')}
-                                  </span>
-                                )}
-                              </div>
-                              <Pencil className="text-muted-foreground h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-80" />
-                            </button>
-                          </PopoverTrigger>
+                                  <Pencil className="text-muted-foreground h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-80" />
+                                </button>
+                              </PopoverTrigger>
 
-                          <PopoverContent align="start" className="w-64 p-1">
-                            <div className="max-h-64 space-y-1 overflow-auto">
-                              <button
-                                type="button"
-                                className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
-                                onClick={() =>
-                                  void handleAgentSelect(lead, null)
-                                }
+                              <PopoverContent
+                                align="start"
+                                className="w-64 p-1"
                               >
-                                <span>{t('notSet')}</span>
-                                {!lead.assigned_agent_id ? (
-                                  <Check className="h-4 w-4" />
-                                ) : null}
-                              </button>
-
-                              {(membersQuery.data ?? []).map((agent) => {
-                                const displayName = getAgentDisplayName(
-                                  agent.label
-                                );
-
-                                return (
+                                <div className="max-h-64 space-y-1 overflow-auto">
                                   <button
-                                    key={agent.value}
                                     type="button"
                                     className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
                                     onClick={() =>
-                                      void handleAgentSelect(lead, agent.value)
+                                      void handleAgentSelect(lead, null)
                                     }
                                   >
-                                    <span className="flex items-center gap-2">
-                                      <Avatar className="h-6 w-6">
-                                        <AvatarFallback className="text-[10px]">
-                                          {toInitials(displayName)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <span className="truncate">
-                                        {displayName}
-                                      </span>
-                                    </span>
-                                    {lead.assigned_agent_id === agent.value ? (
+                                    <span>{t('notSet')}</span>
+                                    {!lead.assigned_agent_id ? (
                                       <Check className="h-4 w-4" />
                                     ) : null}
                                   </button>
-                                );
-                              })}
+
+                                  {(membersQuery.data ?? []).map((agent) => {
+                                    const displayName = getAgentDisplayName(
+                                      agent.label
+                                    );
+
+                                    return (
+                                      <button
+                                        key={agent.value}
+                                        type="button"
+                                        className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
+                                        onClick={() =>
+                                          void handleAgentSelect(
+                                            lead,
+                                            agent.value
+                                          )
+                                        }
+                                      >
+                                        <span className="flex items-center gap-2">
+                                          <Avatar className="h-6 w-6">
+                                            <AvatarFallback className="text-[10px]">
+                                              {toInitials(displayName)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <span className="truncate">
+                                            {displayName}
+                                          </span>
+                                        </span>
+                                        {lead.assigned_agent_id ===
+                                        agent.value ? (
+                                          <Check className="h-4 w-4" />
+                                        ) : null}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          ) : assignedDisplayName ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback className="text-[10px]">
+                                  {toInitials(assignedDisplayName)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-foreground text-xs">
+                                {assignedDisplayName}
+                              </span>
                             </div>
-                          </PopoverContent>
-                        </Popover>
-                      ) : assignedDisplayName ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-[10px]">
-                              {toInitials(assignedDisplayName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-foreground text-xs">
-                            {assignedDisplayName}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">
-                          {t('notSet')}
-                        </span>
-                      )}
-                    </TableCell>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">
+                              {t('notSet')}
+                            </span>
+                          )}
+                        </TableCell>
 
-                    <TableCell>
-                      <Badge className={getPriorityBadgeClass(lead.priority)}>
-                        {t(`priority.${lead.priority}` as never)}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>
-                      {canEditLeads ? (
-                        <Popover
-                          open={openStatusLeadId === lead.id}
-                          onOpenChange={(open) =>
-                            setOpenStatusLeadId(open ? lead.id : null)
-                          }
-                        >
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="group hover:bg-accent inline-flex h-8 items-center gap-2 rounded-md px-1.5"
-                              disabled={isUpdating}
-                              aria-label={t('editAction')}
-                            >
-                              <Badge
-                                className={getStatusBadgeClass(lead.status)}
-                              >
-                                {t(`status.${lead.status}` as never)}
-                              </Badge>
-                              <Pencil className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-80" />
-                            </button>
-                          </PopoverTrigger>
-
-                          <PopoverContent align="start" className="w-44 p-1">
-                            <div className="space-y-1">
-                              {statusOptions.map((status) => (
-                                <button
-                                  key={status}
-                                  type="button"
-                                  className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
-                                  onClick={() =>
-                                    void handleStatusSelect(lead, status)
-                                  }
-                                >
-                                  <span>{t(`status.${status}` as never)}</span>
-                                  {lead.status === status ? (
-                                    <Check className="h-4 w-4" />
-                                  ) : null}
-                                </button>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      ) : (
-                        <Badge className={getStatusBadgeClass(lead.status)}>
-                          {t(`status.${lead.status}` as never)}
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="text-foreground text-sm">
-                      {estimatedValue}
-                    </TableCell>
-
-                    <TableCell className="text-muted-foreground text-sm">
-                      {createdAt}
-                    </TableCell>
-
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground hover:bg-white/5"
+                        <TableCell>
+                          <Badge
+                            className={getPriorityBadgeClass(lead.priority)}
                           >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">{t('actions')}</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="bg-card border-white/10"
-                        >
-                          <DropdownMenuItem
-                            className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                            onClick={() => setViewingLead(lead)}
-                          >
-                            <Eye className="mr-2 h-4 w-4" />
-                            {t('viewDetails')}
-                          </DropdownMenuItem>
+                            {t(`priority.${lead.priority}` as never)}
+                          </Badge>
+                        </TableCell>
 
-                          <DropdownMenuSeparator />
-
+                        <TableCell>
                           {canEditLeads ? (
-                            <DropdownMenuItem
-                              className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                              onClick={() => setEditingLead(lead)}
+                            <Popover
+                              open={openStatusLeadId === lead.id}
+                              onOpenChange={(open) =>
+                                setOpenStatusLeadId(open ? lead.id : null)
+                              }
                             >
-                              <Pencil className="mr-2 h-4 w-4" />
-                              {t('editAction')}
-                            </DropdownMenuItem>
-                          ) : null}
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="group hover:bg-accent inline-flex h-8 items-center gap-2 rounded-md px-1.5"
+                                  disabled={isUpdating}
+                                  aria-label={t('editAction')}
+                                >
+                                  <Badge
+                                    className={getStatusBadgeClass(lead.status)}
+                                  >
+                                    {t(`status.${lead.status}` as never)}
+                                  </Badge>
+                                  <Pencil className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-80" />
+                                </button>
+                              </PopoverTrigger>
 
-                          <DropdownMenuItem
-                            className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                            onClick={() => handleCopyPhone(lead.phone_number)}
-                          >
-                            <Copy className="mr-2 h-4 w-4" />
-                            {t('copyPhoneAction')}
-                          </DropdownMenuItem>
+                              <PopoverContent
+                                align="start"
+                                className="w-44 p-1"
+                              >
+                                <div className="space-y-1">
+                                  {statusOptions.map((status) => (
+                                    <button
+                                      key={status}
+                                      type="button"
+                                      className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
+                                      onClick={() =>
+                                        void handleStatusSelect(lead, status)
+                                      }
+                                    >
+                                      <span>
+                                        {t(`status.${status}` as never)}
+                                      </span>
+                                      {lead.status === status ? (
+                                        <Check className="h-4 w-4" />
+                                      ) : null}
+                                    </button>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <Badge className={getStatusBadgeClass(lead.status)}>
+                              {t(`status.${lead.status}` as never)}
+                            </Badge>
+                          )}
+                        </TableCell>
 
-                          {canDeleteLeads ? <DropdownMenuSeparator /> : null}
+                        <TableCell className="text-foreground text-sm">
+                          {estimatedValue}
+                        </TableCell>
 
-                          {canDeleteLeads ? (
-                            <DropdownMenuItem
-                              className="text-destructive cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                              disabled={isDeleting}
-                              onClick={() => onDeleteLead(lead)}
+                        <TableCell className="text-muted-foreground text-sm">
+                          {createdAt}
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-foreground hover:bg-white/5"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">{t('actions')}</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="bg-card border-white/10"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {isDeleting ? t('deleting') : t('deleteLead')}
-                            </DropdownMenuItem>
-                          ) : null}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                              <DropdownMenuItem
+                                className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                                onClick={() => setViewingLead(lead)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                {t('viewDetails')}
+                              </DropdownMenuItem>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 px-1 pt-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-muted-foreground text-xs">
-              {t('pagination.rowsPerPage')}
-            </p>
+                              <DropdownMenuSeparator />
 
-            <Select
-              value={String(currentLimit)}
-              onValueChange={(value) => {
-                const nextLimit = Number(value);
-                if (Number.isFinite(nextLimit)) {
-                  onLimitChange(nextLimit);
-                }
-              }}
-            >
-              <SelectTrigger className="h-8 w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROWS_PER_PAGE_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={String(option)}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                              {canEditLeads ? (
+                                <DropdownMenuItem
+                                  className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                                  onClick={() => setEditingLead(lead)}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  {t('editAction')}
+                                </DropdownMenuItem>
+                              ) : null}
 
-            <p className="text-muted-foreground text-xs">
-              {t('pagination.range', {
-                from: visibleFrom,
-                to: visibleTo,
-                total: totalRows,
-              })}
-            </p>
+                              <DropdownMenuItem
+                                className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                                onClick={() =>
+                                  handleCopyPhone(lead.phone_number)
+                                }
+                              >
+                                <Copy className="mr-2 h-4 w-4" />
+                                {t('copyPhoneAction')}
+                              </DropdownMenuItem>
+
+                              {canDeleteLeads ? (
+                                <DropdownMenuSeparator />
+                              ) : null}
+
+                              {canDeleteLeads ? (
+                                <DropdownMenuItem
+                                  className="text-destructive cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                                  disabled={isDeleting}
+                                  onClick={() => onDeleteLead(lead)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {isDeleting ? t('deleting') : t('deleteLead')}
+                                </DropdownMenuItem>
+                              ) : null}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
           </div>
 
-          <Pagination className="mx-0 w-auto justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handlePageNavigation(currentPage - 1);
-                  }}
-                  className={
-                    currentPage <= 1 ? 'pointer-events-none opacity-50' : ''
-                  }
-                >
-                  {t('pagination.previous')}
-                </PaginationPrevious>
-              </PaginationItem>
-
-              {pageNumbers.map((pageNumber) => (
-                <PaginationItem key={pageNumber}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNumber === currentPage}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      handlePageNavigation(pageNumber);
-                    }}
-                  >
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handlePageNavigation(currentPage + 1);
-                  }}
-                  className={
-                    currentPage >= totalPages
-                      ? 'pointer-events-none opacity-50'
-                      : ''
-                  }
-                >
-                  {t('pagination.next')}
-                </PaginationNext>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <LeadsTablePagination
+            table={table}
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+          />
         </div>
       </section>
 
-      {selectedRowsCount > 0 ? (
-        <div className="bg-background/95 border-border fixed bottom-8 left-1/2 z-50 flex w-[min(92vw,760px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-sm">
-          <p className="text-foreground text-sm font-semibold">
-            {t('bulkBar.selectedCount', { count: selectedRowsCount })}
-          </p>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              onValueChange={(value) => {
-                void handleBulkStatusUpdate(value as LeadStatus);
-              }}
-            >
-              <SelectTrigger
-                className="h-9 w-40"
-                disabled={bulkUpdateLeadsMutation.isPending}
-              >
-                <SelectValue placeholder={t('bulkBar.changeStatus')} />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {t(`status.${status}` as never)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              onValueChange={(value) => {
-                void handleBulkAgentUpdate(value);
-              }}
-            >
-              <SelectTrigger
-                className="h-9 w-44"
-                disabled={
-                  bulkUpdateLeadsMutation.isPending || membersQuery.isLoading
-                }
-              >
-                <SelectValue placeholder={t('bulkBar.assignAgent')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={UNASSIGNED_AGENT_VALUE}>
-                  {t('bulkBar.unassigned')}
-                </SelectItem>
-                {(membersQuery.data ?? []).map((agent) => (
-                  <SelectItem key={agent.value} value={agent.value}>
-                    {getAgentDisplayName(agent.label)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleClearSelection}
-              aria-label={t('bulkBar.clearSelection')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      <LeadsBulkActionBar
+        table={table}
+        isPending={bulkUpdateLeadsMutation.isPending}
+        isAgentsLoading={membersQuery.isLoading}
+        agentOptions={membersQuery.data ?? []}
+        onStatusChange={handleBulkStatusUpdate}
+        onAgentAssign={(agentId) => handleBulkAgentUpdate(agentId || null)}
+        onClear={handleClearSelection}
+      />
 
       <EditLeadSheet
         lead={editingLead}
