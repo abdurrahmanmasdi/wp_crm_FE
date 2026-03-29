@@ -595,6 +595,144 @@ Notes:
 - Possible errors:
   - `404` when lead does not exist in the specified organization.
 
+## Lead Notes API
+
+Base route: `/api/v1/organizations/:organizationId/leads/:leadId/notes`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+PBAC:
+
+- `GET` requires `leads:read` (or hierarchy equivalent such as `leads:manage`).
+- `POST` requires `leads:create` (or hierarchy equivalent).
+- `DELETE` requires `leads:delete` (or hierarchy equivalent).
+
+### GET /api/v1/organizations/:organizationId/leads/:leadId/notes
+
+- Response 200:
+
+```json
+[
+  {
+    "id": "uuid",
+    "lead_id": "uuid",
+    "author_id": "uuid",
+    "content": "Customer asked to call on Thursday.",
+    "created_at": "2026-03-29T11:00:00.000Z",
+    "updated_at": "2026-03-29T11:00:00.000Z",
+    "author": {
+      "id": "uuid",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "created_at": "2026-03-20T08:00:00.000Z"
+    }
+  }
+]
+```
+
+- Sorting:
+  - Ordered by `created_at` descending.
+
+### POST /api/v1/organizations/:organizationId/leads/:leadId/notes
+
+- Body DTO: `CreateLeadNoteDto`
+
+```json
+{
+  "content": "Customer confirmed budget and timeline."
+}
+```
+
+- Response 201:
+  - Returns created lead note including `author` relation.
+
+- Behavior:
+  - `author_id` is always taken from authenticated user.
+  - `lead_id` is always taken from route parameter.
+
+### DELETE /api/v1/organizations/:organizationId/leads/:leadId/notes/:noteId
+
+- Response 204:
+  - No response body.
+
+- Possible errors:
+  - `404` when lead is not found in organization scope.
+  - `404` when note does not belong to the provided lead.
+
+## Lead Attachments API
+
+Base route: `/api/v1/organizations/:organizationId/leads/:leadId/attachments`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+PBAC:
+
+- `GET` requires `leads:read` (or hierarchy equivalent such as `leads:manage`).
+- `POST` requires `leads:create` (or hierarchy equivalent).
+- `DELETE` requires `leads:delete` (or hierarchy equivalent).
+
+### GET /api/v1/organizations/:organizationId/leads/:leadId/attachments
+
+- Response 200:
+
+```json
+[
+  {
+    "id": "uuid",
+    "lead_id": "uuid",
+    "uploaded_by_id": "uuid",
+    "file_url": "https://files.example.com/contracts/contract-v1.pdf",
+    "file_name": "contract-v1.pdf",
+    "created_at": "2026-03-29T11:05:00.000Z",
+    "updated_at": "2026-03-29T11:05:00.000Z",
+    "uploaded_by": {
+      "id": "uuid",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "email": "jane@example.com",
+      "created_at": "2026-03-20T08:00:00.000Z"
+    }
+  }
+]
+```
+
+- Sorting:
+  - Ordered by `created_at` descending.
+
+### POST /api/v1/organizations/:organizationId/leads/:leadId/attachments
+
+- Body DTO: `CreateLeadAttachmentDto`
+
+```json
+{
+  "file_name": "contract-v1.pdf",
+  "file_url": "https://files.example.com/contracts/contract-v1.pdf"
+}
+```
+
+- Response 201:
+  - Returns created lead attachment including `uploaded_by` relation.
+
+- Behavior:
+  - `uploaded_by_id` is always taken from authenticated user.
+  - `lead_id` is always taken from route parameter.
+
+### DELETE /api/v1/organizations/:organizationId/leads/:leadId/attachments/:attachmentId
+
+- Response 204:
+  - No response body.
+
+- Possible errors:
+  - `404` when lead is not found in organization scope.
+  - `404` when attachment does not belong to the provided lead.
+
 ## Pipeline Stages API
 
 Base route: `/api/v1/organizations/:organizationId/pipeline-stages`

@@ -504,6 +504,36 @@
       "values": {
         "unassigned": "Atanmamış",
         "unknown": "Bilinmeyen"
+      },
+      "tabs": {
+        "details": "Detaylar",
+        "notes": "Notlar",
+        "attachments": "Ekler"
+      },
+      "notes": {
+        "inputLabel": "Not ekle",
+        "inputPlaceholder": "Hızlı bir güncelleme yazın...",
+        "save": "Notu Kaydet",
+        "saving": "Kaydediliyor...",
+        "empty": "Henüz not yok",
+        "saved": "Not eklendi"
+      },
+      "attachments": {
+        "linkName": "Bağlantı adı",
+        "url": "URL",
+        "linkNamePlaceholder": "Teklif PDF",
+        "urlPlaceholder": "https://example.com/dosya",
+        "save": "Bağlantıyı Kaydet",
+        "saving": "Kaydediliyor...",
+        "empty": "Henüz ek yok",
+        "saved": "Ek eklendi",
+        "uploadedBy": "Yükleyen: {user}"
+      },
+      "validation": {
+        "noteRequired": "Lütfen önce bir not girin",
+        "linkNameRequired": "Bağlantı adı zorunludur",
+        "urlRequired": "URL zorunludur",
+        "urlInvalid": "Lütfen geçerli bir URL girin"
       }
     },
     "form": {

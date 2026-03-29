@@ -504,6 +504,36 @@
       "values": {
         "unassigned": "غير معيّن",
         "unknown": "غير معروف"
+      },
+      "tabs": {
+        "details": "التفاصيل",
+        "notes": "الملاحظات",
+        "attachments": "المرفقات"
+      },
+      "notes": {
+        "inputLabel": "إضافة ملاحظة",
+        "inputPlaceholder": "اكتب تحديثا سريعا...",
+        "save": "حفظ الملاحظة",
+        "saving": "جار الحفظ...",
+        "empty": "لا توجد ملاحظات بعد",
+        "saved": "تمت إضافة الملاحظة"
+      },
+      "attachments": {
+        "linkName": "اسم الرابط",
+        "url": "الرابط",
+        "linkNamePlaceholder": "ملف العرض PDF",
+        "urlPlaceholder": "https://example.com/file",
+        "save": "حفظ الرابط",
+        "saving": "جار الحفظ...",
+        "empty": "لا توجد مرفقات بعد",
+        "saved": "تمت إضافة المرفق",
+        "uploadedBy": "تم الرفع بواسطة {user}"
+      },
+      "validation": {
+        "noteRequired": "يرجى إضافة ملاحظة أولا",
+        "linkNameRequired": "اسم الرابط مطلوب",
+        "urlRequired": "الرابط مطلوب",
+        "urlInvalid": "يرجى إدخال رابط صالح"
       }
     },
     "form": {

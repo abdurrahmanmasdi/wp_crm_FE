@@ -504,6 +504,36 @@
       "values": {
         "unassigned": "Unassigned",
         "unknown": "Unknown"
+      },
+      "tabs": {
+        "details": "Details",
+        "notes": "Notes",
+        "attachments": "Attachments"
+      },
+      "notes": {
+        "inputLabel": "Add note",
+        "inputPlaceholder": "Write a quick update...",
+        "save": "Save Note",
+        "saving": "Saving...",
+        "empty": "No notes yet",
+        "saved": "Note added"
+      },
+      "attachments": {
+        "linkName": "Link name",
+        "url": "URL",
+        "linkNamePlaceholder": "Proposal PDF",
+        "urlPlaceholder": "https://example.com/document",
+        "save": "Save Link",
+        "saving": "Saving...",
+        "empty": "No attachments yet",
+        "saved": "Attachment added",
+        "uploadedBy": "Uploaded by {user}"
+      },
+      "validation": {
+        "noteRequired": "Please add a note first",
+        "linkNameRequired": "Link name is required",
+        "urlRequired": "URL is required",
+        "urlInvalid": "Please enter a valid URL"
       }
     },
     "form": {
