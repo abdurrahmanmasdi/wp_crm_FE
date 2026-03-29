@@ -428,6 +428,13 @@
     },
     "boardTitle": "Board view is coming soon",
     "boardDescription": "Use list view for now while we ship drag-and-drop pipeline stages.",
+    "board": {
+      "unassigned": "Unassigned",
+      "noLeadsInColumn": "No leads in this column",
+      "expectedValue": "Expected Value",
+      "unassignedAgent": "Unassigned",
+      "dragError": "Failed to move lead. Please try again."
+    },
     "loading": "Loading leads...",
     "loadErrorTitle": "Failed to load leads",
     "emptyTitle": "No leads yet",
@@ -435,6 +442,7 @@
     "unknownLeadName": "Unknown lead",
     "notSet": "Not set",
     "actions": "Actions",
+    "viewDetails": "View Details",
     "deleteLead": "Delete lead",
     "deleting": "Deleting...",
     "deletedSuccess": "Lead deleted successfully",
@@ -476,6 +484,9 @@
         "timezone": "Timezone",
         "primaryLanguage": "Primary language",
         "preferredLanguage": "Preferred language",
+        "pipelineStage": "Pipeline stage",
+        "source": "Lead source",
+        "assignedAgent": "Assigned agent",
         "pipelineStageId": "Pipeline stage ID",
         "sourceId": "Lead source ID",
         "assignedAgentId": "Assigned agent ID",
@@ -486,6 +497,10 @@
         "organizationId": "Organization ID",
         "createdAt": "Created at",
         "updatedAt": "Updated at"
+      },
+      "values": {
+        "unassigned": "Unassigned",
+        "unknown": "Unknown"
       }
     },
     "form": {

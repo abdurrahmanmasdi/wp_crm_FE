@@ -11,6 +11,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  useLeadSourcesQuery,
+  usePipelineStagesQuery,
+} from '@/hooks/useCrmSettings';
+import { useOrganizationMembersQuery } from '@/hooks/useLeads';
 import type { Lead } from '@/types/leads';
 
 type LeadDetailSheetProps = {
@@ -66,6 +71,10 @@ function formatDateTime(value: string | null): string | null {
   }).format(parsedDate);
 }
 
+function getAgentDisplayName(label: string): string {
+  return label.split(' (')[0] || label;
+}
+
 function formatEstimatedValue(value: string, currency: string): string {
   const parsed = Number(value);
 
@@ -93,10 +102,12 @@ function DetailItem({
 }) {
   return (
     <div className="space-y-1">
-      <dt className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {label}
       </dt>
-      <dd className="text-foreground text-sm wrap-break-word">{value}</dd>
+      <dd className="text-foreground text-sm font-semibold wrap-break-word">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -107,6 +118,9 @@ export function LeadDetailSheet({
   onOpenChange,
 }: LeadDetailSheetProps) {
   const t = useTranslations('Leads');
+  const pipelineStagesQuery = usePipelineStagesQuery();
+  const leadSourcesQuery = useLeadSourcesQuery();
+  const membersQuery = useOrganizationMembersQuery();
 
   const leadName = useMemo(() => {
     if (!lead) {
@@ -130,11 +144,52 @@ export function LeadDetailSheet({
     );
   }, [lead]);
 
+  const pipelineStageLabelMap = useMemo(
+    () =>
+      new Map(
+        (pipelineStagesQuery.data ?? []).map((stage) => [stage.id, stage.name])
+      ),
+    [pipelineStagesQuery.data]
+  );
+
+  const leadSourceLabelMap = useMemo(
+    () =>
+      new Map(
+        (leadSourcesQuery.data ?? []).map((source) => [source.id, source.name])
+      ),
+    [leadSourcesQuery.data]
+  );
+
+  const memberLabelMap = useMemo(
+    () =>
+      new Map(
+        (membersQuery.data ?? []).map((member) => [member.value, member.label])
+      ),
+    [membersQuery.data]
+  );
+
   const renderValue = (value: string | null) => value || t('notSet');
 
   if (!lead) {
     return null;
   }
+
+  const unassignedValue = t('detailSheet.values.unassigned');
+  const unknownValue = t('detailSheet.values.unknown');
+
+  const pipelineStageName = lead.pipeline_stage_id
+    ? (pipelineStageLabelMap.get(lead.pipeline_stage_id) ?? unknownValue)
+    : unassignedValue;
+
+  const sourceName = lead.source_id
+    ? (leadSourceLabelMap.get(lead.source_id) ?? unknownValue)
+    : unassignedValue;
+
+  const assignedAgentName = lead.assigned_agent_id
+    ? getAgentDisplayName(
+        memberLabelMap.get(lead.assigned_agent_id) ?? unknownValue
+      )
+    : unassignedValue;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -160,7 +215,7 @@ export function LeadDetailSheet({
             <h3 className="text-foreground mb-3 text-sm font-semibold">
               {t('detailSheet.sections.identity')}
             </h3>
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-4">
               <DetailItem
                 label={t('detailSheet.fields.firstName')}
                 value={renderValue(lead.first_name)}
@@ -184,7 +239,7 @@ export function LeadDetailSheet({
             <h3 className="text-foreground mb-3 text-sm font-semibold">
               {t('detailSheet.sections.contact')}
             </h3>
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-4">
               <DetailItem
                 label={t('detailSheet.fields.email')}
                 value={renderValue(lead.email)}
@@ -222,7 +277,7 @@ export function LeadDetailSheet({
             <h3 className="text-foreground mb-3 text-sm font-semibold">
               {t('detailSheet.sections.localization')}
             </h3>
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-4">
               <DetailItem
                 label={t('detailSheet.fields.country')}
                 value={renderValue(lead.country)}
@@ -246,18 +301,18 @@ export function LeadDetailSheet({
             <h3 className="text-foreground mb-3 text-sm font-semibold">
               {t('detailSheet.sections.sales')}
             </h3>
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-4">
               <DetailItem
-                label={t('detailSheet.fields.pipelineStageId')}
-                value={renderValue(lead.pipeline_stage_id)}
+                label={t('detailSheet.fields.pipelineStage')}
+                value={pipelineStageName}
               />
               <DetailItem
-                label={t('detailSheet.fields.sourceId')}
-                value={renderValue(lead.source_id)}
+                label={t('detailSheet.fields.source')}
+                value={sourceName}
               />
               <DetailItem
-                label={t('detailSheet.fields.assignedAgentId')}
-                value={renderValue(lead.assigned_agent_id)}
+                label={t('detailSheet.fields.assignedAgent')}
+                value={assignedAgentName}
               />
               <DetailItem
                 label={t('detailSheet.fields.estimatedValue')}
@@ -281,7 +336,7 @@ export function LeadDetailSheet({
             <h3 className="text-foreground mb-3 text-sm font-semibold">
               {t('detailSheet.sections.metadata')}
             </h3>
-            <dl className="grid gap-4 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-4">
               <DetailItem
                 label={t('detailSheet.fields.leadId')}
                 value={lead.id}

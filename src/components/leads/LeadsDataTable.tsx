@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Check, Copy, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -406,13 +406,9 @@ export function LeadsDataTable({
                   >
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
-                        <button
-                          type="button"
-                          onClick={() => setViewingLead(lead)}
-                          className="text-primary w-fit text-left text-sm font-medium underline-offset-2 hover:underline"
-                        >
+                        <p className="text-foreground text-sm font-medium">
                           {leadName || t('unknownLeadName')}
-                        </button>
+                        </p>
                         <p className="text-muted-foreground text-xs">
                           {lead.email || t('notSet')}
                         </p>
@@ -607,6 +603,16 @@ export function LeadsDataTable({
                           align="end"
                           className="bg-card border-white/10"
                         >
+                          <DropdownMenuItem
+                            className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
+                            onClick={() => setViewingLead(lead)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" />
+                            {t('viewDetails')}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+
                           {canEditLeads ? (
                             <DropdownMenuItem
                               className="cursor-pointer hover:bg-white/5 focus:bg-white/5"

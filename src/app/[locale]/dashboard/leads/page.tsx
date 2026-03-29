@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
+import { LeadsKanbanBoard } from '@/components/leads/board/LeadsKanbanBoard';
 import {
   LeadFiltersBar,
   parseLeadFiltersParam,
@@ -17,6 +18,7 @@ import {
 import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
+import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useLeads } from '@/hooks/useLeads';
 import { getErrorMessage } from '@/lib/error-utils';
 import type { Lead } from '@/types/leads';
@@ -59,6 +61,7 @@ export default function LeadsPage() {
     page: currentPage,
     limit: currentLimit,
   });
+  const pipelineStagesQuery = usePipelineStagesQuery();
 
   const handleRulesChange = useCallback(
     (rules: LeadFilterRule[]) => {
@@ -236,16 +239,29 @@ export default function LeadsPage() {
             value="board"
             className="mt-0 flex min-h-0 flex-1 flex-col"
           >
-            <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
-              <div className="bg-background flex min-h-0 flex-1 items-center justify-center rounded-xl border border-dashed border-white/10 p-6 text-center">
-                <p className="text-foreground text-sm font-semibold">
-                  {t('boardTitle')}
-                </p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t('boardDescription')}
-                </p>
-              </div>
-            </section>
+            {leadsQuery.isLoading || pipelineStagesQuery.isLoading ? (
+              <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
+                <p className="text-muted-foreground text-sm">{t('loading')}</p>
+              </section>
+            ) : leadsQuery.error || pipelineStagesQuery.error ? (
+              <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
+                <div className="bg-background w-full rounded-xl border border-dashed border-white/10 p-6 text-center">
+                  <p className="text-destructive text-sm font-semibold">
+                    {t('loadErrorTitle')}
+                  </p>
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    {getErrorMessage(
+                      leadsQuery.error ?? pipelineStagesQuery.error
+                    )}
+                  </p>
+                </div>
+              </section>
+            ) : (
+              <LeadsKanbanBoard
+                leads={leads}
+                pipelineStages={pipelineStagesQuery.data ?? []}
+              />
+            )}
           </TabsContent>
         </Tabs>
       )}

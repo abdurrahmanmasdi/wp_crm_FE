@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -47,9 +48,11 @@ export function LeadSourcesSettings() {
   const [createName, setCreateName] = useState('');
   const [createActive, setCreateActive] = useState(true);
 
-  const [editingSource, setEditingSource] = useState<LeadSource | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editActive, setEditActive] = useState(true);
+  const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [editingStatusSourceId, setEditingStatusSourceId] = useState<
+    string | null
+  >(null);
 
   const canManageSources = hasPermission(
     AppResource.ORGANIZATION,
@@ -87,37 +90,56 @@ export function LeadSourcesSettings() {
     }
   };
 
-  const handleEditSource = (source: LeadSource) => {
-    setEditingSource(source);
-    setEditName(source.name);
-    setEditActive(source.is_active);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingSource) {
+  const handleStartNameEdit = (source: LeadSource) => {
+    if (!canManageSources) {
       return;
     }
 
-    const name = editName.trim();
+    setEditingSourceId(source.id);
+    setEditingName(source.name);
+  };
 
-    if (!name) {
+  const handleSaveName = async (source: LeadSource) => {
+    const nextName = editingName.trim();
+
+    if (!nextName) {
       toast.error(t('leadSources.validation.nameRequired'));
+      setEditingSourceId(null);
+      setEditingName('');
+      return;
+    }
+
+    setEditingSourceId(null);
+    setEditingName('');
+
+    if (nextName === source.name) {
       return;
     }
 
     try {
       await updateMutation.mutateAsync({
-        sourceId: editingSource.id,
+        sourceId: source.id,
         payload: {
-          name,
-          is_active: editActive,
+          name: nextName,
         },
       });
       toast.success(t('leadSources.toasts.updated'));
-      setEditingSource(null);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
+  };
+
+  const handleStartStatusEdit = (source: LeadSource) => {
+    if (!canManageSources) {
+      return;
+    }
+
+    setEditingStatusSourceId(source.id);
+  };
+
+  const handleStatusChange = async (source: LeadSource, isActive: boolean) => {
+    await handleToggleSourceActive(source, isActive);
+    setEditingStatusSourceId(null);
   };
 
   const handleDeleteSource = async (source: LeadSource) => {
@@ -227,38 +249,81 @@ export function LeadSourcesSettings() {
                   className="border-white/5 hover:bg-white/5"
                 >
                   <TableCell className="text-foreground font-medium">
-                    {source.name}
+                    <div className="group inline-flex items-center gap-2">
+                      {editingSourceId === source.id ? (
+                        <Input
+                          value={editingName}
+                          onChange={(event) =>
+                            setEditingName(event.target.value)
+                          }
+                          onBlur={() => void handleSaveName(source)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              void handleSaveName(source);
+                            }
+
+                            if (event.key === 'Escape') {
+                              setEditingSourceId(null);
+                              setEditingName('');
+                            }
+                          }}
+                          autoFocus
+                          disabled={updateMutation.isPending}
+                          className="h-8"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleStartNameEdit(source)}
+                          disabled={!canManageSources}
+                          className="text-foreground inline-flex items-center gap-2 text-left disabled:cursor-default"
+                        >
+                          <span>{source.name}</span>
+                          <Pencil className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-70" />
+                        </button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={source.is_active}
-                        onCheckedChange={(checked) =>
-                          void handleToggleSourceActive(source, checked)
-                        }
-                        disabled={
-                          !canManageSources || updatingSourceId === source.id
-                        }
-                        aria-label={t('leadSources.form.active')}
-                      />
-                      <span className="text-xs">
-                        {source.is_active
-                          ? t('leadSources.status.active')
-                          : t('leadSources.status.inactive')}
-                      </span>
-                    </div>
+                    {editingStatusSourceId === source.id ? (
+                      <div className="inline-flex items-center gap-2">
+                        <Switch
+                          checked={source.is_active}
+                          onCheckedChange={(checked) =>
+                            void handleStatusChange(source, checked)
+                          }
+                          disabled={
+                            !canManageSources || updatingSourceId === source.id
+                          }
+                          aria-label={t('leadSources.form.active')}
+                        />
+                        <span className="text-xs">
+                          {source.is_active
+                            ? t('leadSources.status.active')
+                            : t('leadSources.status.inactive')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="group inline-flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStartStatusEdit(source)}
+                          disabled={!canManageSources}
+                          className="text-muted-foreground inline-flex items-center gap-2 text-left text-xs disabled:cursor-default"
+                        >
+                          <span>
+                            {source.is_active
+                              ? t('leadSources.status.active')
+                              : t('leadSources.status.inactive')}
+                          </span>
+                          <Pencil className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-70" />
+                        </button>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditSource(source)}
-                        disabled={!canManageSources}
-                      >
-                        {t('leadSources.actions.edit')}
-                      </Button>
                       <Button
                         type="button"
                         variant="outline"
@@ -327,64 +392,6 @@ export function LeadSourcesSettings() {
               {createMutation.isPending
                 ? t('leadSources.form.creating')
                 : t('leadSources.form.create')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(editingSource)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingSource(null);
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('leadSources.editDialog.title')}</DialogTitle>
-            <DialogDescription>
-              {t('leadSources.editDialog.description')}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t('leadSources.form.name')}
-              </label>
-              <Input
-                value={editName}
-                onChange={(event) => setEditName(event.target.value)}
-                placeholder={t('leadSources.form.namePlaceholder')}
-              />
-            </div>
-
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox
-                checked={editActive}
-                onCheckedChange={(checked) => setEditActive(checked === true)}
-              />
-              {t('leadSources.form.active')}
-            </label>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditingSource(null)}
-            >
-              {t('leadSources.form.cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSaveEdit}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending
-                ? t('leadSources.form.saving')
-                : t('leadSources.form.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

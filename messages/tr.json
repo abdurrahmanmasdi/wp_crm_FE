@@ -213,6 +213,13 @@
           "actions": "İşlemler"
         },
         "actions": {
+          "board": {
+            "unassigned": "Atanmamış",
+            "noLeadsInColumn": "Bu sütunda aday yok",
+            "expectedValue": "Beklenen Değer",
+            "unassignedAgent": "Atanmamış",
+            "dragError": "Aday taşınamadı. Lütfen tekrar deneyin."
+          },
           "edit": "Düzenle",
           "delete": "Sil",
           "deleting": "Siliniyor...",
@@ -435,6 +442,7 @@
     "unknownLeadName": "Bilinmeyen aday",
     "notSet": "Belirtilmedi",
     "actions": "İşlemler",
+    "viewDetails": "Detayları Görüntüle",
     "deleteLead": "Adayı sil",
     "deleting": "Siliniyor...",
     "deletedSuccess": "Aday başarıyla silindi",
@@ -476,6 +484,9 @@
         "timezone": "Saat dilimi",
         "primaryLanguage": "Birincil dil",
         "preferredLanguage": "Tercih edilen dil",
+        "pipelineStage": "Satış hattı aşaması",
+        "source": "Aday kaynağı",
+        "assignedAgent": "Atanan temsilci",
         "pipelineStageId": "Satış hattı aşama ID",
         "sourceId": "Aday kaynağı ID",
         "assignedAgentId": "Atanan temsilci ID",
@@ -486,6 +497,10 @@
         "organizationId": "Kuruluş ID",
         "createdAt": "Oluşturulma",
         "updatedAt": "Güncellenme"
+      },
+      "values": {
+        "unassigned": "Atanmamış",
+        "unknown": "Bilinmeyen"
       }
     },
     "form": {

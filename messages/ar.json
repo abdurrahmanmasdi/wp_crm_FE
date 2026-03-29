@@ -428,6 +428,13 @@
     },
     "boardTitle": "عرض اللوحة قادم قريبًا",
     "boardDescription": "استخدم عرض القائمة الآن إلى أن نطلق مراحل خط المبيعات بالسحب والإفلات.",
+    "board": {
+      "unassigned": "غير معيّن",
+      "noLeadsInColumn": "لا يوجد عملاء محتملون في هذا العمود",
+      "expectedValue": "القيمة المتوقعة",
+      "unassignedAgent": "غير معيّن",
+      "dragError": "تعذر نقل العميل المحتمل. يرجى المحاولة مرة أخرى."
+    },
     "loading": "جار تحميل العملاء المحتملين...",
     "loadErrorTitle": "تعذر تحميل العملاء المحتملين",
     "emptyTitle": "لا يوجد عملاء محتملون بعد",
@@ -435,6 +442,7 @@
     "unknownLeadName": "عميل محتمل غير معروف",
     "notSet": "غير محدد",
     "actions": "الإجراءات",
+    "viewDetails": "عرض التفاصيل",
     "deleteLead": "حذف العميل المحتمل",
     "deleting": "جار الحذف...",
     "deletedSuccess": "تم حذف العميل المحتمل بنجاح",
@@ -476,6 +484,9 @@
         "timezone": "المنطقة الزمنية",
         "primaryLanguage": "اللغة الأساسية",
         "preferredLanguage": "اللغة المفضلة",
+        "pipelineStage": "مرحلة خط المبيعات",
+        "source": "مصدر العميل المحتمل",
+        "assignedAgent": "الموظف المسؤول",
         "pipelineStageId": "معرّف مرحلة خط المبيعات",
         "sourceId": "معرّف مصدر العميل المحتمل",
         "assignedAgentId": "معرّف الوكيل المعيّن",
@@ -486,6 +497,10 @@
         "organizationId": "معرّف المنظمة",
         "createdAt": "تاريخ الإنشاء",
         "updatedAt": "تاريخ التحديث"
+      },
+      "values": {
+        "unassigned": "غير معيّن",
+        "unknown": "غير معروف"
       }
     },
     "form": {
