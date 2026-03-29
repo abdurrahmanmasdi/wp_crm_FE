@@ -71,7 +71,6 @@ export function RequirePermission({
   if (isAllowed) {
     return <>{children}</>;
   }
-
   // Handle fallback behavior
   if (fallback === 'hide') {
     // Hide: return null (remove from DOM)

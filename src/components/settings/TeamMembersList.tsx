@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -17,7 +17,6 @@ export function TeamMembersList() {
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
-  const currentUser = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const t = useTranslations('Settings.Team');
 
@@ -63,16 +62,6 @@ export function TeamMembersList() {
   const isLoading = isMembersLoading || isRolesLoading;
   const error = membersError || rolesError;
 
-  // Determine current user's role slug
-  const currentUserRoleSlug = useMemo(() => {
-    if (!currentUser || !('id' in currentUser)) return null;
-    const membersList = membersData?.data ?? [];
-    const currentMember = membersList.find(
-      (member) => member.user.id === currentUser.id
-    );
-    return currentMember?.role.slug ?? null;
-  }, [membersData?.data, currentUser]);
-
   // Change member role mutation
   const changeRoleMutation = useMutation({
     mutationFn: (params: { membershipId: string; roleId: string }) =>
@@ -113,17 +102,10 @@ export function TeamMembersList() {
     setPendingRoleChange(null);
   };
 
-  // Check if current user is owner
-  const isCurrentUserOwner = currentUserRoleSlug === 'owner';
-
   // Check if role select should be disabled for a member
   const isRoleSelectDisabled = (member: OrganizationMember) => {
     // Disable if the member is the owner role.
     if (member.role.slug === 'owner') {
-      return true;
-    }
-    // Disable if current user is not the Owner
-    if (!isCurrentUserOwner) {
       return true;
     }
     return false;

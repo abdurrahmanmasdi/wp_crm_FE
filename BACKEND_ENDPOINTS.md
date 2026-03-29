@@ -137,7 +137,8 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
       "id": "uuid",
       "firstName": "John",
       "lastName": "Doe",
-      "email": "user@example.com"
+      "email": "user@example.com",
+      "createdAt": "2026-03-28T10:00:00.000Z"
     },
     "role": {
       "id": "uuid",
@@ -444,8 +445,23 @@ Notes:
 - Query params:
   - `page` (optional, int, default `1`)
   - `limit` (optional, int, default `20`, max `100`)
+  - `filters` (optional, JSON string encoded array of filter rules)
   - `status` (optional enum)
   - `priority` (optional enum)
+
+- Advanced `filters` format:
+  - JSON array of rules in this shape: `{ "field": string, "operator": "equals" | "in", "value": any }`
+  - Allowed fields: `status`, `priority`, `source_id`, `assigned_agent_id`, `country`, `pipeline_stage_id`
+  - `source_id`, `assigned_agent_id`, and `pipeline_stage_id` values must be valid UUID strings.
+  - `status` and `priority` values must be valid enum values.
+  - Disallowed fields are ignored server-side.
+  - Invalid JSON payload or invalid filter value types returns `400`.
+
+- Example (`filters` URL-encoded):
+
+```text
+?page=1&limit=20&filters=%5B%7B%22field%22%3A%22status%22%2C%22operator%22%3A%22in%22%2C%22value%22%3A%5B%22OPEN%22%2C%22WON%22%5D%7D%2C%7B%22field%22%3A%22country%22%2C%22operator%22%3A%22equals%22%2C%22value%22%3A%22Turkey%22%7D%5D
+```
 
 - PBAC behavior:
   - If user has `leads:read_all` (or elevated equivalent such as `leads:manage`, `team_members:manage`, `organization:manage`), returns all org leads.
@@ -455,7 +471,7 @@ Notes:
 
 ```json
 {
-  "items": [
+  "data": [
     {
       "id": "uuid",
       "organization_id": "uuid",

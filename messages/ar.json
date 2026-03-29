@@ -336,6 +336,20 @@
     "deletedError": "فشل حذف العميل المحتمل",
     "createSuccess": "تم إنشاء العميل المحتمل بنجاح",
     "createError": "فشل إنشاء العميل المحتمل",
+    "updatedSuccess": "تم تحديث العميل المحتمل بنجاح",
+    "updatedError": "فشل تحديث العميل المحتمل",
+    "saved": "تم الحفظ",
+    "assignAction": "تعيين",
+    "editAction": "تعديل",
+    "copyPhoneAction": "نسخ الهاتف",
+    "copyPhoneSuccess": "تم نسخ رقم الهاتف",
+    "copyPhoneError": "تعذر نسخ رقم الهاتف",
+    "editSheet": {
+      "title": "تعديل العميل المحتمل",
+      "description": "قم بتحديث بيانات العميل المحتمل ثم احفظ التغييرات.",
+      "submit": "حفظ التغييرات",
+      "submitting": "جار الحفظ..."
+    },
     "form": {
       "title": "إضافة عميل محتمل جديد",
       "description": "املأ تفاصيل العميل المحتمل لإنشاء فرصة جديدة في خط المبيعات.",
@@ -440,14 +454,32 @@
       "estimatedValueNumber": "يجب أن تكون القيمة التقديرية رقمًا صالحًا",
       "estimatedValueMin": "يجب أن تكون القيمة التقديرية صفرًا أو أكثر"
     },
+    "filters": {
+      "addFilter": "إضافة فلتر",
+      "removeFilter": "إزالة الفلتر",
+      "operator": "المعامل",
+      "equals": "يساوي",
+      "in": "ضمن",
+      "value": "القيمة",
+      "valuePlaceholder": "اختر قيمة",
+      "multiSelectPlaceholder": "اختر واحدًا أو أكثر",
+      "selectedCount": "تم اختيار {count}"
+    },
     "tableHeaders": {
       "lead": "العميل المحتمل",
       "source": "المصدر",
+      "assignedTo": "مُسند إلى",
       "priority": "الأولوية",
       "status": "الحالة",
       "estimatedValue": "القيمة التقديرية",
       "createdAt": "تاريخ الإنشاء",
       "actions": "الإجراءات"
+    },
+    "pagination": {
+      "previous": "السابق",
+      "next": "التالي",
+      "rowsPerPage": "عدد الصفوف لكل صفحة",
+      "range": "{from}-{to} من {total}"
     },
     "priority": {
       "HOT": "مرتفع",

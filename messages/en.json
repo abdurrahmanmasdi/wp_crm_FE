@@ -336,6 +336,20 @@
     "deletedError": "Failed to delete lead",
     "createSuccess": "Lead created successfully",
     "createError": "Failed to create lead",
+    "updatedSuccess": "Lead updated successfully",
+    "updatedError": "Failed to update lead",
+    "saved": "Saved",
+    "assignAction": "Assign",
+    "editAction": "Edit",
+    "copyPhoneAction": "Copy Phone",
+    "copyPhoneSuccess": "Phone number copied",
+    "copyPhoneError": "Could not copy phone number",
+    "editSheet": {
+      "title": "Edit Lead",
+      "description": "Update lead details and save your changes.",
+      "submit": "Save Changes",
+      "submitting": "Saving..."
+    },
     "form": {
       "title": "Add New Lead",
       "description": "Fill in lead details to create a new opportunity in your pipeline.",
@@ -440,14 +454,32 @@
       "estimatedValueNumber": "Estimated value must be a valid number",
       "estimatedValueMin": "Estimated value must be zero or greater"
     },
+    "filters": {
+      "addFilter": "Add Filter",
+      "removeFilter": "Remove filter",
+      "operator": "Operator",
+      "equals": "Equals",
+      "in": "In",
+      "value": "Value",
+      "valuePlaceholder": "Select value",
+      "multiSelectPlaceholder": "Select one or more",
+      "selectedCount": "{count} selected"
+    },
     "tableHeaders": {
       "lead": "Lead",
       "source": "Source",
+      "assignedTo": "Assigned To",
       "priority": "Priority",
       "status": "Status",
       "estimatedValue": "Estimated Value",
       "createdAt": "Created",
       "actions": "Actions"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "rowsPerPage": "Rows per page",
+      "range": "{from}-{to} of {total}"
     },
     "priority": {
       "HOT": "Hot",

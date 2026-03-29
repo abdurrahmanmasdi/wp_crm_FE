@@ -9,11 +9,13 @@ import type {
   Lead,
   LeadCurrency,
   LeadGender,
+  LeadsMeta,
   LeadPriority,
   LeadsListResponse,
   LeadStatus,
   LeadSocialLinks,
   LeadsQueryFilters,
+  UpdateLeadPayload,
 } from '@/types/leads';
 
 export type SelectOption = {
@@ -42,6 +44,36 @@ function asNullableString(value: unknown): string | null {
   }
 
   return asString(value);
+}
+
+function asPositiveInteger(value: unknown): number | null {
+  const normalized =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value)
+        : Number.NaN;
+
+  if (!Number.isFinite(normalized) || normalized < 1) {
+    return null;
+  }
+
+  return Math.floor(normalized);
+}
+
+function asNonNegativeInteger(value: unknown): number | null {
+  const normalized =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value)
+        : Number.NaN;
+
+  if (!Number.isFinite(normalized) || normalized < 0) {
+    return null;
+  }
+
+  return Math.floor(normalized);
 }
 
 function normalizeGender(value: unknown): LeadGender {
@@ -145,21 +177,62 @@ function normalizeLead(item: unknown): Lead {
   };
 }
 
-function normalizeLeadsResponse(data: unknown): Lead[] {
+function normalizeLeadsResponse(
+  data: unknown,
+  fallback: { page: number; limit: number }
+): LeadsListResponse {
+  const rootRecord =
+    data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
   const rawList = Array.isArray(data)
     ? data
-    : data && typeof data === 'object'
-      ? ((data as LeadsListResponse).items ??
-        (data as Record<string, unknown>).leads ??
-        (data as Record<string, unknown>).data ??
-        [])
-      : [];
+    : Array.isArray(rootRecord.data)
+      ? rootRecord.data
+      : Array.isArray(rootRecord.items)
+        ? rootRecord.items
+        : Array.isArray(rootRecord.leads)
+          ? rootRecord.leads
+          : [];
 
-  if (!Array.isArray(rawList)) {
-    return [];
-  }
+  const normalizedData = rawList.map((item) => normalizeLead(item));
+  const rawMeta =
+    rootRecord.meta && typeof rootRecord.meta === 'object'
+      ? (rootRecord.meta as Record<string, unknown>)
+      : null;
 
-  return rawList.map((item) => normalizeLead(item));
+  const page =
+    asPositiveInteger(rawMeta?.page ?? rootRecord.page) ?? fallback.page;
+  const limit =
+    asPositiveInteger(
+      rawMeta?.limit ??
+        rawMeta?.per_page ??
+        rawMeta?.page_size ??
+        rootRecord.limit
+    ) ?? fallback.limit;
+  const total =
+    asNonNegativeInteger(rawMeta?.total ?? rootRecord.total) ??
+    normalizedData.length;
+
+  const totalPagesFromMeta = asPositiveInteger(
+    rawMeta?.totalPages ??
+      rawMeta?.total_pages ??
+      rootRecord.totalPages ??
+      rootRecord.total_pages
+  );
+
+  const fallbackTotalPages =
+    total > 0 ? Math.ceil(total / Math.max(1, limit)) : 1;
+
+  const meta: LeadsMeta = {
+    page,
+    limit,
+    total,
+    totalPages: totalPagesFromMeta ?? fallbackTotalPages,
+  };
+
+  return {
+    data: normalizedData,
+    meta,
+  };
 }
 
 function toQueryParams(filters?: LeadsQueryFilters): Record<string, unknown> {
@@ -185,12 +258,22 @@ function toQueryParams(filters?: LeadsQueryFilters): Record<string, unknown> {
 async function fetchLeads(
   orgId: string,
   filters?: LeadsQueryFilters
-): Promise<Lead[]> {
+): Promise<LeadsListResponse> {
   const { data } = await api.get(`/organizations/${orgId}/leads`, {
     params: toQueryParams(filters),
   });
 
-  return normalizeLeadsResponse(data);
+  const fallbackPage =
+    typeof filters?.page === 'number' && filters.page > 0 ? filters.page : 1;
+  const fallbackLimit =
+    typeof filters?.limit === 'number' && filters.limit > 0
+      ? filters.limit
+      : 20;
+
+  return normalizeLeadsResponse(data, {
+    page: fallbackPage,
+    limit: fallbackLimit,
+  });
 }
 
 async function createLead(
@@ -198,6 +281,19 @@ async function createLead(
   payload: CreateLeadPayload
 ): Promise<Lead> {
   const { data } = await api.post(`/organizations/${orgId}/leads`, payload);
+  return normalizeLead(data);
+}
+
+async function updateLead(
+  orgId: string,
+  leadId: string,
+  payload: UpdateLeadPayload
+): Promise<Lead> {
+  const { data } = await api.patch(
+    `/organizations/${orgId}/leads/${leadId}`,
+    payload
+  );
+
   return normalizeLead(data);
 }
 
@@ -252,6 +348,32 @@ export function useCreateLeadMutation() {
   });
 }
 
+export function useUpdateLeadMutation() {
+  const queryClient = useQueryClient();
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
+  return useMutation({
+    mutationFn: ({
+      leadId,
+      payload,
+    }: {
+      leadId: string;
+      payload: UpdateLeadPayload;
+    }) => {
+      if (!organizationId) {
+        throw new Error('No active organization selected.');
+      }
+
+      return updateLead(organizationId, leadId, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['leads', organizationId],
+      });
+    },
+  });
+}
+
 export function useOrganizationMembersQuery() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
@@ -275,6 +397,7 @@ export function useLeads(filters?: LeadsQueryFilters) {
   });
 
   const createLeadMutation = useCreateLeadMutation();
+  const updateLeadMutation = useUpdateLeadMutation();
 
   const deleteLeadMutation = useMutation({
     mutationFn: (leadId: string) => {
@@ -295,6 +418,7 @@ export function useLeads(filters?: LeadsQueryFilters) {
     organizationId,
     leadsQuery,
     createLeadMutation,
+    updateLeadMutation,
     deleteLeadMutation,
   };
 }

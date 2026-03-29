@@ -336,6 +336,20 @@
     "deletedError": "Aday silinemedi",
     "createSuccess": "Aday müşteri başarıyla oluşturuldu",
     "createError": "Aday müşteri oluşturulamadı",
+    "updatedSuccess": "Aday müşteri başarıyla güncellendi",
+    "updatedError": "Aday müşteri güncellenemedi",
+    "saved": "Kaydedildi",
+    "assignAction": "Ata",
+    "editAction": "Düzenle",
+    "copyPhoneAction": "Telefonu Kopyala",
+    "copyPhoneSuccess": "Telefon numarası kopyalandı",
+    "copyPhoneError": "Telefon numarası kopyalanamadı",
+    "editSheet": {
+      "title": "Adayı Düzenle",
+      "description": "Aday detaylarını güncelleyin ve değişiklikleri kaydedin.",
+      "submit": "Değişiklikleri Kaydet",
+      "submitting": "Kaydediliyor..."
+    },
     "form": {
       "title": "Yeni Aday Müşteri Ekle",
       "description": "Satış hattınıza yeni bir fırsat eklemek için müşteri bilgilerini doldurun.",
@@ -440,14 +454,32 @@
       "estimatedValueNumber": "Tahmini değer geçerli bir sayı olmalıdır",
       "estimatedValueMin": "Tahmini değer sıfır veya daha büyük olmalıdır"
     },
+    "filters": {
+      "addFilter": "Filtre Ekle",
+      "removeFilter": "Filtreyi kaldır",
+      "operator": "Operatör",
+      "equals": "Eşittir",
+      "in": "İçinde",
+      "value": "Değer",
+      "valuePlaceholder": "Değer seçin",
+      "multiSelectPlaceholder": "Bir veya daha fazla seçin",
+      "selectedCount": "{count} seçildi"
+    },
     "tableHeaders": {
       "lead": "Aday",
       "source": "Kaynak",
+      "assignedTo": "Atanan",
       "priority": "Öncelik",
       "status": "Durum",
       "estimatedValue": "Tahmini Değer",
       "createdAt": "Oluşturulma",
       "actions": "İşlemler"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "rowsPerPage": "Sayfa başına satır",
+      "range": "{total} kayıttan {from}-{to}"
     },
     "priority": {
       "HOT": "Yüksek",

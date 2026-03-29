@@ -26,6 +26,7 @@ type SearchableSelectProps<TFieldValues extends FieldValues> = {
   control: Control<TFieldValues>;
   name: Path<TFieldValues>;
   label: string;
+  hideLabel?: boolean;
   placeholder: string;
   options: Array<SearchableSelectOption>;
   searchPlaceholder: string;
@@ -41,6 +42,7 @@ export function SearchableSelect<TFieldValues extends FieldValues>({
   control,
   name,
   label,
+  hideLabel = false,
   placeholder,
   options,
   searchPlaceholder,
@@ -87,7 +89,9 @@ export function SearchableSelect<TFieldValues extends FieldValues>({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      {hideLabel ? null : (
+        <label className="text-sm font-medium">{label}</label>
+      )}
       <Select
         value={resolvedValue}
         onValueChange={(nextValue) => {

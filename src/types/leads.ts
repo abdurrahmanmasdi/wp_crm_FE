@@ -40,6 +40,14 @@ export type LeadsQueryFilters = {
   limit?: number;
   status?: LeadStatus;
   priority?: LeadPriority;
+  filters?: string;
+};
+
+export type LeadsMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 };
 
 export type CreateLeadPayload = {
@@ -68,11 +76,6 @@ export type CreateLeadPayload = {
 export type UpdateLeadPayload = Partial<CreateLeadPayload>;
 
 export type LeadsListResponse = {
-  items: Lead[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  data: Lead[];
+  meta: LeadsMeta;
 };
