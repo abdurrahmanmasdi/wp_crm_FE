@@ -60,6 +60,10 @@ const navigationItems: NavigationItem[] = [
         labelKey: 'orgSettings',
         resource: AppResource.ORGANIZATION,
       },
+      {
+        href: '/dashboard/settings/crm',
+        labelKey: 'crmSettings',
+      },
     ],
   },
 ] as const;

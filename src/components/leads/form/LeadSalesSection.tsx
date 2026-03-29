@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
@@ -15,7 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MOCK_LEAD_SOURCES, MOCK_PIPELINE_STAGES } from '@/constants/regions';
+import {
+  useLeadSourcesQuery,
+  usePipelineStagesQuery,
+} from '@/hooks/useCrmSettings';
 import type { LeadCurrency, LeadPriority, LeadStatus } from '@/types/leads';
 
 import {
@@ -37,20 +41,34 @@ export function LeadSalesSection({
   disabled = false,
 }: LeadSalesSectionProps) {
   const t = useTranslations('Leads');
+  const pipelineStagesQuery = usePipelineStagesQuery();
+  const leadSourcesQuery = useLeadSourcesQuery({ activeOnly: true });
   const {
     register,
     control,
     formState: { errors },
   } = useFormContext<AddLeadFormValues>();
 
-  const pipelineStageOptions = MOCK_PIPELINE_STAGES.map((stage) => ({
-    value: stage.id,
-    label: stage.name,
-  }));
-  const leadSourceOptions = MOCK_LEAD_SOURCES.map((source) => ({
-    value: source.id,
-    label: source.name,
-  }));
+  const pipelineStageOptions = useMemo(
+    () =>
+      (pipelineStagesQuery.data ?? []).map((stage) => ({
+        value: stage.id,
+        label: stage.name,
+      })),
+    [pipelineStagesQuery.data]
+  );
+
+  const leadSourceOptions = useMemo(
+    () =>
+      (leadSourcesQuery.data ?? []).map((source) => ({
+        value: source.id,
+        label: source.name,
+      })),
+    [leadSourcesQuery.data]
+  );
+
+  const isPipelineStagesLoading = pipelineStagesQuery.isLoading;
+  const isLeadSourcesLoading = leadSourcesQuery.isLoading;
 
   return (
     <>
@@ -172,7 +190,7 @@ export function LeadSalesSection({
           emptyLabel={t('form.noResults')}
           allowNone
           noneLabel={t('form.noneOption')}
-          disabled={disabled}
+          disabled={disabled || isPipelineStagesLoading}
         />
 
         <SearchableSelect
@@ -199,7 +217,7 @@ export function LeadSalesSection({
         emptyLabel={t('form.noResults')}
         allowNone
         noneLabel={t('form.noneOption')}
-        disabled={disabled}
+        disabled={disabled || isLeadSourcesLoading}
       />
 
       <div className="grid gap-4 sm:grid-cols-2">

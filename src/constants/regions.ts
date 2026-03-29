@@ -7,11 +7,6 @@ export type CallingCodeOption = RegionOption & {
   regionCode: string;
 };
 
-export type MockEntityOption = {
-  id: string;
-  name: string;
-};
-
 export const COMMON_ISO_COUNTRIES: RegionOption[] = [
   { value: 'TR', label: 'Turkey' },
   { value: 'AE', label: 'United Arab Emirates' },
@@ -78,16 +73,4 @@ export const COUNTRY_CALLING_CODES: CallingCodeOption[] = [
   { value: '+1', label: 'United States (+1)', regionCode: 'US' },
   { value: '+33', label: 'France (+33)', regionCode: 'FR' },
   { value: '+49', label: 'Germany (+49)', regionCode: 'DE' },
-] as const;
-
-export const MOCK_PIPELINE_STAGES: MockEntityOption[] = [
-  { id: '1', name: 'Default Stage' },
-  { id: '2', name: 'Qualification' },
-  { id: '3', name: 'Proposal' },
-] as const;
-
-export const MOCK_LEAD_SOURCES: MockEntityOption[] = [
-  { id: '1', name: 'Organic Search' },
-  { id: '2', name: 'Referral' },
-  { id: '3', name: 'Social Media' },
 ] as const;

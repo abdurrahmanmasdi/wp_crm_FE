@@ -26,6 +26,7 @@
     "teamManagement": "Takım Yönetimi",
     "rolesPermissions": "Roller ve İzinler",
     "orgSettings": "Kuruluş Ayarları",
+    "crmSettings": "CRM Ayarları",
     "logout": "Çıkış Yap",
     "Sidebar": {
       "dashboardSuite": "Kontrol Paneli Paketi",
@@ -192,6 +193,110 @@
     "Toasts": {
       "roleCreateSuccess": "Rol başarıyla oluşturuldu",
       "roleUpdateSuccess": "Rol başarıyla güncellendi"
+    },
+    "CRM": {
+      "tabs": {
+        "pipelineStages": "Satış Hattı Aşamaları",
+        "leadSources": "Müşteri Kaynakları"
+      },
+      "pipelineStages": {
+        "title": "Satış Hattı Aşamaları",
+        "subtitle": "Satış hattınızda kullanılan aşamaları tanımlayın ve sıralayın.",
+        "add": "Aşama Ekle",
+        "loading": "Satış hattı aşamaları yükleniyor...",
+        "empty": "Satış hattı aşaması bulunamadı.",
+        "failedToLoad": "Satış hattı aşamaları yüklenemedi",
+        "deleteConfirm": "\"{name}\" öğesini silmek istediğinizden emin misiniz?",
+        "table": {
+          "name": "Ad",
+          "orderIndex": "Sıra",
+          "actions": "İşlemler"
+        },
+        "actions": {
+          "edit": "Düzenle",
+          "delete": "Sil",
+          "deleting": "Siliniyor...",
+          "moveUp": "Yukarı taşı",
+          "moveDown": "Aşağı taşı"
+        },
+        "createDialog": {
+          "title": "Satış Hattı Aşaması Oluştur",
+          "description": "Müşteri hattınıza yeni bir aşama ekleyin."
+        },
+        "editDialog": {
+          "title": "Satış Hattı Aşamasını Düzenle",
+          "description": "Aşama adını ve sırasını güncelleyin."
+        },
+        "form": {
+          "name": "Aşama adı",
+          "namePlaceholder": "ör. Keşif",
+          "orderIndex": "Sıra indeksi",
+          "cancel": "İptal",
+          "create": "Oluştur",
+          "creating": "Oluşturuluyor...",
+          "save": "Kaydet",
+          "saving": "Kaydediliyor..."
+        },
+        "validation": {
+          "nameRequired": "Aşama adı gerekli",
+          "orderIndexInvalid": "Sıra indeksi 0 veya daha büyük olmalıdır"
+        },
+        "toasts": {
+          "created": "Satış hattı aşaması oluşturuldu",
+          "updated": "Satış hattı aşaması güncellendi",
+          "deleted": "Satış hattı aşaması silindi",
+          "reordered": "Satış hattı aşamaları yeniden sıralandı"
+        }
+      },
+      "leadSources": {
+        "title": "Müşteri Kaynakları",
+        "subtitle": "Müşterilerin nereden geldiğini yönetin.",
+        "add": "Kaynak Ekle",
+        "loading": "Müşteri kaynakları yükleniyor...",
+        "empty": "Müşteri kaynağı bulunamadı.",
+        "failedToLoad": "Müşteri kaynakları yüklenemedi",
+        "deleteConfirm": "\"{name}\" öğesini silmek istediğinizden emin misiniz?",
+        "table": {
+          "name": "Ad",
+          "active": "Durum",
+          "actions": "İşlemler"
+        },
+        "status": {
+          "active": "Aktif",
+          "inactive": "Pasif"
+        },
+        "actions": {
+          "edit": "Düzenle",
+          "delete": "Sil",
+          "deleting": "Siliniyor..."
+        },
+        "createDialog": {
+          "title": "Müşteri Kaynağı Oluştur",
+          "description": "Gelen müşteriler için yeni bir kaynak ekleyin."
+        },
+        "editDialog": {
+          "title": "Müşteri Kaynağını Düzenle",
+          "description": "Kaynak detaylarını ve durumunu güncelleyin."
+        },
+        "form": {
+          "name": "Kaynak adı",
+          "namePlaceholder": "ör. Instagram",
+          "active": "Kaynak aktif",
+          "cancel": "İptal",
+          "create": "Oluştur",
+          "creating": "Oluşturuluyor...",
+          "save": "Kaydet",
+          "saving": "Kaydediliyor..."
+        },
+        "validation": {
+          "nameRequired": "Kaynak adı gerekli"
+        },
+        "toasts": {
+          "created": "Müşteri kaynağı oluşturuldu",
+          "updated": "Müşteri kaynağı güncellendi",
+          "deleted": "Müşteri kaynağı silindi"
+        }
+      }
     }
   },
   "Home": {
@@ -349,6 +454,39 @@
       "description": "Aday detaylarını güncelleyin ve değişiklikleri kaydedin.",
       "submit": "Değişiklikleri Kaydet",
       "submitting": "Kaydediliyor..."
+    },
+    "detailSheet": {
+      "description": "Salt okunur aday profili.",
+      "sections": {
+        "identity": "Kimlik",
+        "contact": "İletişim",
+        "localization": "Yerelleştirme",
+        "sales": "Satış",
+        "metadata": "Meta veri"
+      },
+      "fields": {
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "nativeName": "Yerel ad",
+        "gender": "Cinsiyet",
+        "email": "E-posta",
+        "phoneNumber": "Telefon numarası",
+        "socialLinks": "Sosyal bağlantılar",
+        "country": "Ülke",
+        "timezone": "Saat dilimi",
+        "primaryLanguage": "Birincil dil",
+        "preferredLanguage": "Tercih edilen dil",
+        "pipelineStageId": "Satış hattı aşama ID",
+        "sourceId": "Aday kaynağı ID",
+        "assignedAgentId": "Atanan temsilci ID",
+        "estimatedValue": "Tahmini değer",
+        "expectedServiceDate": "Beklenen hizmet tarihi",
+        "nextFollowUpAt": "Sonraki takip",
+        "leadId": "Aday ID",
+        "organizationId": "Kuruluş ID",
+        "createdAt": "Oluşturulma",
+        "updatedAt": "Güncellenme"
+      }
     },
     "form": {
       "title": "Yeni Aday Müşteri Ekle",

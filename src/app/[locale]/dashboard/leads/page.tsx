@@ -13,7 +13,7 @@ import {
   parseLeadFiltersParam,
   serializeLeadFiltersParam,
   type LeadFilterRule,
-} from '@/components/leads/filters/LeadFiltersBar';
+} from '@/components/leads/filters';
 import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';

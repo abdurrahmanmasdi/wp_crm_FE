@@ -26,6 +26,7 @@
     "teamManagement": "إدارة الفريق",
     "rolesPermissions": "الأدوار والأذونات",
     "orgSettings": "إعدادات المنظمة",
+    "crmSettings": "إعدادات CRM",
     "logout": "تسجيل الخروج",
     "Sidebar": {
       "dashboardSuite": "مجموعة لوحة التحكم",
@@ -192,6 +193,110 @@
     "Toasts": {
       "roleCreateSuccess": "تم إنشاء الدور بنجاح",
       "roleUpdateSuccess": "تم تحديث الدور بنجاح"
+    },
+    "CRM": {
+      "tabs": {
+        "pipelineStages": "مراحل خط المبيعات",
+        "leadSources": "مصادر العملاء المحتملين"
+      },
+      "pipelineStages": {
+        "title": "مراحل خط المبيعات",
+        "subtitle": "عرّف ورتّب المراحل المستخدمة في خط المبيعات.",
+        "add": "إضافة مرحلة",
+        "loading": "جاري تحميل مراحل خط المبيعات...",
+        "empty": "لا توجد مراحل لخط المبيعات.",
+        "failedToLoad": "تعذر تحميل مراحل خط المبيعات",
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف \"{name}\"؟",
+        "table": {
+          "name": "الاسم",
+          "orderIndex": "الترتيب",
+          "actions": "الإجراءات"
+        },
+        "actions": {
+          "edit": "تحرير",
+          "delete": "حذف",
+          "deleting": "جاري الحذف...",
+          "moveUp": "نقل لأعلى",
+          "moveDown": "نقل لأسفل"
+        },
+        "createDialog": {
+          "title": "إنشاء مرحلة لخط المبيعات",
+          "description": "أضف مرحلة جديدة لمسار العملاء المحتملين."
+        },
+        "editDialog": {
+          "title": "تحرير مرحلة خط المبيعات",
+          "description": "حدّث اسم المرحلة وترتيبها."
+        },
+        "form": {
+          "name": "اسم المرحلة",
+          "namePlaceholder": "مثال: الاستكشاف",
+          "orderIndex": "مؤشر الترتيب",
+          "cancel": "إلغاء",
+          "create": "إنشاء",
+          "creating": "جار الإنشاء...",
+          "save": "حفظ",
+          "saving": "جار الحفظ..."
+        },
+        "validation": {
+          "nameRequired": "اسم المرحلة مطلوب",
+          "orderIndexInvalid": "يجب أن يكون مؤشر الترتيب صفرا أو أكثر"
+        },
+        "toasts": {
+          "created": "تم إنشاء مرحلة خط المبيعات",
+          "updated": "تم تحديث مرحلة خط المبيعات",
+          "deleted": "تم حذف مرحلة خط المبيعات",
+          "reordered": "تمت إعادة ترتيب مراحل خط المبيعات"
+        }
+      },
+      "leadSources": {
+        "title": "مصادر العملاء المحتملين",
+        "subtitle": "أدر مصادر وصول العملاء المحتملين.",
+        "add": "إضافة مصدر",
+        "loading": "جاري تحميل مصادر العملاء المحتملين...",
+        "empty": "لا توجد مصادر للعملاء المحتملين.",
+        "failedToLoad": "تعذر تحميل مصادر العملاء المحتملين",
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف \"{name}\"؟",
+        "table": {
+          "name": "الاسم",
+          "active": "الحالة",
+          "actions": "الإجراءات"
+        },
+        "status": {
+          "active": "نشط",
+          "inactive": "غير نشط"
+        },
+        "actions": {
+          "edit": "تحرير",
+          "delete": "حذف",
+          "deleting": "جاري الحذف..."
+        },
+        "createDialog": {
+          "title": "إنشاء مصدر عميل محتمل",
+          "description": "أضف مصدرا جديدا للعملاء المحتملين القادمين."
+        },
+        "editDialog": {
+          "title": "تحرير مصدر عميل محتمل",
+          "description": "حدّث تفاصيل المصدر وحالته."
+        },
+        "form": {
+          "name": "اسم المصدر",
+          "namePlaceholder": "مثال: Instagram",
+          "active": "المصدر نشط",
+          "cancel": "إلغاء",
+          "create": "إنشاء",
+          "creating": "جار الإنشاء...",
+          "save": "حفظ",
+          "saving": "جار الحفظ..."
+        },
+        "validation": {
+          "nameRequired": "اسم المصدر مطلوب"
+        },
+        "toasts": {
+          "created": "تم إنشاء مصدر عميل محتمل",
+          "updated": "تم تحديث مصدر عميل محتمل",
+          "deleted": "تم حذف مصدر عميل محتمل"
+        }
+      }
     }
   },
   "Home": {
@@ -349,6 +454,39 @@
       "description": "قم بتحديث بيانات العميل المحتمل ثم احفظ التغييرات.",
       "submit": "حفظ التغييرات",
       "submitting": "جار الحفظ..."
+    },
+    "detailSheet": {
+      "description": "ملف تعريف عميل محتمل للقراءة فقط.",
+      "sections": {
+        "identity": "الهوية",
+        "contact": "التواصل",
+        "localization": "الإعدادات المحلية",
+        "sales": "المبيعات",
+        "metadata": "البيانات الوصفية"
+      },
+      "fields": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "nativeName": "الاسم المحلي",
+        "gender": "الجنس",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "socialLinks": "روابط التواصل",
+        "country": "الدولة",
+        "timezone": "المنطقة الزمنية",
+        "primaryLanguage": "اللغة الأساسية",
+        "preferredLanguage": "اللغة المفضلة",
+        "pipelineStageId": "معرّف مرحلة خط المبيعات",
+        "sourceId": "معرّف مصدر العميل المحتمل",
+        "assignedAgentId": "معرّف الوكيل المعيّن",
+        "estimatedValue": "القيمة التقديرية",
+        "expectedServiceDate": "تاريخ الخدمة المتوقع",
+        "nextFollowUpAt": "المتابعة التالية",
+        "leadId": "معرّف العميل المحتمل",
+        "organizationId": "معرّف المنظمة",
+        "createdAt": "تاريخ الإنشاء",
+        "updatedAt": "تاريخ التحديث"
+      }
     },
     "form": {
       "title": "إضافة عميل محتمل جديد",

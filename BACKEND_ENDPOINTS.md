@@ -1,6 +1,6 @@
 # Backend Endpoint Contract
 
-Last updated: 2026-03-28
+Last updated: 2026-03-29
 Base URL prefix: `/api/v1`
 
 All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
@@ -542,6 +542,10 @@ Notes:
 - Response 201:
   - Returns created Lead object in snake_case (same shape as Lead Object Shape above).
 
+- Validation rules:
+  - If `source_id` is provided, it must belong to the same organization.
+  - If `source_id` is provided, it must reference an **active** lead source (`is_active = true`).
+
 ### GET /api/v1/organizations/:organizationId/leads/:leadId
 
 - PBAC behavior:
@@ -571,6 +575,7 @@ Notes:
 - Validation rules:
   - If `assigned_agent_id` is provided, target user must be an ACTIVE member in the same organization.
   - `pipeline_stage_id` and `source_id` must belong to same organization.
+  - If `source_id` is provided, it must reference an **active** lead source (`is_active = true`).
 
 - Response 200:
   - Returns updated Lead object in snake_case.
@@ -589,3 +594,139 @@ Notes:
 
 - Possible errors:
   - `404` when lead does not exist in the specified organization.
+
+## Pipeline Stages API
+
+Base route: `/api/v1/organizations/:organizationId/pipeline-stages`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+PBAC:
+
+- `GET` is available for all authenticated active members of the organization.
+- `POST`, `PATCH`, and `DELETE` require `organization:manage` (admin/manager equivalent).
+
+### GET /api/v1/organizations/:organizationId/pipeline-stages
+
+- Response 200:
+
+```json
+[
+  {
+    "id": "uuid",
+    "organization_id": "uuid",
+    "name": "Qualified",
+    "order_index": 1,
+    "created_at": "2026-03-29T10:00:00.000Z",
+    "updated_at": "2026-03-29T10:00:00.000Z"
+  }
+]
+```
+
+- Sorting:
+  - Ordered by `order_index` ascending.
+
+### POST /api/v1/organizations/:organizationId/pipeline-stages
+
+- Body DTO: `CreatePipelineStageDto`
+
+```json
+{
+  "name": "Negotiation",
+  "order_index": 3
+}
+```
+
+- Response 201:
+  - Returns created pipeline stage object.
+
+### PATCH /api/v1/organizations/:organizationId/pipeline-stages/:stageId
+
+- Body DTO: `UpdatePipelineStageDto` (all fields optional)
+
+```json
+{
+  "name": "Proposal Sent",
+  "order_index": 4
+}
+```
+
+- Response 200:
+  - Returns updated pipeline stage object.
+
+### DELETE /api/v1/organizations/:organizationId/pipeline-stages/:stageId
+
+- Response 204:
+  - No response body.
+
+## Lead Sources API
+
+Base route: `/api/v1/organizations/:organizationId/lead-sources`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+PBAC:
+
+- `GET` is available for all authenticated active members of the organization.
+- `POST`, `PATCH`, and `DELETE` require `organization:manage` (admin/manager equivalent).
+
+### GET /api/v1/organizations/:organizationId/lead-sources
+
+- Query params:
+  - `activeOnly` (optional boolean)
+    - `true`: returns only active sources (`is_active = true`) for frontend dropdowns.
+    - omitted/`false`: returns all sources (active + inactive), useful for settings management pages.
+
+- Response 200:
+
+```json
+[
+  {
+    "id": "uuid",
+    "organization_id": "uuid",
+    "name": "Facebook Ads",
+    "is_active": true,
+    "created_at": "2026-03-29T10:00:00.000Z",
+    "updated_at": "2026-03-29T10:00:00.000Z"
+  }
+]
+```
+
+### POST /api/v1/organizations/:organizationId/lead-sources
+
+- Body DTO: `CreateLeadSourceDto`
+
+```json
+{
+  "name": "Referral",
+  "is_active": true
+}
+```
+
+- Response 201:
+  - Returns created lead source object.
+
+### PATCH /api/v1/organizations/:organizationId/lead-sources/:sourceId
+
+- Body DTO: `UpdateLeadSourceDto` (all fields optional)
+
+```json
+{
+  "name": "Organic Search",
+  "is_active": false
+}
+```
+
+- Response 200:
+  - Returns updated lead source object.
+
+### DELETE /api/v1/organizations/:organizationId/lead-sources/:sourceId
+
+- Response 204:
+  - No response body.

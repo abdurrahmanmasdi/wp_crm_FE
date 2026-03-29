@@ -44,7 +44,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
-import { MOCK_LEAD_SOURCES } from '@/constants/regions';
+import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
 import {
   useOrganizationMembersQuery,
   useUpdateLeadMutation,
@@ -54,6 +54,7 @@ import { getErrorMessage } from '@/lib/error-utils';
 import type { Lead, LeadsMeta, LeadStatus } from '@/types/leads';
 
 import { EditLeadSheet } from './EditLeadSheet';
+import { LeadDetailSheet } from './LeadDetailSheet';
 
 type LeadsDataTableProps = {
   leads: Lead[];
@@ -188,8 +189,10 @@ export function LeadsDataTable({
   const t = useTranslations('Leads');
   const { hasPermission } = usePermissions();
   const membersQuery = useOrganizationMembersQuery();
+  const leadSourcesQuery = useLeadSourcesQuery();
   const updateLeadMutation = useUpdateLeadMutation();
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [viewingLead, setViewingLead] = useState<Lead | null>(null);
   const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
   const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
 
@@ -204,9 +207,11 @@ export function LeadsDataTable({
   const sourceLabelMap = useMemo(
     () =>
       new Map(
-        MOCK_LEAD_SOURCES.map((source) => [source.id, source.name] as const)
+        (leadSourcesQuery.data ?? []).map(
+          (source) => [source.id, source.name] as const
+        )
       ),
-    []
+    [leadSourcesQuery.data]
   );
   const agentLabelMap = useMemo(
     () =>
@@ -401,9 +406,13 @@ export function LeadsDataTable({
                   >
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
-                        <p className="text-foreground text-sm font-medium">
+                        <button
+                          type="button"
+                          onClick={() => setViewingLead(lead)}
+                          className="text-primary w-fit text-left text-sm font-medium underline-offset-2 hover:underline"
+                        >
                           {leadName || t('unknownLeadName')}
-                        </p>
+                        </button>
                         <p className="text-muted-foreground text-xs">
                           {lead.email || t('notSet')}
                         </p>
@@ -733,6 +742,16 @@ export function LeadsDataTable({
         onOpenChange={(nextOpen) => {
           if (!nextOpen) {
             setEditingLead(null);
+          }
+        }}
+      />
+
+      <LeadDetailSheet
+        lead={viewingLead}
+        open={Boolean(viewingLead)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setViewingLead(null);
           }
         }}
       />

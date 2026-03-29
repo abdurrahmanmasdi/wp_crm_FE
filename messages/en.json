@@ -26,6 +26,7 @@
     "teamManagement": "Team Management",
     "rolesPermissions": "Roles & Permissions",
     "orgSettings": "Organization Settings",
+    "crmSettings": "CRM Settings",
     "logout": "Log Out",
     "Sidebar": {
       "dashboardSuite": "Dashboard Suite",
@@ -192,6 +193,110 @@
     "Toasts": {
       "roleCreateSuccess": "Role created successfully",
       "roleUpdateSuccess": "Role updated successfully"
+    },
+    "CRM": {
+      "tabs": {
+        "pipelineStages": "Pipeline Stages",
+        "leadSources": "Lead Sources"
+      },
+      "pipelineStages": {
+        "title": "Pipeline Stages",
+        "subtitle": "Define and order the stages used in your sales pipeline.",
+        "add": "Add Stage",
+        "loading": "Loading pipeline stages...",
+        "empty": "No pipeline stages found.",
+        "failedToLoad": "Failed to load pipeline stages",
+        "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+        "table": {
+          "name": "Name",
+          "orderIndex": "Order",
+          "actions": "Actions"
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleting": "Deleting...",
+          "moveUp": "Move up",
+          "moveDown": "Move down"
+        },
+        "createDialog": {
+          "title": "Create Pipeline Stage",
+          "description": "Add a new stage for your lead pipeline."
+        },
+        "editDialog": {
+          "title": "Edit Pipeline Stage",
+          "description": "Update the stage name and order."
+        },
+        "form": {
+          "name": "Stage name",
+          "namePlaceholder": "e.g., Discovery",
+          "orderIndex": "Order index",
+          "cancel": "Cancel",
+          "create": "Create",
+          "creating": "Creating...",
+          "save": "Save",
+          "saving": "Saving..."
+        },
+        "validation": {
+          "nameRequired": "Stage name is required",
+          "orderIndexInvalid": "Order index must be zero or greater"
+        },
+        "toasts": {
+          "created": "Pipeline stage created",
+          "updated": "Pipeline stage updated",
+          "deleted": "Pipeline stage deleted",
+          "reordered": "Pipeline stages reordered"
+        }
+      },
+      "leadSources": {
+        "title": "Lead Sources",
+        "subtitle": "Manage where leads are coming from.",
+        "add": "Add Source",
+        "loading": "Loading lead sources...",
+        "empty": "No lead sources found.",
+        "failedToLoad": "Failed to load lead sources",
+        "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+        "table": {
+          "name": "Name",
+          "active": "Status",
+          "actions": "Actions"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete",
+          "deleting": "Deleting..."
+        },
+        "createDialog": {
+          "title": "Create Lead Source",
+          "description": "Add a new source for incoming leads."
+        },
+        "editDialog": {
+          "title": "Edit Lead Source",
+          "description": "Update source details and status."
+        },
+        "form": {
+          "name": "Source name",
+          "namePlaceholder": "e.g., Instagram",
+          "active": "Source is active",
+          "cancel": "Cancel",
+          "create": "Create",
+          "creating": "Creating...",
+          "save": "Save",
+          "saving": "Saving..."
+        },
+        "validation": {
+          "nameRequired": "Source name is required"
+        },
+        "toasts": {
+          "created": "Lead source created",
+          "updated": "Lead source updated",
+          "deleted": "Lead source deleted"
+        }
+      }
     }
   },
   "Home": {
@@ -349,6 +454,39 @@
       "description": "Update lead details and save your changes.",
       "submit": "Save Changes",
       "submitting": "Saving..."
+    },
+    "detailSheet": {
+      "description": "Read-only lead profile.",
+      "sections": {
+        "identity": "Identity",
+        "contact": "Contact",
+        "localization": "Localization",
+        "sales": "Sales",
+        "metadata": "Metadata"
+      },
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "nativeName": "Native name",
+        "gender": "Gender",
+        "email": "Email",
+        "phoneNumber": "Phone number",
+        "socialLinks": "Social links",
+        "country": "Country",
+        "timezone": "Timezone",
+        "primaryLanguage": "Primary language",
+        "preferredLanguage": "Preferred language",
+        "pipelineStageId": "Pipeline stage ID",
+        "sourceId": "Lead source ID",
+        "assignedAgentId": "Assigned agent ID",
+        "estimatedValue": "Estimated value",
+        "expectedServiceDate": "Expected service date",
+        "nextFollowUpAt": "Next follow-up",
+        "leadId": "Lead ID",
+        "organizationId": "Organization ID",
+        "createdAt": "Created at",
+        "updatedAt": "Updated at"
+      }
     },
     "form": {
       "title": "Add New Lead",

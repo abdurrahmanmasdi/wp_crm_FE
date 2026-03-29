@@ -31,11 +31,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { COMMON_ISO_COUNTRIES } from '@/constants/regions';
 import {
-  COMMON_ISO_COUNTRIES,
-  MOCK_LEAD_SOURCES,
-  MOCK_PIPELINE_STAGES,
-} from '@/constants/regions';
+  useLeadSourcesQuery,
+  usePipelineStagesQuery,
+} from '@/hooks/useCrmSettings';
 import { useOrganizationMembersQuery } from '@/hooks/useLeads';
 import { cn } from '@/lib/utils';
 import type { LeadPriority, LeadStatus } from '@/types/leads';
@@ -338,6 +338,8 @@ export function LeadFiltersBar({
   const t = useTranslations('Leads');
   const locale = useLocale();
   const membersQuery = useOrganizationMembersQuery();
+  const pipelineStagesQuery = usePipelineStagesQuery();
+  const leadSourcesQuery = useLeadSourcesQuery();
 
   const form = useForm<LeadFiltersFormValues>({
     defaultValues: {
@@ -397,20 +399,20 @@ export function LeadFiltersBar({
 
   const stageOptions = useMemo(
     () =>
-      MOCK_PIPELINE_STAGES.map((stage) => ({
+      (pipelineStagesQuery.data ?? []).map((stage) => ({
         value: stage.id,
         label: stage.name,
       })),
-    []
+    [pipelineStagesQuery.data]
   );
 
   const sourceOptions = useMemo(
     () =>
-      MOCK_LEAD_SOURCES.map((source) => ({
+      (leadSourcesQuery.data ?? []).map((source) => ({
         value: source.id,
         label: source.name,
       })),
-    []
+    [leadSourcesQuery.data]
   );
 
   const agentOptions = membersQuery.data ?? [];
@@ -450,7 +452,10 @@ export function LeadFiltersBar({
                   t('filters.selectedCount', { count })
                 }
                 disabled={
-                  field === 'assigned_agent_id' && membersQuery.isLoading
+                  (field === 'assigned_agent_id' && membersQuery.isLoading) ||
+                  (field === 'pipeline_stage_id' &&
+                    pipelineStagesQuery.isLoading) ||
+                  (field === 'source_id' && leadSourcesQuery.isLoading)
                 }
                 className={field === 'assigned_agent_id' ? 'w-64' : 'w-56'}
               />
