@@ -4,13 +4,19 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 import axios from 'axios';
+
 import { getConversations, getConversationMessages } from '@/lib/api/chat';
+import { queryKeys } from '@/lib/query-keys';
 import { Conversation, Message } from '@/lib/chat.service';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const CHAT_HISTORY_PAGE_SIZE = 50;
 
-export function conversationMessagesQueryKey(conversationId: string | null) {
-  return ['conversation-messages', conversationId] as const;
+export function conversationMessagesQueryKey(
+  organizationId: string | null | undefined,
+  conversationId: string | null
+) {
+  return queryKeys.chat.messages(organizationId, conversationId);
 }
 
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
@@ -29,9 +35,12 @@ function shouldRetryRequest(failureCount: number, error: unknown): boolean {
  * @returns React Query result containing array of conversations
  */
 export function useConversationsQuery(): UseQueryResult<Conversation[], Error> {
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
   return useQuery<Conversation[], Error>({
-    queryKey: ['conversations'],
+    queryKey: queryKeys.chat.conversations(organizationId),
     queryFn: getConversations,
+    enabled: Boolean(organizationId),
     staleTime: 30 * 1000, // 30 seconds
     retry: shouldRetryRequest,
   });
@@ -43,8 +52,10 @@ export function useConversationsQuery(): UseQueryResult<Conversation[], Error> {
  * @returns React Query result containing array of messages
  */
 export function useChatHistoryQuery(conversationId: string | null) {
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
   return useInfiniteQuery<Message[], Error>({
-    queryKey: conversationMessagesQueryKey(conversationId),
+    queryKey: conversationMessagesQueryKey(organizationId, conversationId),
     queryFn: ({ pageParam }) =>
       getConversationMessages(
         conversationId!,
@@ -52,7 +63,7 @@ export function useChatHistoryQuery(conversationId: string | null) {
         CHAT_HISTORY_PAGE_SIZE
       ),
     initialPageParam: undefined,
-    enabled: !!conversationId,
+    enabled: Boolean(organizationId && conversationId),
     staleTime: 30 * 1000, // 30 seconds
     retry: shouldRetryRequest,
     getNextPageParam: (lastPage) => {

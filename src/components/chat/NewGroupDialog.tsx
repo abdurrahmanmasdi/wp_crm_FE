@@ -3,8 +3,10 @@
 import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+
 import { createGroupConversation } from '@/lib/api/chat';
 import { orgService } from '@/lib/org.service';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
   Dialog,
@@ -52,7 +54,7 @@ export function NewGroupDialog({
    * Fetch all members of the organization
    */
   const { data: members, isLoading: isMembersLoading } = useQuery({
-    queryKey: ['organization-members', organizationId],
+    queryKey: queryKeys.organizations.members(organizationId),
     queryFn: () =>
       organizationId ? orgService.getOrganizationMembers(organizationId) : null,
     enabled: !!organizationId && isOpen,
@@ -65,7 +67,9 @@ export function NewGroupDialog({
     mutationFn: createGroupConversation,
     onSuccess: (conversation) => {
       // Invalidate conversations list so it updates
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.conversations(organizationId),
+      });
 
       // Call the callback to switch to the new conversation
       onChatCreated(conversation.id);

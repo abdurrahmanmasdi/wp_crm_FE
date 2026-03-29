@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 import { crmSettingsService } from '@/lib/crm-settings.service';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type {
   CreateLeadSourcePayload,
@@ -253,7 +254,7 @@ export function usePipelineStagesQuery() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   return useQuery({
-    queryKey: ['pipeline-stages', organizationId],
+    queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
     queryFn: () => fetchPipelineStages(organizationId!),
     enabled: Boolean(organizationId),
     retry: shouldRetryRequest,
@@ -274,7 +275,7 @@ export function useCreatePipelineStageMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['pipeline-stages', organizationId],
+        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
       });
     },
   });
@@ -300,7 +301,7 @@ export function useUpdatePipelineStageMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['pipeline-stages', organizationId],
+        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
       });
     },
   });
@@ -320,7 +321,7 @@ export function useDeletePipelineStageMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['pipeline-stages', organizationId],
+        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
       });
     },
   });
@@ -331,7 +332,10 @@ export function useLeadSourcesQuery(options?: { activeOnly?: boolean }) {
   const activeOnly = options?.activeOnly === true;
 
   return useQuery({
-    queryKey: ['lead-sources', organizationId, activeOnly ? 'active' : 'all'],
+    queryKey: queryKeys.crmSettings.leadSources(
+      organizationId,
+      activeOnly ? 'active' : 'all'
+    ),
     queryFn: () =>
       activeOnly
         ? fetchActiveLeadSources(organizationId!)
@@ -355,7 +359,7 @@ export function useCreateLeadSourceMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['lead-sources', organizationId],
+        queryKey: queryKeys.crmSettings.leadSourcesBase(organizationId),
       });
     },
   });
@@ -381,7 +385,7 @@ export function useUpdateLeadSourceMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['lead-sources', organizationId],
+        queryKey: queryKeys.crmSettings.leadSourcesBase(organizationId),
       });
     },
   });
@@ -401,7 +405,7 @@ export function useDeleteLeadSourceMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['lead-sources', organizationId],
+        queryKey: queryKeys.crmSettings.leadSourcesBase(organizationId),
       });
     },
   });

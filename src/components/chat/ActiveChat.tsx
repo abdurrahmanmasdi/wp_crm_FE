@@ -3,6 +3,7 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+
 import { type Message } from '@/lib/chat.service';
 import { useChatSocket } from '@/providers/ChatSocketProvider';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -35,6 +36,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
 
   // Get current user from auth store
   const currentUserId = useAuthStore((state) => state.user?.id);
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   // Get socket instance and connection status
   const { socket, isConnected } = useChatSocket();
@@ -101,7 +103,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
 
       console.log('[ActiveChat] New message received:', message);
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
-        conversationMessagesQueryKey(conversationId),
+        conversationMessagesQueryKey(organizationId, conversationId),
         (previousData) => {
           if (!previousData) {
             return {
@@ -137,7 +139,7 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
       socket.emit('leave_conversation', { conversationId });
       console.log(`[ActiveChat] Left conversation: ${conversationId}`);
     };
-  }, [socket, isConnected, conversationId, queryClient]);
+  }, [socket, isConnected, conversationId, organizationId, queryClient]);
 
   /**
    * Handle sending a new message

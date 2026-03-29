@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 
@@ -59,7 +60,7 @@ export default function InvitationLandingPage() {
   );
 
   const detailsQuery = useQuery({
-    queryKey: ['invitation-details', token],
+    queryKey: queryKeys.organizations.invitationDetails(token),
     enabled: token.length > 0,
     retry: false,
     queryFn: async () => {

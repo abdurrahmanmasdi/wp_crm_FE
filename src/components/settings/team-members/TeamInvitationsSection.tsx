@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { accessControlService } from '@/lib/access-control.service';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PendingInvitesList } from '@/components/settings/team-members/PendingInvitesList';
 import { InviteMemberDialog } from '@/components/settings/team-members/InviteMemberDialog';
@@ -15,7 +16,7 @@ export function TeamInvitationsSection() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   const rolesQuery = useQuery({
-    queryKey: ['roles', activeOrganizationId],
+    queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
         ? accessControlService.getRoles(activeOrganizationId)

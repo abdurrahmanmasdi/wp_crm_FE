@@ -23,6 +23,7 @@ import {
   getResourcePrefix,
   formatResourceName,
 } from '@/constants/permissions.registry';
+import { queryKeys } from '@/lib/query-keys';
 
 interface MemberPermissionsSheetProps {
   isOpen: boolean;
@@ -55,14 +56,14 @@ export function MemberPermissionsSheet({
 
   // Fetch permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
-    queryKey: ['permissions'],
+    queryKey: queryKeys.permissions.all(),
     queryFn: () => accessControlService.getPermissions(),
     enabled: isOpen,
   });
 
   // Fetch permission breakdown (role vs overrides)
   const { data: breakdownData, isLoading: isLoadingBreakdown } = useQuery({
-    queryKey: ['permissions-breakdown', orgId, member?.membershipId],
+    queryKey: queryKeys.permissions.breakdown(orgId, member?.membershipId),
     queryFn: () => {
       if (!orgId || !member) {
         return Promise.resolve(null);
@@ -132,10 +133,10 @@ export function MemberPermissionsSheet({
     onSuccess: () => {
       toast.success(t('permissionsUpdatedSuccess'));
       queryClient.invalidateQueries({
-        queryKey: ['members', orgId],
+        queryKey: queryKeys.organizations.members(orgId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['permissions-breakdown', orgId, member?.membershipId],
+        queryKey: queryKeys.permissions.breakdown(orgId, member?.membershipId),
       });
       onOpenChange(false);
     },

@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import { api } from '@/lib/api';
 import { orgService } from '@/lib/org.service';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type {
   CreateLeadPayload,
@@ -354,7 +355,7 @@ export function useCreateLeadMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['leads', organizationId],
+        queryKey: queryKeys.leads.base(organizationId),
       });
     },
   });
@@ -380,7 +381,7 @@ export function useUpdateLeadMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['leads', organizationId],
+        queryKey: queryKeys.leads.base(organizationId),
       });
     },
   });
@@ -400,7 +401,7 @@ export function useBulkUpdateLeadsMutation() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['leads', organizationId],
+        queryKey: queryKeys.leads.base(organizationId),
       });
     },
   });
@@ -410,7 +411,7 @@ export function useOrganizationMembersQuery() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   return useQuery({
-    queryKey: ['lead-form-members', organizationId],
+    queryKey: queryKeys.leads.formMembers(organizationId),
     queryFn: () => fetchOrganizationMemberOptions(organizationId!),
     enabled: Boolean(organizationId),
     retry: shouldRetryRequest,
@@ -422,7 +423,7 @@ export function useLeads(filters?: LeadsQueryFilters) {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   const leadsQuery = useQuery({
-    queryKey: ['leads', organizationId, toQueryParams(filters)],
+    queryKey: queryKeys.leads.all(organizationId, toQueryParams(filters)),
     queryFn: () => fetchLeads(organizationId!, filters),
     enabled: Boolean(organizationId),
     retry: shouldRetryRequest,
@@ -441,7 +442,7 @@ export function useLeads(filters?: LeadsQueryFilters) {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['leads', organizationId],
+        queryKey: queryKeys.leads.base(organizationId),
       });
     },
   });

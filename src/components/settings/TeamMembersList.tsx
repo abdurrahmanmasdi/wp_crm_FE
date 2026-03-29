@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { orgService, type OrganizationMember } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MemberPermissionsSheet } from './MemberPermissionsSheet';
 import { TeamMembersTable } from '@/components/settings/team-members/TeamMembersTable';
@@ -36,7 +37,7 @@ export function TeamMembersList() {
     isLoading: isMembersLoading,
     error: membersError,
   } = useQuery({
-    queryKey: ['members', activeOrganizationId],
+    queryKey: queryKeys.organizations.members(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
         ? orgService.getOrganizationMembers(activeOrganizationId)
@@ -49,7 +50,7 @@ export function TeamMembersList() {
     isLoading: isRolesLoading,
     error: rolesError,
   } = useQuery({
-    queryKey: ['roles', activeOrganizationId],
+    queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
         ? accessControlService.getRoles(activeOrganizationId)
@@ -75,7 +76,7 @@ export function TeamMembersList() {
     onSuccess: () => {
       toast.success(t('roleUpdateSuccess'));
       queryClient.invalidateQueries({
-        queryKey: ['members', activeOrganizationId],
+        queryKey: queryKeys.organizations.members(activeOrganizationId),
       });
     },
     onError: (error) => {

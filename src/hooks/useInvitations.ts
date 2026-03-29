@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export type GenerateInvitePayload = {
@@ -124,7 +125,7 @@ export function useInvitations() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   const pendingInvitesQuery = useQuery({
-    queryKey: ['pending-invites', organizationId],
+    queryKey: queryKeys.organizations.invitations(organizationId),
     queryFn: () => fetchPendingInvites(organizationId!),
     enabled: Boolean(organizationId),
   });
@@ -139,7 +140,7 @@ export function useInvitations() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['pending-invites', organizationId],
+        queryKey: queryKeys.organizations.invitations(organizationId),
       });
     },
   });

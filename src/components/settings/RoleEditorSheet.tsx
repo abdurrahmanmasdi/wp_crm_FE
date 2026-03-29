@@ -24,6 +24,7 @@ import {
 } from '@/constants/permissions.registry';
 import { RolePermissionGroups } from '@/components/settings/role-editor/RolePermissionGroups';
 import { RoleTranslationFields } from '@/components/settings/role-editor/RoleTranslationFields';
+import { queryKeys } from '@/lib/query-keys';
 
 // Validation schema
 const roleFormSchema = z.object({
@@ -75,7 +76,7 @@ export function RoleEditorSheet({
 
   // Fetch all permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
-    queryKey: ['permissions'],
+    queryKey: queryKeys.permissions.all(),
     queryFn: () => accessControlService.getPermissions(),
   });
 
@@ -157,7 +158,7 @@ export function RoleEditorSheet({
     },
     onSuccess: () => {
       toast.success(t('roleCreateSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.all(orgId) });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -193,7 +194,7 @@ export function RoleEditorSheet({
     },
     onSuccess: () => {
       toast.success(t('roleUpdateSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['roles', orgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.all(orgId) });
       onOpenChange(false);
     },
     onError: (error) => {

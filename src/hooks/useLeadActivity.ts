@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 type LeadNoteRecord = {
   id: string;
@@ -219,7 +220,7 @@ async function createLeadAttachment(
 
 export function useLeadNotesQuery(orgId: string | null, leadId: string | null) {
   return useQuery({
-    queryKey: ['lead-notes', orgId, leadId],
+    queryKey: queryKeys.leads.notes(orgId, leadId),
     queryFn: () => fetchLeadNotes(orgId!, leadId!),
     enabled: Boolean(orgId && leadId),
   });
@@ -240,7 +241,7 @@ export function useCreateLeadNoteMutation() {
     }) => createLeadNote(orgId, leadId, payload),
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({
-        queryKey: ['lead-notes', variables.orgId, variables.leadId],
+        queryKey: queryKeys.leads.notes(variables.orgId, variables.leadId),
       });
     },
   });
@@ -251,7 +252,7 @@ export function useLeadAttachmentsQuery(
   leadId: string | null
 ) {
   return useQuery({
-    queryKey: ['lead-attachments', orgId, leadId],
+    queryKey: queryKeys.leads.attachments(orgId, leadId),
     queryFn: () => fetchLeadAttachments(orgId!, leadId!),
     enabled: Boolean(orgId && leadId),
   });
@@ -272,7 +273,10 @@ export function useCreateLeadAttachmentMutation() {
     }) => createLeadAttachment(orgId, leadId, payload),
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({
-        queryKey: ['lead-attachments', variables.orgId, variables.leadId],
+        queryKey: queryKeys.leads.attachments(
+          variables.orgId,
+          variables.leadId
+        ),
       });
     },
   });

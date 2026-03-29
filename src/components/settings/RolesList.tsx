@@ -19,6 +19,7 @@ import {
 import { RoleEditorSheet } from './RoleEditorSheet';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
 import type { Role } from '@/types/access-control';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -41,7 +42,7 @@ export function RolesList() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['roles', activeOrganizationId],
+    queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
         ? accessControlService.getRoles(activeOrganizationId)
@@ -60,7 +61,7 @@ export function RolesList() {
     onSuccess: () => {
       toast.success(t('deleteSuccess'));
       queryClient.invalidateQueries({
-        queryKey: ['roles', activeOrganizationId],
+        queryKey: queryKeys.roles.all(activeOrganizationId),
       });
     },
     onError: (error) => {

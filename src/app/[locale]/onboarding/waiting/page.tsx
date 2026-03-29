@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import { MembershipStatus } from '@/types/enums';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -44,7 +45,7 @@ export default function WaitingPage() {
   const logout = useAuthStore((state) => state.logout);
 
   const membershipsQuery = useQuery({
-    queryKey: ['my-memberships'],
+    queryKey: queryKeys.auth.myMemberships(),
     queryFn: async () => {
       const response = await orgService.getMyMemberships();
       return response.data;
@@ -65,7 +66,9 @@ export default function WaitingPage() {
     },
     onSuccess: async () => {
       toast.success('Your request has been canceled.');
-      await queryClient.invalidateQueries({ queryKey: ['my-memberships'] });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.auth.myMemberships(),
+      });
       router.push('/onboarding');
     },
     onError: (error) => {

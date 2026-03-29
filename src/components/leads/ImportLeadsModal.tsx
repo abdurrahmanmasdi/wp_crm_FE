@@ -36,6 +36,7 @@ import {
 } from '@/hooks/useCrmSettings';
 import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import type {
   CreateLeadPayload,
   LeadPriority,
@@ -495,7 +496,7 @@ export function ImportLeadsModal({
     }
 
     await queryClient.invalidateQueries({
-      queryKey: ['leads', organizationId],
+      queryKey: queryKeys.leads.base(organizationId),
     });
 
     toast.success(

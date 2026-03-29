@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { orgService, type OrganizationMembership } from '@/lib/org.service';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MembershipStatus } from '@/types/enums';
 
@@ -83,7 +84,7 @@ export function useAuthRedirectGate(
   const isWaitingRoute = isCurrentRoute(pathname, '/onboarding/waiting');
 
   const membershipsQuery = useQuery({
-    queryKey: ['auth-route-memberships', Boolean(user)],
+    queryKey: queryKeys.auth.routeMemberships(Boolean(user)),
     queryFn: async () => {
       const response = await orgService.getMyMemberships();
       return response.data;

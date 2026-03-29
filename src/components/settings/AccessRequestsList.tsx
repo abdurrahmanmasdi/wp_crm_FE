@@ -29,6 +29,7 @@ import {
 } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
+import { queryKeys } from '@/lib/query-keys';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -134,7 +135,7 @@ export function AccessRequestsList() {
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
 
   const requestsQuery = useQuery({
-    queryKey: ['organization-access-requests', activeOrganizationId],
+    queryKey: queryKeys.organizations.accessRequests(activeOrganizationId),
     queryFn: async () => {
       if (!activeOrganizationId) {
         return [] as AccessRequestListItem[];
@@ -148,7 +149,7 @@ export function AccessRequestsList() {
   });
 
   const rolesQuery = useQuery({
-    queryKey: ['roles', activeOrganizationId],
+    queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () => accessControlService.getRoles(activeOrganizationId!),
     enabled: Boolean(activeOrganizationId),
   });
@@ -174,10 +175,10 @@ export function AccessRequestsList() {
     onSuccess: () => {
       toast.success(t('approveSuccess'));
       queryClient.invalidateQueries({
-        queryKey: ['organization-access-requests', activeOrganizationId],
+        queryKey: queryKeys.organizations.accessRequests(activeOrganizationId),
       });
       queryClient.invalidateQueries({
-        queryKey: ['members', activeOrganizationId],
+        queryKey: queryKeys.organizations.members(activeOrganizationId),
       });
       setRequestToApprove(null);
       setSelectedRoleId('');
@@ -198,7 +199,7 @@ export function AccessRequestsList() {
     onSuccess: () => {
       toast.success(t('rejectSuccess'));
       queryClient.invalidateQueries({
-        queryKey: ['organization-access-requests', activeOrganizationId],
+        queryKey: queryKeys.organizations.accessRequests(activeOrganizationId),
       });
     },
     onError: (error) => {
