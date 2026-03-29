@@ -24,11 +24,41 @@ import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useLeads } from '@/hooks/useLeads';
 import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Lead, LeadsListResponse } from '@/types/leads';
+import type {
+  Lead,
+  LeadsListResponse,
+  LeadSortBy,
+  LeadSortDir,
+} from '@/types/leads';
 import { exportLeadsToCSV } from '@/utils/csv-export';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
+const SORTABLE_FIELDS: LeadSortBy[] = [
+  'first_name',
+  'status',
+  'priority',
+  'estimated_value',
+  'created_at',
+];
+
+function parseSortBy(value: string | null): LeadSortBy | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return SORTABLE_FIELDS.includes(value as LeadSortBy)
+    ? (value as LeadSortBy)
+    : undefined;
+}
+
+function parseSortDir(value: string | null): LeadSortDir | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return value === 'asc' || value === 'desc' ? value : undefined;
+}
 
 type LeadsExportResponse =
   | Lead[]
@@ -84,6 +114,8 @@ export default function LeadsPage() {
   const filtersParam = searchParams.get('filters');
   const pageParam = searchParams.get('page');
   const limitParam = searchParams.get('limit');
+  const sortByParam = parseSortBy(searchParams.get('sortBy'));
+  const sortDirParam = parseSortDir(searchParams.get('sortDir'));
   const currentPage = parsePositiveQueryNumber(pageParam, DEFAULT_PAGE);
   const currentLimit = parsePositiveQueryNumber(limitParam, DEFAULT_LIMIT);
 
@@ -96,6 +128,8 @@ export default function LeadsPage() {
     filters: filtersParam ?? undefined,
     page: currentPage,
     limit: currentLimit,
+    sortBy: sortByParam,
+    sortDir: sortDirParam,
   });
   const pipelineStagesQuery = usePipelineStagesQuery();
 
@@ -161,6 +195,28 @@ export default function LeadsPage() {
       });
     },
     [currentLimit, pathname, router, searchParams]
+  );
+
+  const handleSortChange = useCallback(
+    (nextSortBy?: LeadSortBy, nextSortDir?: LeadSortDir) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+
+      if (!nextSortBy || !nextSortDir) {
+        nextParams.delete('sortBy');
+        nextParams.delete('sortDir');
+      } else {
+        nextParams.set('sortBy', nextSortBy);
+        nextParams.set('sortDir', nextSortDir);
+      }
+
+      nextParams.set('page', '1');
+
+      const query = nextParams.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams]
   );
 
   const handleDeleteLead = async (lead: Lead) => {
@@ -328,6 +384,9 @@ export default function LeadsPage() {
               pagination={paginationMeta}
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
+              sortBy={sortByParam}
+              sortDir={sortDirParam}
+              onSortChange={handleSortChange}
             />
           </TabsContent>
 

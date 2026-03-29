@@ -2,6 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import {
+  type ColumnDef,
+  getCoreRowModel,
+  type OnChangeFn,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table';
+import {
+  ArrowDown,
+  ArrowUp,
   Check,
   Copy,
   Eye,
@@ -61,7 +70,13 @@ import {
 } from '@/hooks/useLeads';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Lead, LeadsMeta, LeadStatus } from '@/types/leads';
+import type {
+  Lead,
+  LeadSortBy,
+  LeadSortDir,
+  LeadsMeta,
+  LeadStatus,
+} from '@/types/leads';
 
 import { EditLeadSheet } from './EditLeadSheet';
 import { LeadDetailSheet } from './LeadDetailSheet';
@@ -75,6 +90,9 @@ type LeadsDataTableProps = {
   pagination: LeadsMeta;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
+  sortBy?: LeadSortBy;
+  sortDir?: LeadSortDir;
+  onSortChange: (sortBy?: LeadSortBy, sortDir?: LeadSortDir) => void;
 };
 
 const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
@@ -196,6 +214,9 @@ export function LeadsDataTable({
   pagination,
   onPageChange,
   onLimitChange,
+  sortBy,
+  sortDir,
+  onSortChange,
 }: LeadsDataTableProps) {
   const t = useTranslations('Leads');
   const { hasPermission } = usePermissions();
@@ -208,6 +229,72 @@ export function LeadsDataTable({
   const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
   const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+
+  const sortingState = useMemo<SortingState>(() => {
+    if (!sortBy || !sortDir) {
+      return [];
+    }
+
+    return [
+      {
+        id: sortBy,
+        desc: sortDir === 'desc',
+      },
+    ];
+  }, [sortBy, sortDir]);
+
+  const sortingColumns = useMemo<ColumnDef<Lead>[]>(
+    () => [
+      {
+        id: 'first_name',
+        accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+      },
+      {
+        id: 'priority',
+        accessorKey: 'priority',
+      },
+      {
+        id: 'estimated_value',
+        accessorKey: 'estimated_value',
+      },
+      {
+        id: 'created_at',
+        accessorKey: 'created_at',
+      },
+    ],
+    []
+  );
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    const nextSorting =
+      typeof updater === 'function' ? updater(sortingState) : updater;
+    const primarySort = nextSorting[0];
+
+    if (!primarySort || !primarySort.id) {
+      onSortChange(undefined, undefined);
+      return;
+    }
+
+    onSortChange(
+      primarySort.id as LeadSortBy,
+      primarySort.desc ? 'desc' : 'asc'
+    );
+  };
+
+  const table = useReactTable({
+    data: leads,
+    columns: sortingColumns,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+    onSortingChange: handleSortingChange,
+    state: {
+      sorting: sortingState,
+    },
+  });
 
   const canEditLeads =
     hasPermission(AppResource.LEADS, AppAction.EDIT) ||
@@ -413,6 +500,29 @@ export function LeadsDataTable({
     }
   };
 
+  const handleSortToggle = (columnId: LeadSortBy) => {
+    const column = table.getColumn(columnId);
+    if (!column) {
+      return;
+    }
+
+    column.toggleSorting(column.getIsSorted() === 'asc');
+  };
+
+  const getSortIndicator = (columnId: LeadSortBy) => {
+    const sortedState = table.getColumn(columnId)?.getIsSorted();
+
+    if (sortedState === 'asc') {
+      return <ArrowUp className="h-3.5 w-3.5" />;
+    }
+
+    if (sortedState === 'desc') {
+      return <ArrowDown className="h-3.5 w-3.5" />;
+    }
+
+    return null;
+  };
+
   if (isLoading) {
     return (
       <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
@@ -474,7 +584,14 @@ export function LeadsDataTable({
                   />
                 </TableHead>
                 <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.lead')}
+                  <button
+                    type="button"
+                    onClick={() => handleSortToggle('first_name')}
+                    className="inline-flex items-center gap-1"
+                  >
+                    {t('tableHeaders.lead')}
+                    {getSortIndicator('first_name')}
+                  </button>
                 </TableHead>
                 <TableHead className="text-muted-foreground">
                   {t('tableHeaders.source')}
@@ -483,16 +600,44 @@ export function LeadsDataTable({
                   {t('tableHeaders.assignedTo')}
                 </TableHead>
                 <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.priority')}
+                  <button
+                    type="button"
+                    onClick={() => handleSortToggle('priority')}
+                    className="inline-flex items-center gap-1"
+                  >
+                    {t('tableHeaders.priority')}
+                    {getSortIndicator('priority')}
+                  </button>
                 </TableHead>
                 <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.status')}
+                  <button
+                    type="button"
+                    onClick={() => handleSortToggle('status')}
+                    className="inline-flex items-center gap-1"
+                  >
+                    {t('tableHeaders.status')}
+                    {getSortIndicator('status')}
+                  </button>
                 </TableHead>
                 <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.estimatedValue')}
+                  <button
+                    type="button"
+                    onClick={() => handleSortToggle('estimated_value')}
+                    className="inline-flex items-center gap-1"
+                  >
+                    {t('tableHeaders.estimatedValue')}
+                    {getSortIndicator('estimated_value')}
+                  </button>
                 </TableHead>
                 <TableHead className="text-muted-foreground">
-                  {t('tableHeaders.createdAt')}
+                  <button
+                    type="button"
+                    onClick={() => handleSortToggle('created_at')}
+                    className="inline-flex items-center gap-1"
+                  >
+                    {t('tableHeaders.createdAt')}
+                    {getSortIndicator('created_at')}
+                  </button>
                 </TableHead>
                 <TableHead className="text-muted-foreground text-right">
                   {t('tableHeaders.actions')}

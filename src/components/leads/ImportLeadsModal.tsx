@@ -294,21 +294,8 @@ export function ImportLeadsModal({
       return false;
     }
 
-    const hasRequiredMapping = REQUIRED_MAPPING_FIELDS.every(
-      (field) => mapping[field].length > 0
-    );
-
-    const hasRequiredSettings =
-      batchSettings.status.length > 0 &&
-      batchSettings.priority.length > 0 &&
-      batchSettings.source_id.length > 0 &&
-      batchSettings.pipeline_stage_id.length > 0 &&
-      batchSettings.country.length > 0 &&
-      batchSettings.timezone.length > 0 &&
-      batchSettings.primary_language.length > 0;
-
-    return hasRequiredMapping && hasRequiredSettings;
-  }, [batchSettings, mapping, phase, rows.length]);
+    return REQUIRED_MAPPING_FIELDS.every((field) => mapping[field].length > 0);
+  }, [mapping, phase, rows.length]);
 
   const resetState = () => {
     setPhase('upload');
@@ -450,29 +437,47 @@ export function ImportLeadsModal({
         continue;
       }
 
-      const selectedStatus = batchSettings.status as LeadStatus;
-      const selectedPriority = batchSettings.priority as LeadPriority;
-
-      const payload: CreateLeadPayload = {
+      const payload: Record<string, unknown> = {
         ...STATIC_CREATE_PAYLOAD_DEFAULTS,
         first_name: firstName,
         last_name: lastName,
         phone_number: phoneNumber,
-        email: emailValue || null,
-        status: selectedStatus,
-        priority: selectedPriority,
-        country: batchSettings.country,
-        timezone: batchSettings.timezone,
-        primary_language: batchSettings.primary_language,
-        source_id:
-          batchSettings.source_id === NONE_VALUE
-            ? null
-            : batchSettings.source_id,
-        pipeline_stage_id:
-          batchSettings.pipeline_stage_id === NONE_VALUE
-            ? null
-            : batchSettings.pipeline_stage_id,
       };
+
+      if (emailValue.length > 0) {
+        payload.email = emailValue;
+      }
+
+      if (batchSettings.status) {
+        payload.status = batchSettings.status;
+      }
+
+      if (batchSettings.priority) {
+        payload.priority = batchSettings.priority;
+      }
+
+      if (batchSettings.country) {
+        payload.country = batchSettings.country;
+      }
+
+      if (batchSettings.timezone) {
+        payload.timezone = batchSettings.timezone;
+      }
+
+      if (batchSettings.primary_language) {
+        payload.primary_language = batchSettings.primary_language;
+      }
+
+      if (batchSettings.source_id && batchSettings.source_id !== NONE_VALUE) {
+        payload.source_id = batchSettings.source_id;
+      }
+
+      if (
+        batchSettings.pipeline_stage_id &&
+        batchSettings.pipeline_stage_id !== NONE_VALUE
+      ) {
+        payload.pipeline_stage_id = batchSettings.pipeline_stage_id;
+      }
 
       try {
         await api.post(`/organizations/${organizationId}/leads`, payload);
@@ -638,7 +643,7 @@ export function ImportLeadsModal({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_VALUE}>
-                          {t('import.settings.select')}
+                          {t('import.settings.none')}
                         </SelectItem>
                         {statusOptions.map((status) => (
                           <SelectItem key={status} value={status}>
@@ -670,7 +675,7 @@ export function ImportLeadsModal({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_VALUE}>
-                          {t('import.settings.select')}
+                          {t('import.settings.none')}
                         </SelectItem>
                         {priorityOptions.map((priority) => (
                           <SelectItem key={priority} value={priority}>
@@ -765,7 +770,7 @@ export function ImportLeadsModal({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_VALUE}>
-                          {t('import.settings.select')}
+                          {t('import.settings.none')}
                         </SelectItem>
                         {countryOptions.map((country) => (
                           <SelectItem key={country.value} value={country.value}>
@@ -796,7 +801,7 @@ export function ImportLeadsModal({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_VALUE}>
-                          {t('import.settings.select')}
+                          {t('import.settings.none')}
                         </SelectItem>
                         {timezoneOptions.map((timezone) => (
                           <SelectItem
@@ -830,7 +835,7 @@ export function ImportLeadsModal({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE_VALUE}>
-                          {t('import.settings.select')}
+                          {t('import.settings.none')}
                         </SelectItem>
                         {languageOptions.map((language) => (
                           <SelectItem

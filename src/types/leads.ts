@@ -4,6 +4,15 @@ export type LeadStatus = 'OPEN' | 'WON' | 'LOST' | 'UNQUALIFIED';
 
 export type LeadPriority = 'HOT' | 'WARM' | 'COLD';
 
+export type LeadSortBy =
+  | 'first_name'
+  | 'status'
+  | 'priority'
+  | 'estimated_value'
+  | 'created_at';
+
+export type LeadSortDir = 'asc' | 'desc';
+
 export type LeadCurrency = 'USD' | 'TRY' | 'EUR' | 'GBP';
 
 export type LeadSocialLinks = Record<string, string> | null;
@@ -41,6 +50,8 @@ export type LeadsQueryFilters = {
   status?: LeadStatus;
   priority?: LeadPriority;
   filters?: string;
+  sortBy?: LeadSortBy;
+  sortDir?: LeadSortDir;
 };
 
 export type LeadsMeta = {

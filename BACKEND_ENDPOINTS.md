@@ -446,8 +446,16 @@ Notes:
   - `page` (optional, int, default `1`)
   - `limit` (optional, int, default `20`, max `100`)
   - `filters` (optional, JSON string encoded array of filter rules)
+  - `sort_by` (optional string)
+  - `sort_dir` (optional string: `asc` or `desc`)
   - `status` (optional enum)
   - `priority` (optional enum)
+
+- Sorting behavior:
+  - Allowed `sort_by` values: `created_at`, `first_name`, `estimated_value`, `status`, `priority`.
+  - If `sort_by` is invalid or missing, server defaults to `created_at`.
+  - If `sort_dir` is invalid or missing, server defaults to `desc`.
+  - Default order with no sort params: `created_at desc`.
 
 - Advanced `filters` format:
   - JSON array of rules in this shape: `{ "field": string, "operator": "equals" | "in", "value": any }`
@@ -906,3 +914,45 @@ PBAC:
 
 - Response 204:
   - No response body.
+
+## Chat API
+
+Base route: `/api/v1/chat`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+
+### GET /api/v1/chat/conversations/:conversationId/messages
+
+- Query params:
+  - `cursor` (optional string, message UUID/id)
+  - `limit` (optional int, default `50`)
+
+- Pagination behavior:
+  - Returns messages ordered by `created_at` descending (newest first).
+  - If `cursor` is provided, results start after that message (`skip: 1`) and continue in descending order.
+
+- Response 200:
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "uuid",
+      "conversation_id": "uuid",
+      "sender_id": "uuid",
+      "content": "Latest message",
+      "created_at": "2026-03-29T16:40:00.000Z",
+      "updated_at": "2026-03-29T16:40:00.000Z",
+      "sender": {
+        "id": "uuid",
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email": "jane@example.com"
+      }
+    }
+  ]
+}
+```
