@@ -1,13 +1,22 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, Copy, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +55,7 @@ import {
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
 import {
+  useBulkUpdateLeadsMutation,
   useOrganizationMembersQuery,
   useUpdateLeadMutation,
 } from '@/hooks/useLeads';
@@ -69,6 +79,7 @@ type LeadsDataTableProps = {
 
 const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+const UNASSIGNED_AGENT_VALUE = '__unassigned__';
 
 function getPriorityBadgeClass(priority: string): string {
   switch (priority) {
@@ -191,10 +202,12 @@ export function LeadsDataTable({
   const membersQuery = useOrganizationMembersQuery();
   const leadSourcesQuery = useLeadSourcesQuery();
   const updateLeadMutation = useUpdateLeadMutation();
+  const bulkUpdateLeadsMutation = useBulkUpdateLeadsMutation();
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [viewingLead, setViewingLead] = useState<Lead | null>(null);
   const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
   const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   const canEditLeads =
     hasPermission(AppResource.LEADS, AppAction.EDIT) ||
@@ -245,6 +258,15 @@ export function LeadsDataTable({
     totalRows === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
   const visibleTo =
     totalRows === 0 ? 0 : Math.min(currentPage * currentLimit, totalRows);
+
+  const selectedLeadIds = useMemo(
+    () => leads.filter((lead) => rowSelection[lead.id]).map((lead) => lead.id),
+    [leads, rowSelection]
+  );
+  const selectedRowsCount = selectedLeadIds.length;
+  const allRowsSelected =
+    leads.length > 0 && selectedRowsCount === leads.length;
+  const someRowsSelected = selectedRowsCount > 0 && !allRowsSelected;
 
   const handleInlineUpdate = async (
     leadId: string,
@@ -305,6 +327,92 @@ export function LeadsDataTable({
     }
   };
 
+  const handleToggleAllRows = (checked: boolean) => {
+    if (!checked) {
+      setRowSelection({});
+      return;
+    }
+
+    const nextSelection: Record<string, boolean> = {};
+    leads.forEach((lead) => {
+      nextSelection[lead.id] = true;
+    });
+
+    setRowSelection(nextSelection);
+  };
+
+  const handleToggleRow = (leadId: string, checked: boolean) => {
+    setRowSelection((previousSelection) => {
+      if (!checked) {
+        const nextSelection = { ...previousSelection };
+        delete nextSelection[leadId];
+        return nextSelection;
+      }
+
+      return {
+        ...previousSelection,
+        [leadId]: true,
+      };
+    });
+  };
+
+  const handleClearSelection = () => {
+    setRowSelection({});
+  };
+
+  const handleBulkStatusUpdate = async (status: LeadStatus) => {
+    if (selectedLeadIds.length === 0) {
+      return;
+    }
+
+    try {
+      await bulkUpdateLeadsMutation.mutateAsync({
+        lead_ids: selectedLeadIds,
+        update_data: {
+          status,
+        },
+      });
+
+      toast.success(
+        t('bulkBar.statusUpdatedSuccess', {
+          count: selectedLeadIds.length,
+        })
+      );
+      setRowSelection({});
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError) || t('bulkBar.updateError'));
+    }
+  };
+
+  const handleBulkAgentUpdate = async (assignedAgentIdValue: string) => {
+    if (selectedLeadIds.length === 0) {
+      return;
+    }
+
+    const assignedAgentId =
+      assignedAgentIdValue === UNASSIGNED_AGENT_VALUE
+        ? null
+        : assignedAgentIdValue;
+
+    try {
+      await bulkUpdateLeadsMutation.mutateAsync({
+        lead_ids: selectedLeadIds,
+        update_data: {
+          assigned_agent_id: assignedAgentId,
+        },
+      });
+
+      toast.success(
+        t('bulkBar.agentUpdatedSuccess', {
+          count: selectedLeadIds.length,
+        })
+      );
+      setRowSelection({});
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError) || t('bulkBar.updateError'));
+    }
+  };
+
   if (isLoading) {
     return (
       <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
@@ -350,6 +458,21 @@ export function LeadsDataTable({
           <Table>
             <TableHeader>
               <TableRow className="border-white/5 hover:bg-transparent">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={
+                      allRowsSelected
+                        ? true
+                        : someRowsSelected
+                          ? 'indeterminate'
+                          : false
+                    }
+                    onCheckedChange={(checked) =>
+                      handleToggleAllRows(checked === true)
+                    }
+                    aria-label={t('bulkBar.selectAll')}
+                  />
+                </TableHead>
                 <TableHead className="text-muted-foreground">
                   {t('tableHeaders.lead')}
                 </TableHead>
@@ -404,6 +527,17 @@ export function LeadsDataTable({
                     key={lead.id}
                     className="border-white/5 hover:bg-white/5"
                   >
+                    <TableCell className="w-10">
+                      <Checkbox
+                        checked={Boolean(rowSelection[lead.id])}
+                        onCheckedChange={(checked) =>
+                          handleToggleRow(lead.id, checked === true)
+                        }
+                        aria-label={t('bulkBar.selectLead', {
+                          name: leadName || t('unknownLeadName'),
+                        })}
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
                         <p className="text-foreground text-sm font-medium">
@@ -741,6 +875,71 @@ export function LeadsDataTable({
           </Pagination>
         </div>
       </section>
+
+      {selectedRowsCount > 0 ? (
+        <div className="bg-background/95 border-border fixed bottom-8 left-1/2 z-50 flex w-[min(92vw,760px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-2xl backdrop-blur-sm">
+          <p className="text-foreground text-sm font-semibold">
+            {t('bulkBar.selectedCount', { count: selectedRowsCount })}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              onValueChange={(value) => {
+                void handleBulkStatusUpdate(value as LeadStatus);
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-40"
+                disabled={bulkUpdateLeadsMutation.isPending}
+              >
+                <SelectValue placeholder={t('bulkBar.changeStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {t(`status.${status}` as never)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              onValueChange={(value) => {
+                void handleBulkAgentUpdate(value);
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-44"
+                disabled={
+                  bulkUpdateLeadsMutation.isPending || membersQuery.isLoading
+                }
+              >
+                <SelectValue placeholder={t('bulkBar.assignAgent')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNASSIGNED_AGENT_VALUE}>
+                  {t('bulkBar.unassigned')}
+                </SelectItem>
+                {(membersQuery.data ?? []).map((agent) => (
+                  <SelectItem key={agent.value} value={agent.value}>
+                    {getAgentDisplayName(agent.label)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleClearSelection}
+              aria-label={t('bulkBar.clearSelection')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <EditLeadSheet
         lead={editingLead}

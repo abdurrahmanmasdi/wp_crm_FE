@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
-import { LayoutGrid, List } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { Download, LayoutGrid, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
 import { LeadsKanbanBoard } from '@/components/leads/board/LeadsKanbanBoard';
+import { ImportLeadsModal } from '@/components/leads/ImportLeadsModal';
 import {
   LeadFiltersBar,
   parseLeadFiltersParam,
@@ -16,15 +17,49 @@ import {
   type LeadFilterRule,
 } from '@/components/leads/filters';
 import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useLeads } from '@/hooks/useLeads';
+import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Lead } from '@/types/leads';
+import type { Lead, LeadsListResponse } from '@/types/leads';
+import { exportLeadsToCSV } from '@/utils/csv-export';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
+
+type LeadsExportResponse =
+  | Lead[]
+  | Pick<LeadsListResponse, 'data'>
+  | { items?: Lead[]; leads?: Lead[] };
+
+function extractLeadsFromResponse(data: LeadsExportResponse): Lead[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  const record = data as {
+    data?: Lead[];
+    items?: Lead[];
+    leads?: Lead[];
+  };
+
+  if (Array.isArray(record.data)) {
+    return record.data;
+  }
+
+  if (Array.isArray(record.items)) {
+    return record.items;
+  }
+
+  if (Array.isArray(record.leads)) {
+    return record.leads;
+  }
+
+  return [];
+}
 
 function parsePositiveQueryNumber(
   value: string | null,
@@ -44,6 +79,7 @@ export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('Leads');
+  const [isExporting, setIsExporting] = useState(false);
 
   const filtersParam = searchParams.get('filters');
   const pageParam = searchParams.get('page');
@@ -136,6 +172,45 @@ export default function LeadsPage() {
     }
   };
 
+  const handleExportCsv = useCallback(async () => {
+    if (!organizationId || isExporting) {
+      return;
+    }
+
+    const exportParams = new URLSearchParams(searchParams.toString());
+    exportParams.set('page', '1');
+    exportParams.set('limit', '5000');
+
+    try {
+      setIsExporting(true);
+
+      const { data } = await api.get<LeadsExportResponse>(
+        `/organizations/${organizationId}/leads`,
+        {
+          params: Object.fromEntries(exportParams.entries()),
+        }
+      );
+
+      const leadsForExport = extractLeadsFromResponse(data);
+
+      if (leadsForExport.length === 0) {
+        toast.error(t('export.empty'));
+        return;
+      }
+
+      exportLeadsToCSV(leadsForExport);
+      toast.success(
+        t('export.success', {
+          count: leadsForExport.length,
+        })
+      );
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t('export.error'));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [isExporting, organizationId, searchParams, t]);
+
   const deletingLeadId =
     deleteLeadMutation.isPending &&
     typeof deleteLeadMutation.variables === 'string'
@@ -208,6 +283,27 @@ export default function LeadsPage() {
                 initialRules={initialRules}
                 onRulesChange={handleRulesChange}
               />
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => void handleExportCsv()}
+                disabled={isExporting || leadsQuery.isLoading}
+              >
+                <Download className="h-4 w-4" />
+                {isExporting ? t('export.loading') : t('export.button')}
+              </Button>
+
+              <RequirePermission
+                resource={AppResource.LEADS}
+                action={AppAction.CREATE}
+                fallback="disable"
+              >
+                <ImportLeadsModal
+                  organizationId={organizationId}
+                  disabled={leadsQuery.isLoading}
+                />
+              </RequirePermission>
 
               <RequirePermission
                 resource={AppResource.LEADS}

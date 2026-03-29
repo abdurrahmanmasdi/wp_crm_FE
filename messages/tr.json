@@ -426,6 +426,58 @@
     "pageTitle": "Aday Müşteri Hattı",
     "pageDescription": "Yeni fırsatları takip edin, öncelikleri belirleyin ve satış hattınızı tek yerden yönetin.",
     "addLead": "Aday Müşteri Ekle",
+    "export": {
+      "button": "CSV Dışa Aktar",
+      "loading": "Dışa aktarılıyor...",
+      "empty": "Mevcut filtrelerle eşleşen aday yok",
+      "success": "{count} aday dışa aktarıldı",
+      "error": "Adaylar dışa aktarılamadı"
+    },
+    "import": {
+      "button": "Içe Aktar",
+      "title": "CSV ile Aday Içe Aktar",
+      "description": "Bir CSV yükleyin, kolonları eşleyin ve adayları içe aktarın.",
+      "uploadTitle": "CSV dosyanızı buraya bırakın",
+      "uploadDescription": "İsterseniz dosyayı manuel de seçebilirsiniz.",
+      "cancel": "Iptal",
+      "start": "Içe Aktarmayı Başlat",
+      "parsing": "Ayrıştırılıyor...",
+      "processing": "Içe aktarılıyor {current} / {total}",
+      "processingStats": "Aktarılan: {success} | Başarısız: {failed}",
+      "finished": "Içe aktarma tamamlandı. {total} satırın {success} tanesi aktarıldı ({failed} başarısız).",
+      "mapping": {
+        "fileName": "Dosya: {file}",
+        "rowsCount": "Bulunan satır: {count}",
+        "sectionTitle": "CSV Sütun Eşlemesi",
+        "sectionDescription": "Her alan için hangi CSV sütununun kullanılacağını seçin.",
+        "selectColumn": "CSV kolonu seçin",
+        "none": "Yok",
+        "firstName": "Ad",
+        "lastName": "Soyad",
+        "phone": "Telefon",
+        "email": "E-posta"
+      },
+      "settings": {
+        "sectionTitle": "Genel Toplu Ayarlar",
+        "sectionDescription": "Içe aktarılan tüm adaylara uygulanacak varsayılan değerleri belirleyin.",
+        "select": "Değer seçin",
+        "none": "Yok",
+        "status": "Durum",
+        "priority": "Öncelik",
+        "source": "Aday Kaynağı",
+        "pipelineStage": "Satış Aşaması",
+        "country": "Ülke",
+        "timezone": "Saat Dilimi",
+        "primaryLanguage": "Birincil Dil"
+      },
+      "errors": {
+        "fileType": "Lütfen geçerli bir CSV dosyası seçin",
+        "noHeaders": "CSV başlıkları bulunamadı",
+        "noRows": "CSV içinde satır bulunamadı",
+        "parse": "CSV dosyası ayrıştırılamadı",
+        "mappingRequired": "Içe aktarmadan önce zorunlu alanları eşleyin"
+      }
+    },
     "createComingSoon": "Aday müşteri oluşturma formu yakında eklenecek.",
     "missingOrganizationTitle": "Aktif kuruluş seçilmedi",
     "missingOrganizationDescription": "Aday müşterileri yönetmek için önce bir kuruluş seçin.",
@@ -666,6 +718,18 @@
       "next": "Sonraki",
       "rowsPerPage": "Sayfa başına satır",
       "range": "{total} kayıttan {from}-{to}"
+    },
+    "bulkBar": {
+      "selectAll": "Tüm adayları seç",
+      "selectLead": "{name} seç",
+      "selectedCount": "{count} aday seçildi",
+      "changeStatus": "Durumu Değiştir",
+      "assignAgent": "Ajan Ata",
+      "unassigned": "Atanmamış",
+      "clearSelection": "Seçimi Temizle",
+      "statusUpdatedSuccess": "{count} adayın durumu güncellendi",
+      "agentUpdatedSuccess": "{count} adayın ataması güncellendi",
+      "updateError": "Seçili adaylar güncellenemedi"
     },
     "priority": {
       "HOT": "Yüksek",

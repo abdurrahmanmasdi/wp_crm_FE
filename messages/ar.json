@@ -419,6 +419,58 @@
     "pageTitle": "خط العملاء المحتملين",
     "pageDescription": "تابع الفرص الجديدة وحدد الأولويات ونظف خط المبيعات من مكان واحد.",
     "addLead": "إضافة عميل محتمل",
+    "export": {
+      "button": "تصدير CSV",
+      "loading": "جار التصدير...",
+      "empty": "لا توجد نتائج مطابقة للفلاتر الحالية",
+      "success": "تم تصدير {count} عميل محتمل",
+      "error": "فشل تصدير العملاء المحتملين"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد العملاء المحتملين من CSV",
+      "description": "ارفع ملف CSV، ثم طابق الأعمدة وابدأ الاستيراد.",
+      "uploadTitle": "اسحب ملف CSV هنا",
+      "uploadDescription": "يمكنك أيضا اختيار الملف يدويا.",
+      "cancel": "إلغاء",
+      "start": "بدء الاستيراد",
+      "parsing": "جار التحليل...",
+      "processing": "جار الاستيراد {current} / {total}",
+      "processingStats": "تم الاستيراد: {success} | فشل: {failed}",
+      "finished": "اكتمل الاستيراد. تم استيراد {success} من أصل {total} صفا (فشل {failed}).",
+      "mapping": {
+        "fileName": "الملف: {file}",
+        "rowsCount": "عدد الصفوف المكتشفة: {count}",
+        "sectionTitle": "مطابقة أعمدة CSV",
+        "sectionDescription": "اختر العمود المناسب لكل حقل عميل محتمل.",
+        "selectColumn": "اختر عمود CSV",
+        "none": "بدون",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني"
+      },
+      "settings": {
+        "sectionTitle": "إعدادات الدفعة العامة",
+        "sectionDescription": "حدد القيم الافتراضية التي ستطبق على جميع العملاء المستوردين.",
+        "select": "اختر قيمة",
+        "none": "بدون",
+        "status": "الحالة",
+        "priority": "الأولوية",
+        "source": "مصدر العميل المحتمل",
+        "pipelineStage": "مرحلة خط المبيعات",
+        "country": "الدولة",
+        "timezone": "المنطقة الزمنية",
+        "primaryLanguage": "اللغة الأساسية"
+      },
+      "errors": {
+        "fileType": "يرجى اختيار ملف CSV صالح",
+        "noHeaders": "تعذر العثور على عناوين الأعمدة",
+        "noRows": "لا توجد صفوف في ملف CSV",
+        "parse": "فشل تحليل ملف CSV",
+        "mappingRequired": "يرجى مطابقة الحقول المطلوبة قبل الاستيراد"
+      }
+    },
     "createComingSoon": "نموذج إنشاء عميل محتمل قادم قريبًا.",
     "missingOrganizationTitle": "لا توجد منظمة نشطة محددة",
     "missingOrganizationDescription": "اختر منظمة أولاً لإدارة العملاء المحتملين.",
@@ -666,6 +718,18 @@
       "next": "التالي",
       "rowsPerPage": "عدد الصفوف لكل صفحة",
       "range": "{from}-{to} من {total}"
+    },
+    "bulkBar": {
+      "selectAll": "تحديد جميع العملاء المحتملين",
+      "selectLead": "تحديد {name}",
+      "selectedCount": "تم تحديد {count} عميل محتمل",
+      "changeStatus": "تغيير الحالة",
+      "assignAgent": "تعيين موظف",
+      "unassigned": "غير معيّن",
+      "clearSelection": "مسح التحديد",
+      "statusUpdatedSuccess": "تم تحديث حالة {count} عميل محتمل",
+      "agentUpdatedSuccess": "تم تحديث تعيين {count} عميل محتمل",
+      "updateError": "فشل تحديث العملاء المحددين"
     },
     "priority": {
       "HOT": "مرتفع",

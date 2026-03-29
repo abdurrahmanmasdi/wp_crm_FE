@@ -23,6 +23,11 @@ export type SelectOption = {
   label: string;
 };
 
+export type BulkUpdateLeadsPayload = {
+  lead_ids: string[];
+  update_data: Partial<Pick<UpdateLeadPayload, 'status' | 'assigned_agent_id'>>;
+};
+
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
@@ -297,6 +302,13 @@ async function updateLead(
   return normalizeLead(data);
 }
 
+async function bulkUpdateLeads(
+  orgId: string,
+  payload: BulkUpdateLeadsPayload
+): Promise<void> {
+  await api.patch(`/organizations/${orgId}/leads/bulk`, payload);
+}
+
 async function deleteLead(orgId: string, leadId: string): Promise<void> {
   await api.delete(`/organizations/${orgId}/leads/${leadId}`);
 }
@@ -365,6 +377,26 @@ export function useUpdateLeadMutation() {
       }
 
       return updateLead(organizationId, leadId, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['leads', organizationId],
+      });
+    },
+  });
+}
+
+export function useBulkUpdateLeadsMutation() {
+  const queryClient = useQueryClient();
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
+  return useMutation({
+    mutationFn: (payload: BulkUpdateLeadsPayload) => {
+      if (!organizationId) {
+        throw new Error('No active organization selected.');
+      }
+
+      return bulkUpdateLeads(organizationId, payload);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({

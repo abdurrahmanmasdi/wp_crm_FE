@@ -419,6 +419,58 @@
     "pageTitle": "Lead Pipeline",
     "pageDescription": "Track incoming opportunities, prioritize follow-up, and clean your pipeline from one place.",
     "addLead": "Add Lead",
+    "export": {
+      "button": "Export CSV",
+      "loading": "Exporting...",
+      "empty": "No leads match the current filters",
+      "success": "Exported {count} leads",
+      "error": "Failed to export leads"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import Leads from CSV",
+      "description": "Upload a CSV, map its columns, then import leads.",
+      "uploadTitle": "Drop your CSV file here",
+      "uploadDescription": "You can also pick a file manually.",
+      "cancel": "Cancel",
+      "start": "Start Import",
+      "parsing": "Parsing...",
+      "processing": "Importing {current} / {total}",
+      "processingStats": "Imported: {success} | Failed: {failed}",
+      "finished": "Import finished. Imported {success} of {total} rows ({failed} failed).",
+      "mapping": {
+        "fileName": "File: {file}",
+        "rowsCount": "Rows detected: {count}",
+        "sectionTitle": "CSV Column Mapping",
+        "sectionDescription": "Choose which CSV column maps to each lead field.",
+        "selectColumn": "Select CSV column",
+        "none": "None",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "phone": "Phone",
+        "email": "Email"
+      },
+      "settings": {
+        "sectionTitle": "Global Batch Settings",
+        "sectionDescription": "Set default values that apply to every imported lead.",
+        "select": "Select value",
+        "none": "None",
+        "status": "Status",
+        "priority": "Priority",
+        "source": "Lead Source",
+        "pipelineStage": "Pipeline Stage",
+        "country": "Country",
+        "timezone": "Timezone",
+        "primaryLanguage": "Primary Language"
+      },
+      "errors": {
+        "fileType": "Please select a valid CSV file",
+        "noHeaders": "Could not find CSV headers",
+        "noRows": "No rows found in the CSV",
+        "parse": "Failed to parse the CSV file",
+        "mappingRequired": "Please map required fields before importing"
+      }
+    },
     "createComingSoon": "Lead creation form is coming soon.",
     "missingOrganizationTitle": "No active organization selected",
     "missingOrganizationDescription": "Select an organization first to manage leads.",
@@ -666,6 +718,18 @@
       "next": "Next",
       "rowsPerPage": "Rows per page",
       "range": "{from}-{to} of {total}"
+    },
+    "bulkBar": {
+      "selectAll": "Select all leads",
+      "selectLead": "Select {name}",
+      "selectedCount": "{count} leads selected",
+      "changeStatus": "Change Status",
+      "assignAgent": "Assign Agent",
+      "unassigned": "Unassigned",
+      "clearSelection": "Clear Selection",
+      "statusUpdatedSuccess": "Status updated for {count} leads",
+      "agentUpdatedSuccess": "Assignee updated for {count} leads",
+      "updateError": "Failed to update selected leads"
     },
     "priority": {
       "HOT": "Hot",

@@ -580,6 +580,44 @@ Notes:
 - Response 200:
   - Returns updated Lead object in snake_case.
 
+### PATCH /api/v1/organizations/:organizationId/leads/bulk
+
+- Access control:
+  - Requires permission: `leads:edit` (or hierarchy equivalent such as `leads:edit_all` or `leads:manage`).
+
+- Body DTO: `BulkUpdateLeadsDto`
+
+```json
+{
+  "lead_ids": [
+    "c7fce87c-5ef2-4ed2-929e-67b703796790",
+    "7d98e03d-8f94-4dc1-9d97-d65f06a24a87"
+  ],
+  "update_data": {
+    "status": "WON",
+    "priority": "HOT",
+    "assigned_agent_id": "f9ce8f72-9ec8-4db0-bf07-614ec2ec6143",
+    "pipeline_stage_id": "2f41db92-cdf8-4a6c-a40f-a35e9f8d9f2a"
+  }
+}
+```
+
+- Field rules:
+  - `lead_ids` must be an array of valid UUIDs with at least one item.
+  - `update_data` supports optional fields only: `status`, `priority`, `assigned_agent_id`, `pipeline_stage_id`.
+
+- Security behavior:
+  - Update scope always enforces tenant isolation using organization + ids.
+  - If caller does not have `leads:edit_all` (or elevated equivalent), updates are additionally constrained to `assigned_agent_id = currentUserId`.
+
+- Response 200:
+
+```json
+{
+  "updated_count": 2
+}
+```
+
 ### DELETE /api/v1/organizations/:organizationId/leads/:leadId
 
 - Access control:
