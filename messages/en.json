@@ -377,6 +377,22 @@
     "sampleInquiry3Destination": "Antalya Coast Explorer",
     "sampleInquiry3Value": "$2,900"
   },
+  "dashboard": {
+    "title": "Analytics Dashboard",
+    "description": "Track lead performance, pipeline value, and recent activity in real time.",
+    "kpi_total_leads": "Total Leads",
+    "kpi_pipeline_value": "Pipeline Value",
+    "kpi_active_stages": "Active Stages",
+    "charts_leads_by_stage": "Leads by Stage",
+    "charts_leads_by_source": "Leads by Source",
+    "recent_activity_title": "Recent Activity",
+    "no_recent_activity": "No recent leads yet.",
+    "empty_no_stage_data": "No stage data available yet.",
+    "empty_no_source_data": "No source data available yet.",
+    "empty_no_organization": "Select an organization to view dashboard analytics.",
+    "error_load_failed": "Failed to load dashboard analytics.",
+    "unknown_lead": "Unknown lead"
+  },
   "Chat": {
     "newChatTitle": "Start New Chat",
     "newChatDescription": "Select a team member to start a new conversation",

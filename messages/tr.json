@@ -384,6 +384,22 @@
     "sampleInquiry3Destination": "Antalya Sahili Gezisi",
     "sampleInquiry3Value": "$2.900"
   },
+  "dashboard": {
+    "title": "Analitik Kontrol Paneli",
+    "description": "Müşteri adayı performansını, satış hattı değerini ve son aktiviteleri gerçek zamanlı takip edin.",
+    "kpi_total_leads": "Toplam Aday Müşteri",
+    "kpi_pipeline_value": "Satış Hattı Değeri",
+    "kpi_active_stages": "Aktif Aşamalar",
+    "charts_leads_by_stage": "Aşamaya Göre Aday Müşteriler",
+    "charts_leads_by_source": "Kaynağa Göre Aday Müşteriler",
+    "recent_activity_title": "Son Aktivite",
+    "no_recent_activity": "Henüz son müşteri adayı yok.",
+    "empty_no_stage_data": "Henüz aşama verisi yok.",
+    "empty_no_source_data": "Henüz kaynak verisi yok.",
+    "empty_no_organization": "Dashboard analizlerini görmek için bir kuruluş seçin.",
+    "error_load_failed": "Dashboard analizleri yüklenemedi.",
+    "unknown_lead": "Bilinmeyen müşteri adayı"
+  },
   "Chat": {
     "newChatTitle": "Yeni Sohbet Başlat",
     "newChatDescription": "Yeni bir sohbet başlatmak için bir ekip üyesi seçin",

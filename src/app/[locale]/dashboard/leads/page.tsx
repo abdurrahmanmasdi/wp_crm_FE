@@ -2,13 +2,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
-import { LeadsKanbanBoard } from '@/components/leads/board/LeadsKanbanBoard';
 import {
   parseLeadFiltersParam,
   serializeLeadFiltersParam,
@@ -38,6 +38,19 @@ const SORTABLE_FIELDS: LeadSortBy[] = [
   'estimated_value',
   'created_at',
 ];
+
+const LeadsKanbanBoard = dynamic(
+  () =>
+    import('@/components/leads/board/LeadsKanbanBoard').then(
+      (mod) => mod.LeadsKanbanBoard
+    ),
+  {
+    loading: () => (
+      <div className="border-muted h-[600px] w-full animate-pulse rounded-xl border-2 border-dashed" />
+    ),
+    ssr: false,
+  }
+);
 
 function parseSortBy(value: string | null): LeadSortBy | undefined {
   if (!value) {
@@ -313,7 +326,7 @@ export default function LeadsPage() {
           className="flex min-h-0 flex-1 flex-col gap-3"
         >
           <div className="bg-card rounded-xl border border-white/5 p-2 shadow-2xl shadow-black/20">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <TabsList className="bg-background grid h-8 w-auto grid-cols-2 rounded-lg border border-white/5 p-0.5">
                 <TabsTrigger
                   value="list"

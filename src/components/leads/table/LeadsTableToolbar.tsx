@@ -2,10 +2,10 @@
 
 import type { Table } from '@tanstack/react-table';
 import { Download, Search } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 import { RequirePermission } from '@/components/auth/RequirePermission';
-import { ImportLeadsModal } from '@/components/leads/ImportLeadsModal';
 import {
   LeadFiltersBar,
   type LeadFilterRule,
@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 import type { LeadWithRelations } from '@/types/leads';
+
+const ImportLeadsModal = dynamic(
+  () => import('../ImportLeadsModal').then((mod) => mod.ImportLeadsModal),
+  {
+    ssr: false,
+  }
+);
 
 type LeadsTableToolbarProps = {
   table: Table<LeadWithRelations>;

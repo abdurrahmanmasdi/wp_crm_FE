@@ -63,4 +63,8 @@ export const queryKeys = {
     leadSources: (orgId: OrganizationId, scope: 'active' | 'all' = 'all') =>
       ['crm-settings', 'lead-sources', orgId, scope] as const,
   },
+
+  analytics: {
+    dashboard: (orgId: string) => ['analytics', 'dashboard', orgId] as const,
+  },
 } as const;

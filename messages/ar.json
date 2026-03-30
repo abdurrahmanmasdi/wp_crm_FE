@@ -377,6 +377,22 @@
     "sampleInquiry3Destination": "مستكشف الساحل الأنطالي",
     "sampleInquiry3Value": "$2,900"
   },
+  "dashboard": {
+    "title": "لوحة تحليلات",
+    "description": "تابع أداء العملاء المحتملين وقيمة خط المبيعات وآخر الأنشطة بشكل فوري.",
+    "kpi_total_leads": "إجمالي العملاء المحتملين",
+    "kpi_pipeline_value": "قيمة خط المبيعات",
+    "kpi_active_stages": "المراحل النشطة",
+    "charts_leads_by_stage": "العملاء حسب المرحلة",
+    "charts_leads_by_source": "العملاء حسب المصدر",
+    "recent_activity_title": "آخر الأنشطة",
+    "no_recent_activity": "لا يوجد عملاء محتملون حديثون حتى الآن.",
+    "empty_no_stage_data": "لا توجد بيانات مراحل حتى الآن.",
+    "empty_no_source_data": "لا توجد بيانات مصادر حتى الآن.",
+    "empty_no_organization": "اختر منظمة لعرض تحليلات لوحة التحكم.",
+    "error_load_failed": "تعذر تحميل تحليلات لوحة التحكم.",
+    "unknown_lead": "عميل محتمل غير معروف"
+  },
   "Chat": {
     "newChatTitle": "بدء محادثة جديدة",
     "newChatDescription": "اختر عضوا من الفريق لبدء محادثة جديدة",
