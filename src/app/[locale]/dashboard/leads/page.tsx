@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
@@ -18,6 +18,7 @@ import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useLeads } from '@/hooks/useLeads';
 import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
@@ -122,26 +123,60 @@ export default function LeadsPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const filtersParam = searchParams.get('filters');
+  const searchParam = searchParams.get('search') ?? '';
   const pageParam = searchParams.get('page');
   const limitParam = searchParams.get('limit');
   const sortByParam = parseSortBy(searchParams.get('sortBy'));
   const sortDirParam = parseSortDir(searchParams.get('sortDir'));
   const currentPage = parsePositiveQueryNumber(pageParam, DEFAULT_PAGE);
   const currentLimit = parsePositiveQueryNumber(limitParam, DEFAULT_LIMIT);
+  const [searchInput, setSearchInput] = useState(searchParam);
+  const debouncedSearch = useDebounce(searchInput, 500);
 
   const initialRules = useMemo(
     () => parseLeadFiltersParam(filtersParam),
     [filtersParam]
   );
 
-  const { organizationId, leadsQuery, deleteLeadMutation } = useLeads({
-    filters: filtersParam ?? undefined,
-    page: currentPage,
-    limit: currentLimit,
-    sortBy: sortByParam,
-    sortDir: sortDirParam,
-  });
+  const { organizationId, leadsQuery, deleteLeadMutation } = useLeads(
+    {
+      filters: filtersParam ?? undefined,
+      page: currentPage,
+      limit: currentLimit,
+      sortBy: sortByParam,
+      sortDir: sortDirParam,
+    },
+    debouncedSearch
+  );
   const pipelineStagesQuery = usePipelineStagesQuery();
+
+  useEffect(() => {
+    setSearchInput(searchParam);
+  }, [searchParam]);
+
+  useEffect(() => {
+    const normalizedSearch = debouncedSearch.trim();
+    const normalizedParam = searchParam.trim();
+
+    if (normalizedSearch === normalizedParam) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (!normalizedSearch) {
+      nextParams.delete('search');
+    } else {
+      nextParams.set('search', normalizedSearch);
+    }
+
+    nextParams.set('page', '1');
+
+    const query = nextParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  }, [debouncedSearch, pathname, router, searchParam, searchParams]);
 
   const handleRulesChange = useCallback(
     (rules: LeadFilterRule[]) => {
@@ -222,6 +257,25 @@ export default function LeadsPage() {
       nextParams.set('page', '1');
 
       const query = nextParams.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const handleSearchChange = useCallback(
+    (nextValue: string) => {
+      setSearchInput(nextValue);
+
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set('page', '1');
+
+      const query = nextParams.toString();
+      if (query === searchParams.toString()) {
+        return;
+      }
+
       router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
       });
@@ -365,6 +419,8 @@ export default function LeadsPage() {
               organizationId={organizationId}
               initialRules={initialRules}
               onRulesChange={handleRulesChange}
+              searchValue={searchInput}
+              onSearchChange={handleSearchChange}
               onExportCsv={handleExportCsv}
               isExporting={isExporting}
               deletingLeadId={deletingLeadId}

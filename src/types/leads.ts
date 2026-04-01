@@ -49,6 +49,7 @@ export type LeadWithRelations = Lead;
 export type LeadsQueryFilters = {
   page?: number;
   limit?: number;
+  search?: string;
   status?: LeadStatus;
   priority?: LeadPriority;
   filters?: string;

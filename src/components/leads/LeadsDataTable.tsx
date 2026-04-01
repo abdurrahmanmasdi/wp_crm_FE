@@ -4,7 +4,6 @@
 import { useMemo, useState } from 'react';
 import {
   getCoreRowModel,
-  getFilteredRowModel,
   type OnChangeFn,
   type RowSelectionState,
   type SortingState,
@@ -81,6 +80,8 @@ type LeadsDataTableProps = {
   onRulesChange: (rules: LeadFilterRule[]) => void;
   onExportCsv: () => void | Promise<void>;
   isExporting: boolean;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
   onDeleteLead: (lead: LeadWithRelations) => void;
   deletingLeadId: string | null;
   pagination: LeadsMeta;
@@ -187,6 +188,8 @@ export function LeadsDataTable({
   onRulesChange,
   onExportCsv,
   isExporting,
+  searchValue,
+  onSearchChange,
   onDeleteLead,
   deletingLeadId,
   pagination,
@@ -211,7 +214,6 @@ export function LeadsDataTable({
   const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
   const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState('');
 
   const sortingState = useMemo<SortingState>(() => {
     if (!sortBy || !sortDir) {
@@ -246,16 +248,13 @@ export function LeadsDataTable({
     data: leads,
     columns: leadsColumns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     manualSorting: true,
     enableRowSelection: true,
     onSortingChange: handleSortingChange,
     onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting: sortingState,
       rowSelection,
-      globalFilter,
     },
   });
 
@@ -451,10 +450,11 @@ export function LeadsDataTable({
       <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/5 p-3 shadow-2xl shadow-black/20">
         <div className="space-y-4">
           <LeadsTableToolbar
-            table={table}
             organizationId={organizationId}
             initialRules={initialRules}
             onRulesChange={onRulesChange}
+            searchValue={searchValue}
+            onSearchChange={onSearchChange}
             onExportCsv={onExportCsv}
             isExporting={isExporting}
             isLoading={isLoading}

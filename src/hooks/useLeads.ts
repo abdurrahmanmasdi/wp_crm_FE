@@ -471,13 +471,21 @@ export function useOrganizationMembersQuery() {
  * @param filters Optional server-side list filters and pagination/sort settings.
  * @returns Organization context, leads query, and create/update/delete mutation objects.
  */
-export function useLeads(filters?: LeadsQueryFilters) {
+export function useLeads(filters?: LeadsQueryFilters, search?: string) {
   const queryClient = useQueryClient();
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
+  const normalizedSearch = typeof search === 'string' ? search.trim() : '';
+  const normalizedFilters: LeadsQueryFilters = {
+    ...(filters ?? {}),
+    search: normalizedSearch.length > 0 ? normalizedSearch : undefined,
+  };
 
   const leadsQuery = useQuery({
-    queryKey: queryKeys.leads.all(organizationId, toQueryParams(filters)),
-    queryFn: () => fetchLeads(organizationId!, filters),
+    queryKey: queryKeys.leads.all(
+      organizationId,
+      toQueryParams(normalizedFilters)
+    ),
+    queryFn: () => fetchLeads(organizationId!, normalizedFilters),
     enabled: Boolean(organizationId),
     retry: shouldRetryRequest,
   });
