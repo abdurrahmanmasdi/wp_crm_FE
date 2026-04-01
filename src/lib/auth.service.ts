@@ -22,6 +22,14 @@ export type ResetPasswordPayload = {
   newPassword: string;
 };
 
+export type VerifyEmailPayload = {
+  token: string;
+};
+
+export type ResendVerificationPayload = {
+  email: string;
+};
+
 export type LoginResponse = {
   access_token: string;
   user: {
@@ -74,6 +82,12 @@ export const authService = {
   },
   resetPassword(payload: ResetPasswordPayload) {
     return api.post('/auth/reset-password', payload);
+  },
+  verifyEmail(payload: VerifyEmailPayload) {
+    return api.post('/auth/verify-email', payload);
+  },
+  resendVerification(payload: ResendVerificationPayload) {
+    return api.post('/auth/resend-verification', payload);
   },
   me() {
     return api.get<AuthUserProfile>('/users/me');

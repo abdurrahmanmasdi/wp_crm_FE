@@ -364,7 +364,20 @@
     "resettingPassword": "Resetting password...",
     "resetPasswordButton": "Reset password",
     "resetPasswordSuccess": "Password reset successful. You can now log in.",
-    "resetPasswordTokenMissing": "Reset token is missing or invalid. Please use the link from your email."
+    "resetPasswordTokenMissing": "Reset token is missing or invalid. Please use the link from your email.",
+    "verifyEmailTitle": "Email verification",
+    "verifyEmailDescription": "We are checking your verification link now.",
+    "verifyingEmailLoading": "Verifying your email...",
+    "verifyEmailSuccess": "Your email has been verified successfully.",
+    "verifyEmailTokenMissing": "Verification token is missing. Please use the link sent to your email.",
+    "verifyEmailErrorFallback": "Verification failed. The link may be invalid or expired.",
+    "verifyEmailLink": "Verify your email",
+    "proceedToLogin": "Proceed to Login",
+    "resendVerificationTitle": "Need a new verification link?",
+    "resendVerificationButton": "Resend Verification",
+    "resendingVerification": "Resending verification...",
+    "resendVerificationSuccess": "If this email exists, a new verification link has been sent.",
+    "resendVerificationCooldown": "Please wait {seconds}s before requesting another verification link."
   },
   "Dashboard": {
     "overview": "Overview",

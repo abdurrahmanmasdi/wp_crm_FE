@@ -64,6 +64,41 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
 }
 ```
 
+- Behavior:
+  - Verifies and consumes one-time `VERIFICATION` token.
+  - Activates account by setting `is_email_verified = true`.
+
+### POST /api/v1/auth/resend-verification (Public)
+
+- Body DTO: `ResendVerificationDto`
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+- Response 201:
+
+```json
+{
+  "message": "If an account exists, a link has been sent"
+}
+```
+
+- Security behavior:
+  - Returns the same generic message whether user does not exist, is already verified, or is unverified.
+  - Prevents email enumeration.
+
+- Internal behavior (for existing unverified users):
+  - Revokes existing verification tokens.
+  - Issues a new verification token.
+  - Dispatches verification email via MailingService.
+
+- Dev-mode behavior:
+  - If SMTP is disabled and backend is not in production, backend logs:
+    `[DEV MODE] Email Verification Link: <FRONTEND_URL>/auth/verify-email?token=<rawToken>`
+
 ### POST /api/v1/auth/request-password-reset (Public)
 
 - Body DTO: `RequestPasswordResetDto`
@@ -155,6 +190,7 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
   - New users are created with unverified email.
   - Verification token email is dispatched after registration.
   - Login is blocked until email is verified.
+  - In dev mode (SMTP disabled), backend logs the verification URL to console.
 
 - Response 201:
 

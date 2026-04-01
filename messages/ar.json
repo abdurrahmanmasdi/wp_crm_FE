@@ -364,7 +364,20 @@
     "resettingPassword": "جار إعادة تعيين كلمة المرور...",
     "resetPasswordButton": "إعادة تعيين كلمة المرور",
     "resetPasswordSuccess": "تمت إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.",
-    "resetPasswordTokenMissing": "رمز إعادة التعيين مفقود أو غير صالح. يرجى استخدام الرابط من البريد الإلكتروني."
+    "resetPasswordTokenMissing": "رمز إعادة التعيين مفقود أو غير صالح. يرجى استخدام الرابط من البريد الإلكتروني.",
+    "verifyEmailTitle": "تأكيد البريد الإلكتروني",
+    "verifyEmailDescription": "نقوم الآن بالتحقق من رابط التأكيد الخاص بك.",
+    "verifyingEmailLoading": "جار التحقق من بريدك الإلكتروني...",
+    "verifyEmailSuccess": "تم التحقق من بريدك الإلكتروني بنجاح.",
+    "verifyEmailTokenMissing": "رمز التحقق مفقود. يرجى استخدام الرابط المرسل إلى بريدك الإلكتروني.",
+    "verifyEmailErrorFallback": "فشل التحقق. قد يكون الرابط غير صالح أو منتهي الصلاحية.",
+    "verifyEmailLink": "تحقق من بريدك الإلكتروني",
+    "proceedToLogin": "المتابعة إلى تسجيل الدخول",
+    "resendVerificationTitle": "هل تحتاج رابط تحقق جديد؟",
+    "resendVerificationButton": "إعادة إرسال رابط التحقق",
+    "resendingVerification": "جار إعادة إرسال رابط التحقق...",
+    "resendVerificationSuccess": "إذا كان البريد موجودا، فقد تم إرسال رابط تحقق جديد.",
+    "resendVerificationCooldown": "يرجى الانتظار {seconds} ثانية قبل طلب رابط تحقق جديد."
   },
   "Dashboard": {
     "overview": "نظرة عامة",

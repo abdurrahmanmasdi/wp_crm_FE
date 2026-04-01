@@ -371,7 +371,20 @@
     "resettingPassword": "Sifre sifirlaniyor...",
     "resetPasswordButton": "Sifreyi sifirla",
     "resetPasswordSuccess": "Sifre basariyla sifirlandi. Artik giris yapabilirsiniz.",
-    "resetPasswordTokenMissing": "Sifirlama tokeni eksik veya gecersiz. Lutfen e-postadaki baglantiyi kullanin."
+    "resetPasswordTokenMissing": "Sifirlama tokeni eksik veya gecersiz. Lutfen e-postadaki baglantiyi kullanin.",
+    "verifyEmailTitle": "E-posta dogrulama",
+    "verifyEmailDescription": "Dogrulama baglantiniz su anda kontrol ediliyor.",
+    "verifyingEmailLoading": "E-posta adresiniz dogrulaniyor...",
+    "verifyEmailSuccess": "E-posta adresiniz basariyla dogrulandi.",
+    "verifyEmailTokenMissing": "Dogrulama tokeni eksik. Lutfen e-postanizdaki baglantiyi kullanin.",
+    "verifyEmailErrorFallback": "Dogrulama basarisiz. Baglanti gecersiz veya suresi dolmus olabilir.",
+    "verifyEmailLink": "E-postani dogrula",
+    "proceedToLogin": "Girise devam et",
+    "resendVerificationTitle": "Yeni bir dogrulama baglantisi mi gerekiyor?",
+    "resendVerificationButton": "Dogrulamayi yeniden gonder",
+    "resendingVerification": "Dogrulama yeniden gonderiliyor...",
+    "resendVerificationSuccess": "Bu e-posta varsa, yeni bir dogrulama baglantisi gonderildi.",
+    "resendVerificationCooldown": "Lutfen yeni bir dogrulama baglantisi istemeden once {seconds} sn bekleyin."
   },
   "Dashboard": {
     "overview": "Özet",

@@ -74,6 +74,30 @@ function isWrongPasswordError(error: unknown): boolean {
   );
 }
 
+function isUnverifiedEmailError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  const responseMessage =
+    error.response?.data?.message ?? error.response?.data?.error;
+  const normalizedMessage =
+    typeof responseMessage === 'string'
+      ? responseMessage.toLowerCase()
+      : Array.isArray(responseMessage) && responseMessage.length > 0
+        ? String(responseMessage[0]).toLowerCase()
+        : '';
+
+  return (
+    (error.response?.status === 403 &&
+      normalizedMessage.includes('verify') &&
+      normalizedMessage.includes('email')) ||
+    normalizedMessage.includes('email not verified') ||
+    normalizedMessage.includes('unverified') ||
+    normalizedMessage.includes('verification required')
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,6 +105,8 @@ export default function LoginPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [submitError, setSubmitError] = useState('');
   const [showForgotPasswordLink, setShowForgotPasswordLink] = useState(false);
+  const [showVerifyEmailLink, setShowVerifyEmailLink] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
 
   const {
     register,
@@ -97,6 +123,8 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     setSubmitError('');
     setShowForgotPasswordLink(false);
+    setShowVerifyEmailLink(false);
+    setVerificationEmail('');
 
     try {
       const loginResponse = await authService.login(values);
@@ -115,8 +143,15 @@ export default function LoginPage() {
 
       router.push(safeReturnTo ?? '/dashboard');
     } catch (error) {
+      const wrongPasswordError = isWrongPasswordError(error);
+      const unverifiedEmailError = isUnverifiedEmailError(error);
+
       setSubmitError(getApiErrorMessage(error));
-      setShowForgotPasswordLink(isWrongPasswordError(error));
+      setShowForgotPasswordLink(wrongPasswordError && !unverifiedEmailError);
+      setShowVerifyEmailLink(unverifiedEmailError);
+      if (unverifiedEmailError) {
+        setVerificationEmail(values.email.trim());
+      }
     }
   };
 
@@ -183,6 +218,18 @@ export default function LoginPage() {
                     href="/auth/forgot-password"
                   >
                     {t('forgotPasswordTitle')}
+                  </Link>
+                ) : null}
+                {showVerifyEmailLink ? (
+                  <Link
+                    className="text-primary text-sm hover:underline"
+                    href={
+                      verificationEmail
+                        ? `/auth/verify-email?email=${encodeURIComponent(verificationEmail)}`
+                        : '/auth/verify-email'
+                    }
+                  >
+                    {t('verifyEmailLink')}
                   </Link>
                 ) : null}
               </div>
