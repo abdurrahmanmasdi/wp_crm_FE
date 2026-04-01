@@ -41,21 +41,11 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
   const [socket, setSocket] = useState<SocketInstance | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Keep effect dependencies primitive to avoid accidental reconnect loops.
-  const userId = useAuthStore((state) => {
-    const candidate = state.user;
-    if (!candidate || typeof candidate !== 'object' || !('id' in candidate)) {
-      return null;
-    }
-
-    return String((candidate as { id: string }).id);
-  });
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
-  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
 
-  // Primitive auth token dependency; changes trigger a fresh socket session.
+  // Changes to token or org context should recreate the socket session.
   const userToken = Cookies.get('access_token') ?? null;
 
   /**
@@ -64,7 +54,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     // Close any existing socket if auth/org context is no longer valid.
-    if (!_hasHydrated || !userId || !activeOrganizationId || !userToken) {
+    if (!activeOrganizationId || !userToken) {
       if (socketRef.current) {
         socketRef.current.removeAllListeners();
         socketRef.current.disconnect();
@@ -88,7 +78,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
     const socketInstance = io(wsUrl, {
       auth: {
         token: userToken,
-        orgId: activeOrganizationId,
+        organizationId: activeOrganizationId,
       },
       reconnection: true,
       reconnectionDelay: 1000,
@@ -141,7 +131,7 @@ export function ChatSocketProvider({ children }: { children: ReactNode }) {
       setSocket((current) => (current === socketInstance ? null : current));
       setIsConnected(false);
     };
-  }, [_hasHydrated, userId, activeOrganizationId, userToken]);
+  }, [activeOrganizationId, userToken]);
 
   return (
     <ChatSocketContext.Provider value={{ socket, isConnected }}>

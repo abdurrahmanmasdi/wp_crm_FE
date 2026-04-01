@@ -1,13 +1,22 @@
 # Backend Endpoint Contract
 
-Last updated: 2026-03-29
+Last updated: 2026-03-31
 Base URL prefix: `/api/v1`
 
 All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
 
+## Runtime Behavior Updates (Recent)
+
+- Tenant isolation and soft-delete are enforced at Prisma extension level (application-level RLS + universal soft-delete).
+- Tenant-bound queries are automatically scoped by current tenant context; services/controllers should not send manual `organization_id` filters for isolation.
+- Soft-delete filter (`deleted_at: null`) is applied automatically unless an explicit `deleted_at` filter is provided.
+- Chat WebSocket handlers now run inside tenant context before calling ChatService.
+
 ## Auth Routes
 
 ### POST /api/v1/auth/login
+
+- Access: Public
 
 - Body DTO: `LoginDto`
 
@@ -34,6 +43,96 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
 }
 ```
 
+- Side effect:
+  - Sets `Set-Cookie: refresh_token=<opaque-token>` (HttpOnly, SameSite=Strict, Secure in production, `maxAge=7d`).
+
+### POST /api/v1/auth/verify-email (Public)
+
+- Body DTO: `VerifyEmailDto`
+
+```json
+{
+  "token": "raw_verification_token"
+}
+```
+
+- Response 201:
+
+```json
+{
+  "message": "Email verified"
+}
+```
+
+### POST /api/v1/auth/request-password-reset (Public)
+
+- Body DTO: `RequestPasswordResetDto`
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+- Response 201:
+
+```json
+{
+  "message": "If this email exists, a reset link has been sent"
+}
+```
+
+### POST /api/v1/auth/reset-password (Public)
+
+- Body DTO: `ResetPasswordDto`
+
+```json
+{
+  "token": "raw_reset_token",
+  "newPassword": "newSecurePassword123"
+}
+```
+
+- Response 201:
+
+```json
+{
+  "message": "Password reset successful"
+}
+```
+
+### POST /api/v1/auth/refresh (Public)
+
+- Auth mechanism:
+  - Reads refresh token from HttpOnly cookie: `refresh_token`.
+- Body: none
+- Response 201:
+
+```json
+{
+  "access_token": "jwt-token"
+}
+```
+
+- Side effect:
+  - Rotates refresh token and sets a fresh `refresh_token` cookie.
+
+### POST /api/v1/auth/logout (Public)
+
+- Auth mechanism:
+  - Uses `refresh_token` cookie if present.
+- Body: none
+- Response 201:
+
+```json
+{
+  "message": "Logged out"
+}
+```
+
+- Side effect:
+  - Clears `refresh_token` cookie.
+
 ### POST /api/v1/auth/register (Public)
 
 - Body DTO: `RegisterDto`
@@ -47,6 +146,11 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
   "inviteToken": "optional_invitation_token"
 }
 ```
+
+- Notes:
+  - New users are created with unverified email.
+  - Verification token email is dispatched after registration.
+  - Login is blocked until email is verified.
 
 - Response 201:
 
@@ -615,7 +719,7 @@ Notes:
   - `update_data` supports optional fields only: `status`, `priority`, `assigned_agent_id`, `pipeline_stage_id`.
 
 - Security behavior:
-  - Update scope always enforces tenant isolation using organization + ids.
+  - Update scope is enforced by Prisma tenant extension (automatic tenant scoping).
   - If caller does not have `leads:edit_all` (or elevated equivalent), updates are additionally constrained to `assigned_agent_id = currentUserId`.
 
 - Response 200:
@@ -632,7 +736,7 @@ Notes:
   - Requires permission: `leads:delete`.
 
 - Behavior:
-  - Delete is scoped by `organization_id` + `leadId`.
+  - Delete is scoped automatically by Prisma tenant extension + `leadId`.
   - Cross-organization IDs do not delete records.
 
 - Response 204:
@@ -922,6 +1026,95 @@ Base route: `/api/v1/chat`
 Authentication:
 
 - Requires `Authorization: Bearer <jwt>`.
+- Requires `x-organization-id` header for conversation list/create endpoints.
+
+### GET /api/v1/chat/conversations
+
+- Headers:
+  - Required: `x-organization-id: <organization-uuid>`
+- Response 200:
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "uuid",
+      "organization_id": "uuid",
+      "is_group": true,
+      "name": "Sales Team",
+      "participants": [],
+      "messages": [],
+      "created_at": "2026-03-31T09:00:00.000Z",
+      "updated_at": "2026-03-31T09:10:00.000Z"
+    }
+  ]
+}
+```
+
+### POST /api/v1/chat/conversations
+
+- Headers:
+  - Required: `x-organization-id: <organization-uuid>`
+- Body DTO: `CreateConversationDto`
+
+```json
+{
+  "targetUserId": "uuid"
+}
+```
+
+- Response 201:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "uuid",
+    "organization_id": "uuid",
+    "is_group": false,
+    "name": null,
+    "participants": [],
+    "messages": [],
+    "created_at": "2026-03-31T09:00:00.000Z",
+    "updated_at": "2026-03-31T09:00:00.000Z"
+  }
+}
+```
+
+### POST /api/v1/chat/groups
+
+- Headers:
+  - Required: `x-organization-id: <organization-uuid>`
+- Body DTO: `CreateGroupConversationDto`
+
+```json
+{
+  "name": "Support Team",
+  "participantIds": ["uuid-1", "uuid-2"]
+}
+```
+
+- Response 201:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "uuid",
+    "organization_id": "uuid",
+    "is_group": true,
+    "name": "Support Team",
+    "participants": [],
+    "messages": [],
+    "created_at": "2026-03-31T09:00:00.000Z",
+    "updated_at": "2026-03-31T09:00:00.000Z"
+  }
+}
+```
+
+- Note:
+  - Backend requires at least 2 participant IDs for group creation success.
 
 ### GET /api/v1/chat/conversations/:conversationId/messages
 
@@ -956,3 +1149,31 @@ Authentication:
   ]
 }
 ```
+
+## Chat WebSocket Contract
+
+Namespace: `/chat`
+
+Authentication during handshake:
+
+- Provide JWT token via `handshake.auth.token` (or `Authorization` header).
+- Organization context can come from JWT claims (`orgId` / `organizationId`), handshake auth (`orgId` / `organizationId`), or header `x-organization-id`.
+
+Events:
+
+- `join_conversation`
+  - Payload: `{ "conversationId": "uuid" }`
+- `send_message`
+  - Payload: `{ "conversationId": "uuid", "content": "Hello" }`
+- `get_messages`
+  - Payload: `{ "conversationId": "uuid" }`
+- `leave_conversation`
+  - Payload: `{ "conversationId": "uuid" }`
+
+Server emits:
+
+- `new_message`
+- `conversation_messages`
+- `user_joined`
+- `user_left`
+- `error`

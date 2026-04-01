@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useLocale } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -21,8 +22,10 @@ export function DashboardLayoutClient({
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const queryClient = useQueryClient();
   const locale = useLocale();
   const isRTL = locale === 'ar';
+  const previousOrganizationIdRef = useRef<string | null>(null);
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const isLoading = useAuthStore((state) => state.isLoading);
   const activeOrganizationId = useAuthStore(
@@ -31,6 +34,28 @@ export function DashboardLayoutClient({
   const user = useAuthStore((state) => state.user);
   const permissions = useAuthStore((state) => state.permissions);
   const setPermissions = useAuthStore((state) => state.setPermissions);
+
+  /**
+   * Enforce tenant cache isolation on organization switch to prevent stale UI bleed.
+   */
+  useEffect(() => {
+    if (previousOrganizationIdRef.current === activeOrganizationId) {
+      return;
+    }
+
+    previousOrganizationIdRef.current = activeOrganizationId;
+
+    if (!activeOrganizationId) {
+      return;
+    }
+
+    const resetOrganizationCache = async () => {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+    };
+
+    void resetOrganizationCache();
+  }, [activeOrganizationId, queryClient]);
 
   /**
    * Fetch permissions for the active organization if not yet cached
