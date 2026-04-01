@@ -13,6 +13,15 @@ export type LoginPayload = {
   password: string;
 };
 
+export type ForgotPasswordPayload = {
+  email: string;
+};
+
+export type ResetPasswordPayload = {
+  token: string;
+  newPassword: string;
+};
+
 export type LoginResponse = {
   access_token: string;
   user: {
@@ -59,6 +68,12 @@ export const authService = {
   },
   login(payload: LoginPayload) {
     return api.post<LoginResponse>('/auth/login', payload);
+  },
+  forgotPassword(payload: ForgotPasswordPayload) {
+    return api.post('/auth/forgot-password', payload);
+  },
+  resetPassword(payload: ResetPasswordPayload) {
+    return api.post('/auth/reset-password', payload);
   },
   me() {
     return api.get<AuthUserProfile>('/users/me');

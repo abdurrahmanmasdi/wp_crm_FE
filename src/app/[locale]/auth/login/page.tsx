@@ -48,12 +48,39 @@ function getApiErrorMessage(error: unknown) {
   return 'Something went wrong. Please try again.';
 }
 
+function isWrongPasswordError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) {
+    return false;
+  }
+
+  if (error.response?.status === 401) {
+    return true;
+  }
+
+  const responseMessage =
+    error.response?.data?.message ?? error.response?.data?.error;
+  const normalizedMessage =
+    typeof responseMessage === 'string'
+      ? responseMessage.toLowerCase()
+      : Array.isArray(responseMessage) && responseMessage.length > 0
+        ? String(responseMessage[0]).toLowerCase()
+        : '';
+
+  return (
+    normalizedMessage.includes('password') ||
+    normalizedMessage.includes('invalid credential') ||
+    normalizedMessage.includes('invalid login') ||
+    normalizedMessage.includes('incorrect')
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('Auth');
   const setAuth = useAuthStore((state) => state.setAuth);
   const [submitError, setSubmitError] = useState('');
+  const [showForgotPasswordLink, setShowForgotPasswordLink] = useState(false);
 
   const {
     register,
@@ -69,6 +96,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setSubmitError('');
+    setShowForgotPasswordLink(false);
 
     try {
       const loginResponse = await authService.login(values);
@@ -88,6 +116,7 @@ export default function LoginPage() {
       router.push(safeReturnTo ?? '/dashboard');
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
+      setShowForgotPasswordLink(isWrongPasswordError(error));
     }
   };
 
@@ -146,7 +175,17 @@ export default function LoginPage() {
             </div>
 
             {submitError ? (
-              <p className="text-sm text-red-400">{submitError}</p>
+              <div className="space-y-1">
+                <p className="text-sm text-red-400">{submitError}</p>
+                {showForgotPasswordLink ? (
+                  <Link
+                    className="text-primary text-sm hover:underline"
+                    href="/auth/forgot-password"
+                  >
+                    {t('forgotPasswordTitle')}
+                  </Link>
+                ) : null}
+              </div>
             ) : null}
 
             <Button
