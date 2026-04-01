@@ -2,6 +2,7 @@ type OrganizationId = string | null | undefined;
 type MembershipId = string | null | undefined;
 type ConversationId = string | null | undefined;
 type LeadId = string | null | undefined;
+type AgentId = string | null | undefined;
 
 export const queryKeys = {
   auth: {
@@ -65,6 +66,7 @@ export const queryKeys = {
   },
 
   analytics: {
-    dashboard: (orgId: string) => ['analytics', 'dashboard', orgId] as const,
+    dashboard: (orgId: string, agentId?: AgentId) =>
+      ['analytics', 'dashboard', orgId, agentId ?? 'all'] as const,
   },
 } as const;

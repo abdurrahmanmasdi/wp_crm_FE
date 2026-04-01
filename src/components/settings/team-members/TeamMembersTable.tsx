@@ -179,7 +179,7 @@ export function TeamMembersTable({
                       action={AppAction.READ_ALL}
                       fallback="hide"
                     >
-                      <Link href={`/dashboard/members/${member.membershipId}`}>
+                      <Link href={`/dashboard/members/${member.user.id}`}>
                         <DropdownMenuItem className="text-foreground cursor-pointer hover:bg-white/5 focus:bg-white/5">
                           <Eye className="mr-2 h-4 w-4" />
                           {t('viewDetails')}

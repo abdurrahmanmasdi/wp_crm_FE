@@ -76,6 +76,8 @@ export type OrganizationMember = {
     firstName: string;
     lastName: string;
     email: string;
+    avatarUrl?: string;
+    avatar_url?: string;
   };
   role: {
     id: string;

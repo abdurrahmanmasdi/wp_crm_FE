@@ -1,6 +1,6 @@
 # Backend Endpoint Contract
 
-Last updated: 2026-03-31
+Last updated: 2026-04-01
 Base URL prefix: `/api/v1`
 
 All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
@@ -81,6 +81,10 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
   "message": "If this email exists, a reset link has been sent"
 }
 ```
+
+- Dev-mode behavior:
+  - If SMTP is disabled and backend is not in production, backend logs:
+    `[DEV MODE] Password Reset Link generated: <FRONTEND_URL>/auth/reset-password?token=<rawToken>`
 
 ### POST /api/v1/auth/reset-password (Public)
 
@@ -554,6 +558,11 @@ Notes:
   - `sort_dir` (optional string: `asc` or `desc`)
   - `status` (optional enum)
   - `priority` (optional enum)
+  - `search` (optional string, case-insensitive text search)
+
+- `search` behavior:
+  - Applies `contains` (case-insensitive) matching across: `first_name`, `last_name`, `email`, `phone_number`.
+  - Applied in conjunction with PBAC/filter/sort rules.
 
 - Sorting behavior:
   - Allowed `sort_by` values: `created_at`, `first_name`, `estimated_value`, `status`, `priority`.
@@ -744,6 +753,71 @@ Notes:
 
 - Possible errors:
   - `404` when lead does not exist in the specified organization.
+
+## Analytics API
+
+Base route: `/api/v1/organizations/:organizationId/analytics`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires active membership in `organizationId`.
+
+PBAC:
+
+- `GET /dashboard` requires `organization:read` (or hierarchy equivalent).
+
+### GET /api/v1/organizations/:organizationId/analytics/dashboard
+
+- Query params:
+  - `agent_id` (optional UUID)
+    - When provided, dashboard calculations are scoped to leads assigned to that agent (`assigned_agent_id = agent_id`) inside the current organization context.
+
+- Response 200:
+
+```json
+{
+  "pipeline_overview": {
+    "total_leads": 12,
+    "total_estimated_value": 84500.5
+  },
+  "leads_by_stage": [
+    {
+      "pipeline_stage_id": "uuid",
+      "stage_name": "Qualified",
+      "lead_count": 4
+    }
+  ],
+  "leads_by_source": [
+    {
+      "source_id": "uuid",
+      "source_name": "Referral",
+      "lead_count": 3
+    }
+  ],
+  "recent_activity": [
+    {
+      "id": "uuid",
+      "first_name": "John",
+      "last_name": "Doe",
+      "status": "OPEN",
+      "priority": "WARM",
+      "estimated_value": 15000.5,
+      "pipeline_stage_id": "uuid",
+      "pipeline_stage_name": "Qualified",
+      "source_id": "uuid",
+      "source_name": "Referral",
+      "created_at": "2026-03-28T10:00:00.000Z",
+      "updated_at": "2026-03-29T10:00:00.000Z"
+    }
+  ],
+  "dashboard_stats": {
+    "won_deals": 3,
+    "total_revenue": 42000.5,
+    "lead_conversion_rate": 25
+  }
+}
+```
 
 ## Lead Notes API
 

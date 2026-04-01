@@ -49,6 +49,10 @@ export type DashboardMetricsResponse = {
   recentLeads: DashboardRecentLead[];
 };
 
+export type DashboardMetricsParams = {
+  agentId?: string;
+};
+
 function asString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null;
 }
@@ -230,8 +234,15 @@ function normalizeMetricsResponse(data: unknown): DashboardMetricsResponse {
  * @returns A promise resolving to normalized dashboard metrics for KPI, charts, and recent activity widgets.
  */
 export async function getDashboardMetrics(
-  orgId: string
+  orgId: string,
+  params?: DashboardMetricsParams
 ): Promise<DashboardMetricsResponse> {
-  const { data } = await api.get(`/organizations/${orgId}/analytics/dashboard`);
+  const normalizedAgentId = params?.agentId?.trim();
+  const { data } = await api.get(
+    `/organizations/${orgId}/analytics/dashboard`,
+    {
+      params: normalizedAgentId ? { agent_id: normalizedAgentId } : undefined,
+    }
+  );
   return normalizeMetricsResponse(data);
 }
