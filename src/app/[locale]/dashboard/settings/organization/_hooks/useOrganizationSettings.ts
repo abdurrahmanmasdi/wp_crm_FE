@@ -29,6 +29,7 @@ export function useOrganizationSettings() {
   const {
     data: currentOrg,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: ['organization', activeOrganizationId],
@@ -114,10 +115,11 @@ export function useOrganizationSettings() {
   const onRetry = () =>
     queryClient.invalidateQueries({ queryKey: ['organization', activeOrganizationId] });
 
-  console.log(hasHydrated, isLoading)
+  const isFormLoading = !hasHydrated || (!currentOrg && isLoading);
+
   return {
     form,
-    isLoading: !hasHydrated || isLoading,
+    isLoading: isFormLoading,
     isError,
     isSaving: mutation.isPending,
     onSubmit,

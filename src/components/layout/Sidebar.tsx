@@ -9,6 +9,7 @@ import {
   Users,
   MessageSquare,
   ChevronDown,
+  Package,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -35,6 +36,11 @@ const navigationItems: NavigationItem[] = [
     labelKey: 'leads',
     icon: Users,
     resource: AppResource.LEADS,
+  },
+  {
+    href: '/dashboard/products',
+    labelKey: 'products',
+    icon: Package,
   },
   {
     href: '/dashboard/chat',

@@ -69,4 +69,10 @@ export const queryKeys = {
     dashboard: (orgId: string, agentId?: AgentId) =>
       ['analytics', 'dashboard', orgId, agentId ?? 'all'] as const,
   },
+
+  products: {
+    all: (orgId: OrganizationId) => ['products', orgId] as const,
+    detail: (orgId: OrganizationId, productId: string) =>
+      ['products', 'detail', orgId, productId] as const,
+  },
 } as const;

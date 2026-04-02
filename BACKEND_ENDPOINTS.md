@@ -1,6 +1,6 @@
 # Backend Endpoint Contract
 
-Last updated: 2026-04-01
+Last updated: 2026-04-02
 Base URL prefix: `/api/v1`
 
 All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
@@ -15,6 +15,9 @@ All endpoints require `Authorization: Bearer <jwt>` unless noted as Public.
 - **`privacy_policy` has been renamed to `privacy_policy`** across all organization endpoints.
 - **New white-labeling fields** are now available for organization creation: `tax_number`, `tax_office`, `logo_url`, `brand_colors`, `default_currency`, `industry_category`, `address`, `website_url`, `public_email`, `public_phone`, `terms_and_conditions`, `privacy_policy`.
 - **Social links and bank accounts** can now be created inline during organization creation via `social_links` and `bank_accounts` nested arrays.
+- **Catalog & Order Engine added**: New `ProductType` and `ProposalStatus` enums govern product behavior and availability rules. Products, Proposals, and their line items are tenant-scoped.
+- **Availability Engine**: `RESOURCE_RENTAL` and `REAL_ESTATE_ASSET` products include server-side date-overlap validation before a proposal is accepted. `SCHEDULED_EVENT` products enforce instance capacity checks.
+- **`public_link_hash`** is auto-generated on Proposal creation — do not send it from the client.
 
 ## Auth Routes
 
@@ -1542,3 +1545,295 @@ Server emits:
 - `user_joined`
 - `user_left`
 - `error`
+
+---
+
+## Products API
+
+Base route: `/api/v1/products`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires `x-organization-id` header (Tenant Interceptor).
+
+Serialization: **snake_case** keys.
+
+### ProductType Enum Values (CRITICAL)
+
+| Value | Description |
+|---|---|
+| `REAL_ESTATE_ASSET` | Fixed asset, no required dates (e.g., Villa for sale). Availability: blocks on first ACCEPTED/VERIFIED sale if no dates provided; or date-overlap if dates given (short-term rental). |
+| `SCHEDULED_EVENT` | Fixed date/capacity bucket (e.g., Boat Tour). Availability: instance capacity check. |
+| `RESOURCE_RENTAL` | Fluid time-blocked asset (e.g., Car Rental). Availability: server-side date-overlap check. |
+| `DYNAMIC_SERVICE` | Formula pricing, infinite capacity (e.g., Airport Transfer). No availability check. |
+
+### Product Object Shape (response)
+
+```json
+{
+  "id": "uuid",
+  "organization_id": "uuid",
+  "type": "RESOURCE_RENTAL",
+  "title": "2024 Mercedes S-Class",
+  "description": "Luxury executive sedan.",
+  "base_price": "850.00",
+  "currency": "USD",
+  "specifications": { "color": "black", "seats": 5 },
+  "available_addons": [
+    { "name": "Child Seat", "price": 20 }
+  ],
+  "created_at": "2026-04-02T10:00:00.000Z",
+  "updated_at": "2026-04-02T10:00:00.000Z",
+  "media": [
+    {
+      "id": "uuid",
+      "product_id": "uuid",
+      "file_url": "https://cdn.example.com/car.jpg",
+      "file_name": "car.jpg",
+      "is_primary": true,
+      "created_at": "2026-04-02T10:00:00.000Z"
+    }
+  ],
+  "instances": []
+}
+```
+
+### GET /api/v1/products
+
+- Response 200: Array of Product objects.
+
+### POST /api/v1/products
+
+- Body DTO:
+
+```json
+{
+  "type": "RESOURCE_RENTAL",
+  "title": "2024 Mercedes S-Class",
+  "description": "Luxury executive sedan.",
+  "base_price": 850.00,
+  "currency": "USD",
+  "specifications": { "color": "black"},
+  "available_addons": [{ "name": "Child Seat", "price": 20 }],
+  "media": [
+    { "file_url": "https://cdn.example.com/car.jpg", "file_name": "car.jpg" }
+  ],
+  "instances": [
+    { "start_date": "2026-05-01T00:00:00.000Z", "end_date": "2026-05-07T00:00:00.000Z", "max_capacity": 1 }
+  ]
+}
+```
+
+- Notes:
+  - `media` and `instances` are **optional** nested arrays. If provided, they are created in the same request — no extra calls needed.
+  - The **first** media item in the array is automatically set as `is_primary: true`.
+  - `type` must be a valid `ProductType` enum value.
+  - `base_price` is sent as a number and returned as a Decimal string.
+
+- Response 201: Returns created Product object with `media` and `instances` arrays included.
+
+### GET /api/v1/products/:id
+
+- Response 200: Single Product object with `media` and `instances` arrays.
+
+### PATCH /api/v1/products/:id
+
+- Body DTO: All fields from Create DTO are optional. `media` and `instances` are NOT nested-updated here — use dedicated media endpoints.
+- Response 200: Updated Product object.
+
+### DELETE /api/v1/products/:id
+
+- Response 204: No response body.
+
+## Product Media API
+
+Base route: `/api/v1/products/:id/media`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires `x-organization-id` header.
+
+### POST /api/v1/products/:id/media
+
+- Body DTO:
+
+```json
+{
+  "file_url": "https://cdn.example.com/pool.jpg",
+  "file_name": "pool.jpg"
+}
+```
+
+- Response 201: Returns created `ProductMedia` object.
+- Behavior: If this is the first media for the product, it is automatically set to `is_primary: true`.
+
+### PUT /api/v1/products/:id/media/:mediaId/primary
+
+- Body: none
+- Response 200: No body (204 behavior).
+- Behavior: Atomically sets `is_primary: false` for all other media of this product and `is_primary: true` for the given `mediaId` inside a single database transaction.
+
+## Product Instances API
+
+Instances represent time-bucketed capacity slots, primarily used for `SCHEDULED_EVENT` products.
+
+### Instance Object Shape
+
+```json
+{
+  "id": "uuid",
+  "product_id": "uuid",
+  "start_date": "2026-05-10T09:00:00.000Z",
+  "end_date": "2026-05-10T17:00:00.000Z",
+  "max_capacity": 12,
+  "booked_quantity": 3,
+  "is_available": true,
+  "created_at": "2026-04-02T10:00:00.000Z"
+}
+```
+
+- `booked_quantity` is managed server-side when proposals are ACCEPTED.
+- `is_available` is a soft flag; server-side capacity check is the authoritative source.
+
+## Proposals API
+
+Base route: `/api/v1/proposals`
+
+Authentication:
+
+- Requires `Authorization: Bearer <jwt>`.
+- Requires `x-organization-id` header (Tenant Interceptor).
+
+Serialization: **snake_case** keys.
+
+### ProposalStatus Enum Values
+
+| Value | Description |
+|---|---|
+| `DRAFT` | Default on creation. Agent is building. |
+| `SENT` | Agent has sent the public link to the client. |
+| `ACCEPTED` | Client has accepted the proposal. Triggers availability block. |
+| `RECEIPT_UPLOADED` | Client has uploaded a payment receipt. |
+| `VERIFIED` | Agent has verified payment. Finalizes the booking. |
+| `REJECTED` | Proposal was rejected. |
+| `EXPIRED` | Proposal has passed its validity window. |
+
+### Proposal Object Shape (response)
+
+```json
+{
+  "id": "uuid",
+  "organization_id": "uuid",
+  "lead_id": "uuid",
+  "created_by_id": "uuid",
+  "bank_account_id": "uuid | null",
+  "status": "DRAFT",
+  "total_amount": "5500.00",
+  "currency": "USD",
+  "client_notes": "Please review the attached terms.",
+  "public_link_hash": "a3f8b2c1d4e5f607a8b9c0d1e2f3a4b5",
+  "client_accepted_kvkk": false,
+  "created_at": "2026-04-02T10:00:00.000Z",
+  "updated_at": "2026-04-02T10:00:00.000Z",
+  "line_items": []
+}
+```
+
+- `public_link_hash` is **auto-generated** by the backend. Do NOT send it from the client.
+- `total_amount` is sent as a number and returned as a Decimal string.
+
+### ProposalLineItem Object Shape
+
+```json
+{
+  "id": "uuid",
+  "proposal_id": "uuid",
+  "product_id": "uuid | null",
+  "instance_id": "uuid | null",
+  "start_date": "2026-05-10T00:00:00.000Z | null",
+  "end_date": "2026-05-17T00:00:00.000Z | null",
+  "custom_name": "2024 Mercedes S-Class (7 days)",
+  "unit_price": "850.00",
+  "quantity": 1,
+  "selected_addons": [{ "name": "Child Seat", "price": 20 }]
+}
+```
+
+### GET /api/v1/proposals
+
+- Response 200: Array of Proposal objects with `line_items`.
+
+### POST /api/v1/proposals
+
+- Body DTO:
+
+```json
+{
+  "lead_id": "uuid",
+  "created_by_id": "uuid",
+  "bank_account_id": "uuid",
+  "total_amount": 5500.00,
+  "currency": "USD",
+  "client_notes": "Please review the attached terms.",
+  "line_items": [
+    {
+      "product_id": "uuid",
+      "instance_id": null,
+      "start_date": "2026-05-10T00:00:00.000Z",
+      "end_date": "2026-05-17T00:00:00.000Z",
+      "custom_name": "2024 Mercedes S-Class (7 days)",
+      "unit_price": 850.00,
+      "quantity": 1,
+      "selected_addons": [{ "name": "Child Seat", "price": 20 }]
+    },
+    {
+      "product_id": null,
+      "custom_name": "Agency Coordination Fee",
+      "unit_price": 200.00,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+- Notes:
+  - `line_items` is required and must have at least one item.
+  - `product_id` is **nullable** (allows custom fee line items with no backing product).
+  - `instance_id` is used **only** for `SCHEDULED_EVENT` products.
+  - If the backing product is `RESOURCE_RENTAL`, both `start_date` and `end_date` are **required** — server returns `400` if missing.
+  - `public_link_hash` is **auto-generated** — do not send it.
+
+- Response 201: Returns created Proposal object with `line_items` array.
+
+### GET /api/v1/proposals/:id
+
+- Response 200: Full Proposal object with `line_items` including nested `product` and `instance` relations.
+
+### PATCH /api/v1/proposals/:id
+
+- Body DTO (all optional):
+
+```json
+{
+  "status": "SENT",
+  "bank_account_id": "uuid",
+  "total_amount": 6000.00,
+  "client_notes": "Updated terms.",
+  "client_accepted_kvkk": true
+}
+```
+
+- Response 200: Updated Proposal object with `line_items`.
+
+### POST /api/v1/proposals/:id/verify
+
+- Body: none
+- Behavior: Sets proposal `status` to `VERIFIED`.
+- Response 200: Updated Proposal object.
+- Use case: Called by the agent after manually confirming a payment receipt upload.
+
+### DELETE /api/v1/proposals/:id
+
+- Response 204: No response body.
