@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
@@ -32,6 +32,7 @@ import { exportLeadsToCSV } from '@/utils/csv-export';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
+const SEARCH_ROUTER_REPLACE_DELAY_MS = 1000;
 const SORTABLE_FIELDS: LeadSortBy[] = [
   'first_name',
   'status',
@@ -131,6 +132,7 @@ export default function LeadsPage() {
   const currentPage = parsePositiveQueryNumber(pageParam, DEFAULT_PAGE);
   const currentLimit = parsePositiveQueryNumber(limitParam, DEFAULT_LIMIT);
   const [searchInput, setSearchInput] = useState(searchParam);
+  const searchReplaceTimeoutRef = useRef<number | null>(null);
   const debouncedSearch = useDebounce(searchInput, 500);
 
   const initialRules = useMemo(
@@ -155,28 +157,12 @@ export default function LeadsPage() {
   }, [searchParam]);
 
   useEffect(() => {
-    const normalizedSearch = debouncedSearch.trim();
-    const normalizedParam = searchParam.trim();
-
-    if (normalizedSearch === normalizedParam) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams.toString());
-
-    if (!normalizedSearch) {
-      nextParams.delete('search');
-    } else {
-      nextParams.set('search', normalizedSearch);
-    }
-
-    nextParams.set('page', '1');
-
-    const query = nextParams.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
-  }, [debouncedSearch, pathname, router, searchParam, searchParams]);
+    return () => {
+      if (searchReplaceTimeoutRef.current !== null) {
+        window.clearTimeout(searchReplaceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleRulesChange = useCallback(
     (rules: LeadFilterRule[]) => {
@@ -268,19 +254,35 @@ export default function LeadsPage() {
     (nextValue: string) => {
       setSearchInput(nextValue);
 
-      const nextParams = new URLSearchParams(searchParams.toString());
-      nextParams.set('page', '1');
-
-      const query = nextParams.toString();
-      if (query === searchParams.toString()) {
-        return;
+      if (searchReplaceTimeoutRef.current !== null) {
+        window.clearTimeout(searchReplaceTimeoutRef.current);
       }
 
-      router.replace(query ? `${pathname}?${query}` : pathname, {
-        scroll: false,
-      });
+      searchReplaceTimeoutRef.current = window.setTimeout(() => {
+        const nextParams = new URLSearchParams(window.location.search);
+        const normalizedSearch = nextValue.trim();
+
+        if (!normalizedSearch) {
+          nextParams.delete('search');
+        } else {
+          nextParams.set('search', normalizedSearch);
+        }
+
+        nextParams.set('page', '1');
+
+        const nextQuery = nextParams.toString();
+        const currentQuery = window.location.search.replace(/^\?/, '');
+
+        if (nextQuery === currentQuery) {
+          return;
+        }
+
+        router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+          scroll: false,
+        });
+      }, SEARCH_ROUTER_REPLACE_DELAY_MS);
     },
-    [pathname, router, searchParams]
+    [pathname, router]
   );
 
   const handleDeleteLead = async (lead: Lead) => {

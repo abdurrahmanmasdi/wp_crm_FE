@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 
@@ -47,17 +47,15 @@ function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
-export default function MemberProfilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function MemberProfilePage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const t = useTranslations('dashboard');
   const activeOrganizationId = useAuthStore(
     (state) => state.activeOrganizationId
   );
-  const id = params.id;
+  const rawId = params.id;
+  const id = Array.isArray(rawId) ? (rawId[0] ?? '') : rawId;
 
   const membersQuery = useQuery({
     queryKey: queryKeys.organizations.members(activeOrganizationId),
