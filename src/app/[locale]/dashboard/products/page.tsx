@@ -1,196 +1,139 @@
-'use client';
+import { cookies } from 'next/headers';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import { useTranslations } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
-import { AnimatePresence } from 'framer-motion';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
-
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { useDebounce } from '@/hooks/useDebounce';
-import { usePermissions } from '@/hooks/usePermissions';
-import { productService } from '@/lib/product.service';
+import { getQueryClient } from '@/lib/get-query-client';
+import type { PaginatedProducts } from '@/lib/product.service';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/useAuthStore';
-import { ProductCard } from './_components/ProductCard';
-import { ProductDetailsDrawer } from './_components/ProductDrawer';
-import { ProductListRow } from './_components/ProductListRow';
-import {
-  EmptyState,
-  LoadingSkeleton,
-  ProductsToolbar,
-} from './_components/ProductsCatalogUi';
-import { ProductsFilterBar } from './_components/ProductsFilterBar';
-import type { FilterNode, Product } from './_components/product-types';
+import { MembershipStatus } from '@/types/enums';
+import ProductsCatalog from './_components/ProductsCatalog';
 
-export default function ProductsCatalogPage() {
-  const t = useTranslations('Products');
-  const { hasPermission } = usePermissions();
-  const activeOrganizationId = useAuthStore((s) => s.activeOrganizationId);
+const INITIAL_PAGE = 1;
+const INITIAL_LIMIT = 12;
+const INITIAL_FILTERS_QUERY = encodeURIComponent(JSON.stringify([]));
 
-  const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [filters, setFilters] = useState<FilterNode[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const debouncedFilters = useDebounce(filters, 600);
-  const itemsPerPage = 12;
-
-  const filtersQueryParam = useMemo(
-    () => encodeURIComponent(JSON.stringify(debouncedFilters)),
-    [debouncedFilters]
-  );
-
-  const handleSetFilters: Dispatch<SetStateAction<FilterNode[]>> = (update) => {
-    setCurrentPage(1);
-    setFilters(update);
+type MembershipRecord = {
+  status?: string;
+  organization_id?: string;
+  organizationId?: string;
+  organization?: {
+    id?: string;
   };
+};
 
-  const { data: responseData, isLoading } = useQuery({
-    queryKey: [
-      ...queryKeys.products.all(activeOrganizationId),
-      filtersQueryParam,
-      currentPage,
-      itemsPerPage,
-    ],
-    queryFn: async () => {
-      if (!activeOrganizationId) {
-        throw new Error('Active organization is required');
-      }
+type MembershipResponse =
+  | MembershipRecord[]
+  | {
+      memberships?: MembershipRecord[];
+      organizations?: MembershipRecord[];
+    };
 
-      return productService.getAll(activeOrganizationId, {
-        page: currentPage,
-        limit: itemsPerPage,
-        filters: filtersQueryParam,
-      });
+function normalizeMemberships(data: MembershipResponse): MembershipRecord[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data.memberships ?? data.organizations ?? [];
+}
+
+function extractOrganizationId(membership: MembershipRecord): string | null {
+  return (
+    membership.organization_id ??
+    membership.organizationId ??
+    membership.organization?.id ??
+    null
+  );
+}
+
+async function getServerOrganizationIdAndToken() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'en';
+
+  if (!token) {
+    return { organizationId: null, token: null, locale };
+  }
+
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+  const response = await fetch(`${apiBase}/users/me/organizations`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': locale,
     },
-    enabled: !!activeOrganizationId,
+    cache: 'no-store',
   });
 
-  const products: Product[] = Array.isArray(responseData)
-    ? (responseData as unknown as Product[])
-    : ((responseData?.data as unknown as Product[]) ?? []);
+  if (!response.ok) {
+    return { organizationId: null, token, locale };
+  }
 
-  const meta = responseData?.meta ?? {
-    page: 1,
-    limit: itemsPerPage,
-    total: 0,
-    totalPages: 1,
+  const data = (await response.json()) as MembershipResponse;
+  const memberships = normalizeMemberships(data);
+  const activeMembership = memberships.find((membership) => {
+    const status = membership.status ?? MembershipStatus.ACTIVE;
+    return (
+      status === MembershipStatus.ACTIVE &&
+      Boolean(extractOrganizationId(membership))
+    );
+  });
+
+  return {
+    organizationId: activeMembership
+      ? extractOrganizationId(activeMembership)
+      : null,
+    token,
+    locale,
   };
+}
 
-  const canCreate = hasPermission('products', 'create');
+async function prefetchProducts(
+  organizationId: string,
+  token: string,
+  locale: string
+): Promise<PaginatedProducts> {
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+  const url = new URL(`${apiBase}/organizations/${organizationId}/products`);
+  url.searchParams.set('page', String(INITIAL_PAGE));
+  url.searchParams.set('limit', String(INITIAL_LIMIT));
+  url.searchParams.set('filters', INITIAL_FILTERS_QUERY);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-organization-id': organizationId,
+      'Accept-Language': locale,
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to prefetch products');
+  }
+
+  return (await response.json()) as PaginatedProducts;
+}
+
+export default async function ProductsCatalogPage() {
+  const queryClient = getQueryClient();
+  const { organizationId, token, locale } =
+    await getServerOrganizationIdAndToken();
+
+  if (organizationId && token) {
+    await queryClient.prefetchQuery({
+      queryKey: [
+        ...queryKeys.products.all(organizationId),
+        INITIAL_FILTERS_QUERY,
+        INITIAL_PAGE,
+        INITIAL_LIMIT,
+      ],
+      queryFn: () => prefetchProducts(organizationId, token, locale),
+    });
+  }
 
   return (
-    <div className="mx-auto min-h-screen max-w-350 px-6 py-8 pb-24 md:px-10 lg:px-12">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="mb-1 text-3xl font-bold tracking-tight text-white">
-            {t('title')}
-          </h1>
-          <p className="text-sm text-zinc-400">{t('subtitle')}</p>
-        </div>
-
-        {canCreate && (
-          <Link
-            href="/dashboard/products/create"
-            className="bg-primary text-primary-foreground flex shrink-0 items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-[0_4px_14px_0_hsl(var(--primary)/20%)] transition-all hover:brightness-110 active:scale-95"
-          >
-            <Plus className="h-4 w-4" />
-            {t('newProduct')}
-          </Link>
-        )}
-      </div>
-
-      <ProductsFilterBar filters={filters} setFilters={handleSetFilters} />
-      <ProductsToolbar viewMode={viewMode} setViewMode={setViewMode} />
-
-      <ProductDetailsDrawer
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
-
-      {isLoading ? (
-        <LoadingSkeleton viewMode={viewMode} />
-      ) : products.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="space-y-8">
-          <AnimatePresence mode="popLayout">
-            {viewMode === 'GRID' ? (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-4">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => setSelectedProduct(product)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {products.map((product) => (
-                  <ProductListRow
-                    key={product.id}
-                    product={product}
-                    onClick={() => setSelectedProduct(product)}
-                  />
-                ))}
-              </div>
-            )}
-          </AnimatePresence>
-
-          {meta.totalPages > 1 && (
-            <Pagination className="mt-8 opacity-90 transition-opacity hover:opacity-100">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={
-                      currentPage === 1
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-
-                {Array.from({ length: meta.totalPages }).map((_, i) => (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      isActive={currentPage === i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className="cursor-pointer"
-                    >
-                      {i + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
-                    }
-                    className={
-                      currentPage === meta.totalPages
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
-        </div>
-      )}
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ProductsCatalog />
+    </HydrationBoundary>
   );
 }
