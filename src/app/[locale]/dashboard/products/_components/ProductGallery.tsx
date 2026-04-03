@@ -68,16 +68,18 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className="group flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-border bg-muted/20 transition-all hover:bg-muted/30"
+        className="group border-border bg-muted/20 hover:bg-muted/30 flex aspect-video w-full cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed transition-all"
       >
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 transition-transform group-hover:scale-110">
-          <CloudUpload className="h-6 w-6 text-primary" />
+        <div className="bg-primary/10 mb-4 flex h-14 w-14 items-center justify-center rounded-full transition-transform group-hover:scale-110">
+          <CloudUpload className="text-primary h-6 w-6" />
         </div>
         <p className="text-xs font-medium">
           Drag &amp; drop or{' '}
-          <span className="text-primary underline underline-offset-2">browse</span>
+          <span className="text-primary underline underline-offset-2">
+            browse
+          </span>
         </p>
-        <p className="mt-1.5 text-[10px] text-muted-foreground">
+        <p className="text-muted-foreground mt-1.5 text-[10px]">
           Supports multiple files · JPG, PNG, WebP
         </p>
         <input
@@ -101,7 +103,7 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
                 transition={{ duration: 0.18 }}
-                className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted/20"
+                className="group border-border bg-muted/20 relative aspect-square overflow-hidden rounded-2xl border"
               >
                 {/* Preview image */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -113,9 +115,9 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
 
                 {/* Cover badge */}
                 {item.isPrimary && (
-                  <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5">
-                    <Star className="h-2.5 w-2.5 fill-primary-foreground text-primary-foreground" />
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground">
+                  <div className="bg-primary absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5">
+                    <Star className="fill-primary-foreground text-primary-foreground h-2.5 w-2.5" />
+                    <span className="text-primary-foreground text-[9px] font-bold tracking-wider uppercase">
                       Cover
                     </span>
                   </div>
@@ -130,7 +132,7 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
                         e.stopPropagation();
                         setPrimary(index);
                       }}
-                      className="flex items-center gap-1 rounded-lg bg-primary/90 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-primary-foreground transition-all hover:bg-primary"
+                      className="bg-primary/90 text-primary-foreground hover:bg-primary flex items-center gap-1 rounded-lg px-2 py-1 text-[9px] font-bold tracking-wider uppercase transition-all"
                     >
                       <Star className="h-2.5 w-2.5" />
                       Set Cover
@@ -155,11 +157,11 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
               key="add-more"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/10 text-muted-foreground/50 transition-all hover:bg-muted/20 hover:text-muted-foreground"
+              className="border-border bg-muted/10 text-muted-foreground/50 hover:bg-muted/20 hover:text-muted-foreground flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed transition-all"
               onClick={() => inputRef.current?.click()}
             >
               <ImageIcon className="h-5 w-5" />
-              <span className="mt-1.5 text-[9px] font-bold uppercase tracking-wider">
+              <span className="mt-1.5 text-[9px] font-bold tracking-wider uppercase">
                 Add more
               </span>
             </motion.div>
@@ -168,8 +170,9 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
       )}
 
       {items.length > 0 && (
-        <p className="text-[10px] text-muted-foreground/60">
-          {items.length} photo{items.length !== 1 ? 's' : ''} · hover a thumbnail to set cover or remove
+        <p className="text-muted-foreground/60 text-[10px]">
+          {items.length} photo{items.length !== 1 ? 's' : ''} · hover a
+          thumbnail to set cover or remove
         </p>
       )}
     </div>

@@ -1,7 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import type { CardSectionProps } from '../_schema';
 
-export function SectionCard({ title, icon: Icon, children, className }: CardSectionProps) {
+export function SectionCard({
+  title,
+  icon: Icon,
+  children,
+  className,
+}: CardSectionProps) {
   return (
     <Card
       className={`text-on-surface rounded-[1.5rem] border border-white/5 bg-[#161b22] shadow-xl ${className ?? ''}`.trim()}

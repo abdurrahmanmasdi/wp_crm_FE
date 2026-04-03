@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm, FormProvider, useWatch } from 'react-hook-form';
+import { useEffect, useState, useRef } from 'react';
+import {
+  useForm,
+  FormProvider,
+  useWatch,
+  type Resolver,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,8 +14,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { productFormSchema, type LocalMediaItem, type ProductFormValues } from '../_schema';
-import { productService, type CreateProductDto, type UpdateProductDto } from '@/lib/product.service';
+import {
+  productFormSchema,
+  type LocalMediaItem,
+  type ProductFormValues,
+} from '../_schema';
+import { productService, type CreateProductDto } from '@/lib/product.service';
+import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProductBasicsSection } from './ProductBasicsSection';
@@ -20,15 +30,27 @@ import { AddonsSection } from './AddonsSection';
 // ---------------------------------------------------------------------------
 // Default values per product type (used on type switch to clear specs)
 // ---------------------------------------------------------------------------
-const TYPE_DEFAULTS: Record<ProductFormValues['type'], Partial<ProductFormValues>> = {
+const TYPE_DEFAULTS: Record<
+  ProductFormValues['type'],
+  Partial<ProductFormValues>
+> = {
   REAL_ESTATE_ASSET: {
     type: 'REAL_ESTATE_ASSET',
-    specifications: { bedrooms: 0, bathrooms: 0, square_meters: 10, year_built: 2000 },
+    specifications: {
+      bedrooms: 0,
+      bathrooms: 0,
+      square_meters: 10,
+      year_built: 2000,
+    },
   },
   SCHEDULED_EVENT: {
     type: 'SCHEDULED_EVENT',
     instance: { start_date: '', end_date: '', max_capacity: 10 },
-    specifications: { duration_hours: 1, meeting_point: '', difficulty_level: 'MEDIUM' },
+    specifications: {
+      duration_hours: 1,
+      meeting_point: '',
+      difficulty_level: 'MEDIUM',
+    },
   },
   RESOURCE_RENTAL: {
     type: 'RESOURCE_RENTAL',
@@ -113,26 +135,33 @@ export function ProductForm({
   const [mediaItems, setMediaItems] = useState<LocalMediaItem[]>(initialMedia);
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema) as any,
-    defaultValues: initialData || ({
-      type: 'REAL_ESTATE_ASSET',
-      title: '',
-      description: '',
-      base_price: 0,
-      currency: 'USD',
-      available_addons: [],
-      extra_specifications: [],
-      specifications: { bedrooms: 0, bathrooms: 0, square_meters: 10, year_built: 2000 },
-    } as ProductFormValues),
+    resolver: zodResolver(productFormSchema) as Resolver<ProductFormValues>,
+    defaultValues:
+      initialData ||
+      ({
+        type: 'REAL_ESTATE_ASSET',
+        title: '',
+        description: '',
+        base_price: 0,
+        currency: 'USD',
+        available_addons: [],
+        extra_specifications: [],
+        specifications: {
+          bedrooms: 0,
+          bathrooms: 0,
+          square_meters: 10,
+          year_built: 2000,
+        },
+      } as ProductFormValues),
   });
 
   const selectedType = useWatch({ control: form.control, name: 'type' });
-  const [prevType, setPrevType] = useState(form.getValues('type'));
+  const prevTypeRef = useRef(form.getValues('type'));
 
   // When type changes, reset only type-specific fields, preserving shared ones
   // But only if the type actually changed by user, not during initial render
   useEffect(() => {
-    if (selectedType !== prevType) {
+    if (selectedType !== prevTypeRef.current) {
       const preserved = {
         title: form.getValues('title'),
         description: form.getValues('description'),
@@ -141,21 +170,38 @@ export function ProductForm({
         available_addons: form.getValues('available_addons'),
         extra_specifications: [], // Clear extra specs on type change normally
       };
-      form.reset({ ...preserved, ...TYPE_DEFAULTS[selectedType] } as ProductFormValues);
-      setPrevType(selectedType);
+      form.reset({
+        ...preserved,
+        ...TYPE_DEFAULTS[selectedType],
+      } as ProductFormValues);
+      prevTypeRef.current = selectedType;
     }
-  }, [selectedType, prevType, form]);
+  }, [selectedType, form]);
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
+      if (!activeOrganizationId) {
+        toast.error('Please select an organization before managing products.');
+        return;
+      }
+
       const payload = buildPayload(data, mediaItems);
-      
+
       if (isEditMode) {
+        if (!productId) {
+          toast.error('Missing product ID for update.');
+          return;
+        }
+
         // Mock updating the product (In reality we patch, but user says passing the same DTO is fine for now due to backend limits)
-        await productService.update(productId, payload as Partial<CreateProductDto>);
+        await productService.update(
+          activeOrganizationId,
+          productId,
+          payload as Partial<CreateProductDto>
+        );
         toast.success('Product updated successfully!');
       } else {
-        await productService.create(payload);
+        await productService.create(activeOrganizationId, payload);
         toast.success('Product created successfully!');
       }
 
@@ -164,14 +210,18 @@ export function ProductForm({
         queryKey: queryKeys.products.all(activeOrganizationId),
       });
       if (isEditMode) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.products.detail(activeOrganizationId, productId as string) })
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.products.detail(
+            activeOrganizationId,
+            productId as string
+          ),
+        });
       }
 
       router.push('../products'); // navigate back to list
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message ?? `Failed to ${isEditMode ? 'update' : 'create'} product.`;
-      toast.error(message);
+    } catch (err: unknown) {
+      const fallback = `Failed to ${isEditMode ? 'update' : 'create'} product.`;
+      toast.error(getErrorMessage(err) || fallback);
     }
   };
 
@@ -181,13 +231,17 @@ export function ProductForm({
     <FormProvider {...form}>
       {/* Page header */}
       <div className="mb-10">
-        <h2 className="text-3xl font-bold tracking-tight">{isEditMode ? 'Edit Product' : 'Create New Product'}</h2>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          {isEditMode ? 'Update your product details and configuration.' : 'Design and configure your dynamic product offerings for any industry.'}
+        <h2 className="text-3xl font-bold tracking-tight">
+          {isEditMode ? 'Edit Product' : 'Create New Product'}
+        </h2>
+        <p className="text-muted-foreground mt-1.5 text-sm">
+          {isEditMode
+            ? 'Update your product details and configuration.'
+            : 'Design and configure your dynamic product offerings for any industry.'}
         </p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* Section 1 – Basics + Gallery */}
         <ProductBasicsSection
           mediaItems={mediaItems}
@@ -211,11 +265,11 @@ export function ProductForm({
         <AddonsSection />
 
         {/* ─── Footer actions ─────────────────────────────────────────────── */}
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-8">
+        <div className="border-border mt-4 flex items-center justify-between border-t pt-8">
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-xs font-bold tracking-widest uppercase transition-colors"
           >
             Discard Draft
           </button>
@@ -223,7 +277,7 @@ export function ProductForm({
           <div className="flex items-center gap-4">
             <button
               type="button"
-              className="rounded-xl border border-border px-8 py-3 text-xs font-bold uppercase tracking-widest text-foreground transition-all hover:bg-muted"
+              className="border-border text-foreground hover:bg-muted rounded-xl border px-8 py-3 text-xs font-bold tracking-widest uppercase transition-all"
             >
               Save as Template
             </button>
@@ -231,15 +285,17 @@ export function ProductForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 rounded-xl bg-primary px-10 py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground shadow-[0_10px_24px_-10px_hsl(var(--primary)/0.4)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+              className="bg-primary text-primary-foreground flex items-center gap-2 rounded-xl px-10 py-3 text-xs font-bold tracking-widest uppercase shadow-[0_10px_24px_-10px_hsl(var(--primary)/0.4)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   {isEditMode ? 'Saving…' : 'Publishing…'}
                 </>
+              ) : isEditMode ? (
+                'Save Changes'
               ) : (
-                isEditMode ? 'Save Changes' : 'Activate & List Product'
+                'Activate & List Product'
               )}
             </button>
           </div>

@@ -10,7 +10,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { orgService, type BankAccount } from '@/lib/org.service';
 import { bankAccountSchema } from '../_schema';
@@ -57,8 +63,8 @@ function BankAccountRow({
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (isNew) return Promise.resolve({ data: undefined } as any);
-      return orgService.deleteBankAccount(account.id);
+      if (isNew || !account) return;
+      await orgService.deleteBankAccount(account.id);
     },
     onSuccess: () => {
       if (!isNew) toast.success('Bank account removed');
@@ -101,7 +107,10 @@ function BankAccountRow({
                     <FormItem>
                       <FormLabel>Account Holder</FormLabel>
                       <FormControl>
-                        <Input placeholder="Kinetic Monolith Systems Corp." {...field} />
+                        <Input
+                          placeholder="Kinetic Monolith Systems Corp."
+                          {...field}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -117,7 +126,10 @@ function BankAccountRow({
                   <FormItem className="md:col-span-2">
                     <FormLabel>IBAN / Account Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="US00 2938 1203 9948 2210" {...field} />
+                      <Input
+                        placeholder="US00 2938 1203 9948 2210"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -137,16 +149,21 @@ function BankAccountRow({
               />
             </div>
 
-            <div className="flex items-center justify-between mt-2">
+            <div className="mt-2 flex items-center justify-between">
               <FormField
                 control={form.control}
                 name="is_default"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center gap-3 space-y-0">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormLabel className="font-medium">Mark as Primary Account</FormLabel>
+                    <FormLabel className="font-medium">
+                      Mark as Primary Account
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -163,7 +180,11 @@ function BankAccountRow({
                     else deleteMutation.mutate();
                   }}
                 >
-                  {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
                 </Button>
 
                 <Button
@@ -172,7 +193,11 @@ function BankAccountRow({
                   disabled={isSaving || isDeleting || !form.formState.isDirty}
                   className={`transition-opacity ${!form.formState.isDirty && !isNew ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} bg-primary/20 text-primary hover:bg-primary/30`}
                 >
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                  {isSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
                   Save
                 </Button>
               </div>
@@ -191,12 +216,16 @@ export function BankAccountsSection() {
     queryKey: ['bank-accounts'],
     queryFn: async () => {
       const res = await orgService.getBankAccounts();
-      return (res as any).data ?? res;
+      return res.data;
     },
   });
 
   return (
-    <SectionCard title="Bank Accounts" icon={Landmark} className="lg:col-span-7">
+    <SectionCard
+      title="Bank Accounts"
+      icon={Landmark}
+      className="lg:col-span-7"
+    >
       <div className="mb-6 flex justify-end">
         <Button
           type="button"
@@ -212,14 +241,16 @@ export function BankAccountsSection() {
 
       {isLoading ? (
         <div className="flex items-center justify-center p-8">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <Loader2 className="text-primary h-6 w-6 animate-spin" />
         </div>
       ) : (
         <div className="space-y-4">
           {accounts.map((account: BankAccount) => (
             <BankAccountRow key={account.id} account={account} />
           ))}
-          {showNewRow && <BankAccountRow onRemoveEmpty={() => setShowNewRow(false)} />}
+          {showNewRow && (
+            <BankAccountRow onRemoveEmpty={() => setShowNewRow(false)} />
+          )}
         </div>
       )}
     </SectionCard>

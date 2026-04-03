@@ -46,7 +46,9 @@ export const organizationFormSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export type OrganizationFormValues = z.infer<typeof organizationFormSchema>;
-export type OrganizationFormInputValues = z.input<typeof organizationFormSchema>;
+export type OrganizationFormInputValues = z.input<
+  typeof organizationFormSchema
+>;
 
 // Typed react-hook-form Control with schema transforms applied
 export type OrganizationFormControl = Control<

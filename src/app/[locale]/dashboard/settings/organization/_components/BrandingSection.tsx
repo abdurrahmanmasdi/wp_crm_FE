@@ -37,7 +37,8 @@ export function BrandingSection({ control }: Props) {
                     alt="Organization logo"
                     src={field.value}
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      (e.currentTarget as HTMLImageElement).style.display =
+                        'none';
                     }}
                   />
                 ) : (
@@ -67,7 +68,9 @@ export function BrandingSection({ control }: Props) {
         {/* Brand colours */}
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-2">
-            <FormLabel className="text-sm font-semibold">Brand Colors</FormLabel>
+            <FormLabel className="text-sm font-semibold">
+              Brand Colors
+            </FormLabel>
             <Button
               type="button"
               variant="outline"
@@ -100,26 +103,25 @@ export function BrandingSection({ control }: Props) {
                     )}
                   />
                 </div>
-                <div className="flex-1 flex gap-2">
+                <div className="flex flex-1 gap-2">
                   <FormField
                     control={control}
                     name={`brand_colors.${index}.value`}
                     render={({ field: valField }) => (
-                      <FormItem className="flex-1 flex gap-2 space-y-0">
+                      <FormItem className="flex flex-1 gap-2 space-y-0">
                         <FormControl>
-                          <div className="flex items-center flex-1 gap-2">
+                          <div className="flex flex-1 items-center gap-2">
                             {/* Native color picker box */}
                             <input
                               type="color"
-                              className="h-10 w-10 shrink-0 cursor-pointer rounded border border-white/10 bg-transparent p-0 object-cover"
+                              className="h-10 w-10 shrink-0 cursor-pointer rounded border border-white/10 bg-transparent object-cover p-0"
                               value={valField.value || '#000000'}
-                              onChange={(e) => valField.onChange(e.target.value)}
+                              onChange={(e) =>
+                                valField.onChange(e.target.value)
+                              }
                             />
                             {/* Hex input */}
-                            <Input
-                              placeholder="#000000"
-                              {...valField}
-                            />
+                            <Input placeholder="#000000" {...valField} />
                           </div>
                         </FormControl>
                         <FormMessage className="absolute" />
@@ -139,7 +141,9 @@ export function BrandingSection({ control }: Props) {
               </div>
             ))}
             {fields.length === 0 && (
-              <p className="text-xs text-on-surface-variant italic">No brand colors defined.</p>
+              <p className="text-on-surface-variant text-xs italic">
+                No brand colors defined.
+              </p>
             )}
           </div>
         </div>

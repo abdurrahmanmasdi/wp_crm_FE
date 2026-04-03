@@ -930,5 +930,12 @@
       "logoutButton": "Logout",
       "cancelError": "Could not find a pending request to cancel."
     }
+  },
+  "Products": {
+    "title": "Product Catalog",
+    "subtitle": "Manage your inventory, schedule events, and configure dynamic services.",
+    "newProduct": "New Product",
+    "noProductsFound": "No products found",
+    "noProductsDescription": "No products match your current filtering criteria. Adjust your filters or create a new product."
   }
 }

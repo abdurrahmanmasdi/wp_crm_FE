@@ -930,5 +930,12 @@
       "logoutButton": "Çıkış Yap",
       "cancelError": "Verilen talep bulunamadı."
     }
+  },
+  "Products": {
+    "title": "Ürün Kataloğu",
+    "subtitle": "Envanterinizi yönetin, etkinlikleri planlayın ve dinamik hizmetleri yapılandırın.",
+    "newProduct": "Yeni Ürün",
+    "noProductsFound": "Ürün Bulunamadı",
+    "noProductsDescription": "Geçerli filtreleme ölçütlerinize uyan ürün yok. Filtrelerinizi ayarlayın veya yeni bir ürün oluşturun."
   }
 }

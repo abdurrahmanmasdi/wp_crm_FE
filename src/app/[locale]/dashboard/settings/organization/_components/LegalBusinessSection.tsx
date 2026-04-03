@@ -43,7 +43,11 @@ function AddressField({ control }: Props) {
 
 export function LegalBusinessSection({ control }: Props) {
   return (
-    <SectionCard title="Legal & Business" icon={Briefcase} className="lg:col-span-8">
+    <SectionCard
+      title="Legal & Business"
+      icon={Briefcase}
+      className="lg:col-span-8"
+    >
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <SharedTextField
           control={control}

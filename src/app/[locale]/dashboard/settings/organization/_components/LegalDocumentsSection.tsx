@@ -1,5 +1,4 @@
 import { Briefcase, ExternalLink, Gavel } from 'lucide-react';
-import Link from 'next/link';
 import { SectionCard } from './SectionCard';
 
 export function LegalDocumentsSection() {

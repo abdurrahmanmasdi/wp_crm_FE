@@ -103,4 +103,7 @@ export const authService = {
   getUserOrganizations() {
     return api.get<UserOrganizationsResponse>('/users/me/organizations');
   },
+  logout() {
+    return api.post('/auth/logout');
+  },
 };

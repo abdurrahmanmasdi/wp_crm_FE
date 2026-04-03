@@ -1,14 +1,18 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { ProductForm } from '../../_components/CreateProductForm';
-import { productService, type Product } from '@/lib/product.service';
-import { type ProductFormValues, type LocalMediaItem, type ProductType, type ExtraSpecFormValues } from '../../_schema';
+import { productService } from '@/lib/product.service';
+import {
+  type ProductFormValues,
+  type LocalMediaItem,
+  type ProductType,
+  type ExtraSpecFormValues,
+} from '../../_schema';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -19,125 +23,140 @@ const STANDARD_SPECS_KEYS = {
   SCHEDULED_EVENT: ['duration_hours', 'meeting_point', 'difficulty_level'],
   RESOURCE_RENTAL: ['transmission', 'fuel_type', 'seats', 'daily_limit_km'],
   DYNAMIC_SERVICE: ['base_fee', 'price_per_km', 'hourly_rate'],
-};
+} as const;
 
-export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const resolvedParams = use(params);
   const productId = resolvedParams.id;
-  const router = useRouter();
-  const activeOrganizationId = useAuthStore(s => s.activeOrganizationId);
+  const activeOrganizationId = useAuthStore((s) => s.activeOrganizationId);
 
   // Fetch product data
-  const { data: product, isLoading, error } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.products.detail(activeOrganizationId, productId),
-    queryFn: () => productService.getById(productId),
+    queryFn: () => {
+      if (!activeOrganizationId) {
+        throw new Error('Active organization is required');
+      }
+
+      return productService.getById(activeOrganizationId, productId);
+    },
+    enabled: !!activeOrganizationId && !!productId,
   });
 
-  const [initialData, setInitialData] = useState<ProductFormValues | null>(null);
-  const [initialMedia, setInitialMedia] = useState<LocalMediaItem[] | null>(null);
-
-  useEffect(() => {
-    if (product) {
-      const type = product.type as ProductType;
-      const rawSpecs = product.specifications || {};
-      const standardKeysForType = STANDARD_SPECS_KEYS[type] || [];
-      
-      const specifications: Record<string, any> = {};
-      const extra_specifications: ExtraSpecFormValues[] = [];
-
-      for (const [k, v] of Object.entries(rawSpecs)) {
-        if (standardKeysForType.includes(k)) {
-          specifications[k] = v;
-        } else {
-          extra_specifications.push({ key: k, value: String(v) });
-        }
-      }
-
-      let instanceData = undefined;
-      if (type === 'SCHEDULED_EVENT' && product.instances && product.instances.length > 0) {
-        const firstInst = product.instances[0];
-        // Ensure datetime strings are formatted for input[type="datetime-local"]
-        // The backend returns ISO string e.g. "2026-05-01T00:00:00.000Z"
-        // We slice 0, 16 for "YYYY-MM-DDTHH:mm"
-        const formatForInput = (isoString: string) => {
-          try {
-            return new Date(isoString).toISOString().slice(0, 16);
-          } catch {
-            return isoString;
-          }
-        };
-
-        instanceData = {
-          start_date: formatForInput(firstInst.start_date),
-          end_date: formatForInput(firstInst.end_date),
-          max_capacity: firstInst.max_capacity,
-        };
-      }
-
-      // Prepare initial Values for the form
-      const formValues = {
-        type: type,
-        title: product.title,
-        description: product.description || '',
-        base_price: Number(product.base_price),
-        currency: product.currency || 'USD',
-        available_addons: product.available_addons || [],
-        specifications: specifications,
-        extra_specifications: extra_specifications,
-        // Using "as any" to bypass strict discriminated union structural limits locally while injecting instanceData safely
-        ...(instanceData ? { instance: instanceData } : {}),
-      } as unknown as ProductFormValues;
-
-      setInitialData(formValues);
-
-      // Map backend media arrays to the frontend's LocalMediaItem structure
-      // Faking File object to comply with local preview requirements
-      const mappedMedia: LocalMediaItem[] = (product.media || []).map((m) => ({
-        previewUrl: m.file_url,
-        file: new File([""], m.file_name || 'image.jpg', { type: 'image/jpeg' }),
-        isPrimary: m.is_primary,
-      }));
-
-      setInitialMedia(mappedMedia);
+  const initialFormData = useMemo(() => {
+    if (!product) {
+      return null;
     }
+
+    const type = product.type as ProductType;
+    const rawSpecs = product.specifications || {};
+    const standardKeysForType = new Set<string>(STANDARD_SPECS_KEYS[type]);
+
+    const specifications: Record<string, unknown> = {};
+    const extra_specifications: ExtraSpecFormValues[] = [];
+
+    for (const [k, v] of Object.entries(rawSpecs)) {
+      if (standardKeysForType.has(k)) {
+        specifications[k] = v;
+      } else {
+        extra_specifications.push({ key: k, value: String(v) });
+      }
+    }
+
+    let instanceData:
+      | { start_date: string; end_date: string; max_capacity: number }
+      | undefined;
+    if (type === 'SCHEDULED_EVENT' && product.instances?.length) {
+      const firstInst = product.instances[0];
+      const formatForInput = (isoString: string) => {
+        try {
+          return new Date(isoString).toISOString().slice(0, 16);
+        } catch {
+          return isoString;
+        }
+      };
+
+      instanceData = {
+        start_date: formatForInput(firstInst.start_date),
+        end_date: formatForInput(firstInst.end_date),
+        max_capacity: firstInst.max_capacity,
+      };
+    }
+
+    const initialData = {
+      type,
+      title: product.title,
+      description: product.description || '',
+      base_price: Number(product.base_price),
+      currency: product.currency || 'USD',
+      available_addons: product.available_addons || [],
+      specifications,
+      extra_specifications,
+      ...(instanceData ? { instance: instanceData } : {}),
+    } as unknown as ProductFormValues;
+
+    const initialMedia: LocalMediaItem[] = (product.media || []).map((m) => ({
+      previewUrl: m.file_url,
+      file: new File([''], m.file_name || 'image.jpg', {
+        type: 'image/jpeg',
+      }),
+      isPrimary: m.is_primary,
+    }));
+
+    return { initialData, initialMedia };
   }, [product]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-zinc-500 font-medium tracking-wide animate-pulse">Loading Product Configuration...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center">
+        <Loader2 className="text-primary mb-4 h-8 w-8 animate-spin" />
+        <p className="animate-pulse font-medium tracking-wide text-zinc-500">
+          Loading Product Configuration...
+        </p>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <p className="text-red-400 font-medium">Failed to load product details.</p>
-        <Link href="/dashboard/products" className="text-primary hover:underline text-sm font-semibold flex items-center gap-2">
-           <ArrowLeft className="h-4 w-4" /> Back to Products
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+        <p className="font-medium text-red-400">
+          Failed to load product details.
+        </p>
+        <Link
+          href="/dashboard/products"
+          className="text-primary flex items-center gap-2 text-sm font-semibold hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Products
         </Link>
       </div>
     );
   }
 
-  if (!initialData || !initialMedia) return null;
+  if (!initialFormData) return null;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 pb-24 md:px-10">
       <Link
         href="/dashboard/products"
-        className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground hover:bg-zinc-900/50 p-2 rounded-lg -ml-2"
+        className="text-muted-foreground hover:text-foreground mb-8 -ml-2 inline-flex items-center gap-2 rounded-lg p-2 text-xs font-bold tracking-widest uppercase transition-colors hover:bg-zinc-900/50"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Catalog
       </Link>
 
-      <ProductForm 
-        productId={productId} 
-        initialData={initialData} 
-        initialMedia={initialMedia} 
+      <ProductForm
+        productId={productId}
+        initialData={initialFormData.initialData}
+        initialMedia={initialFormData.initialMedia}
       />
     </div>
   );

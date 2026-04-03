@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import Cookies from 'js-cookie';
 import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
+import { authService } from '@/lib/auth.service';
 
 export type AuthUser = {
   id: string;
@@ -30,7 +31,7 @@ type AuthStore = {
   setHasHydrated: (state: boolean) => void;
   startInitialization: () => void;
   finishInitialization: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -62,7 +63,16 @@ export const useAuthStore = create<AuthStore>()(
       startInitialization: () => set({ isInitialized: false, isLoading: true }),
       finishInitialization: () =>
         set({ isInitialized: true, isLoading: false }),
-      logout: () => {
+      logout: async () => {
+        try {
+          // Revoke refresh token backend-side first
+          await authService.logout();
+        } catch (error) {
+          // Log but continue with local cleanup even if backend revocation fails
+          console.error('Failed to revoke refresh token:', error);
+        }
+
+        // Clear local cookies and Zustand state
         Cookies.remove('access_token', accessTokenCookieAttributes);
         set({
           user: null,

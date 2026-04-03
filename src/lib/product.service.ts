@@ -97,37 +97,63 @@ export type UpdateProductDto = Partial<
 // ---------------------------------------------------------------------------
 
 export const productService = {
-  /** GET /api/v1/products */
-  getAll(params?: FindProductsQueryDto): Promise<PaginatedProducts> {
-    return api.get<PaginatedProducts>('/products', { params }).then((r) => r.data);
+  /** GET /api/v1/organizations/:organizationId/products */
+  getAll(
+    organizationId: string,
+    params?: FindProductsQueryDto
+  ): Promise<PaginatedProducts> {
+    return api
+      .get<PaginatedProducts>(`/organizations/${organizationId}/products`, {
+        params,
+      })
+      .then((r) => r.data);
   },
 
-  /** GET /api/v1/products/:id */
-  getById(id: string): Promise<Product> {
-    return api.get<Product>(`/products/${id}`).then((r) => r.data);
+  /** GET /api/v1/organizations/:organizationId/products/:id */
+  getById(organizationId: string, id: string): Promise<Product> {
+    return api
+      .get<Product>(`/organizations/${organizationId}/products/${id}`)
+      .then((r) => r.data);
   },
 
-  /** POST /api/v1/products */
-  create(dto: CreateProductDto): Promise<Product> {
-    return api.post<Product>('/products', dto).then((r) => r.data);
+  /** POST /api/v1/organizations/:organizationId/products */
+  create(organizationId: string, dto: CreateProductDto): Promise<Product> {
+    return api
+      .post<Product>(`/organizations/${organizationId}/products`, dto)
+      .then((r) => r.data);
   },
 
-  /** PATCH /api/v1/products/:id */
-  update(id: string, dto: UpdateProductDto): Promise<Product> {
-    return api.patch<Product>(`/products/${id}`, dto).then((r) => r.data);
+  /** PATCH /api/v1/organizations/:organizationId/products/:id */
+  update(
+    organizationId: string,
+    id: string,
+    dto: UpdateProductDto
+  ): Promise<Product> {
+    return api
+      .patch<Product>(`/organizations/${organizationId}/products/${id}`, dto)
+      .then((r) => r.data);
   },
 
-  /** DELETE /api/v1/products/:id */
-  delete(id: string): Promise<void> {
-    return api.delete(`/products/${id}`).then(() => undefined);
+  /** DELETE /api/v1/organizations/:organizationId/products/:id */
+  delete(organizationId: string, id: string): Promise<void> {
+    return api
+      .delete(`/organizations/${organizationId}/products/${id}`)
+      .then(() => undefined);
   },
 
   // ── Media ──────────────────────────────────────────────────────────────
 
-  /** POST /api/v1/products/:id/media */
-  addMedia(productId: string, dto: CreateProductMediaDto): Promise<ProductMedia> {
+  /** POST /api/v1/organizations/:organizationId/products/:id/media */
+  addMedia(
+    organizationId: string,
+    productId: string,
+    dto: CreateProductMediaDto
+  ): Promise<ProductMedia> {
     return api
-      .post<ProductMedia>(`/products/${productId}/media`, dto)
+      .post<ProductMedia>(
+        `/organizations/${organizationId}/products/${productId}/media`,
+        dto
+      )
       .then((r) => r.data);
   },
 
@@ -135,9 +161,15 @@ export const productService = {
    * PUT /api/v1/products/:productId/media/:mediaId/primary
    * Atomically flips is_primary on the given media item.
    */
-  setPrimaryMedia(productId: string, mediaId: string): Promise<void> {
+  setPrimaryMedia(
+    organizationId: string,
+    productId: string,
+    mediaId: string
+  ): Promise<void> {
     return api
-      .put(`/products/${productId}/media/${mediaId}/primary`)
+      .put(
+        `/organizations/${organizationId}/products/${productId}/media/${mediaId}/primary`
+      )
       .then(() => undefined);
   },
 };

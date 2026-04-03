@@ -29,8 +29,8 @@ export type Organization = {
   website_url?: string | null;
   public_email?: string | null;
   public_phone?: string | null;
-  social_links?: any[];
-  bank_accounts?: any[];
+  social_links?: SocialLink[];
+  bank_accounts?: BankAccount[];
 };
 
 export type BankAccount = {
@@ -45,7 +45,10 @@ export type BankAccount = {
   organization_id: string;
 };
 
-export type CreateBankAccountDto = Omit<BankAccount, 'id' | 'created_at' | 'updated_at' | 'organization_id'>;
+export type CreateBankAccountDto = Omit<
+  BankAccount,
+  'id' | 'created_at' | 'updated_at' | 'organization_id'
+>;
 export type UpdateBankAccountDto = Partial<CreateBankAccountDto>;
 
 export type SocialLink = {
@@ -57,7 +60,10 @@ export type SocialLink = {
   organization_id: string;
 };
 
-export type CreateSocialLinkDto = Omit<SocialLink, 'id' | 'created_at' | 'updated_at' | 'organization_id'>;
+export type CreateSocialLinkDto = Omit<
+  SocialLink,
+  'id' | 'created_at' | 'updated_at' | 'organization_id'
+>;
 export type UpdateSocialLinkDto = Partial<CreateSocialLinkDto>;
 
 export type OrganizationMembership = {
@@ -179,7 +185,7 @@ export const orgService = {
   getOrganization(orgId: string) {
     return api.get<Organization>(`/organizations/${orgId}`);
   },
-  updateOrganization(orgId: string, payload: Record<string, any>) {
+  updateOrganization(orgId: string, payload: Record<string, unknown>) {
     return api.patch<Organization>(`/organizations/${orgId}`, payload);
   },
   inviteTeamMember(orgId: string, payload: InviteTeamMemberPayload) {

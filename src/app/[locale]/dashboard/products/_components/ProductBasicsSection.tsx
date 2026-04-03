@@ -28,7 +28,7 @@ const CURRENCIES = ['USD', 'EUR', 'GBP', 'TRY'];
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+    <p className="text-muted-foreground mb-2 text-[10px] font-bold tracking-widest uppercase">
       {children}
     </p>
   );
@@ -48,10 +48,10 @@ export function ProductBasicsSection({
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
   return (
-    <section className="rounded-[20px] border border-border bg-card p-8 shadow-sm">
+    <section className="border-border bg-card rounded-[20px] border p-8 shadow-sm">
       {/* Section header */}
       <div className="mb-8 flex items-center gap-3">
-        <span className="h-6 w-1.5 rounded-full bg-primary" />
+        <span className="bg-primary h-6 w-1.5 rounded-full" />
         <h3 className="text-lg font-bold tracking-tight">The Basics</h3>
       </div>
 
@@ -67,7 +67,7 @@ export function ProductBasicsSection({
                 <FieldLabel>Product Type</FieldLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl border-border bg-muted/40 px-4 py-3 text-sm focus:ring-1 focus:ring-primary/40">
+                    <SelectTrigger className="border-border bg-muted/40 focus:ring-primary/40 rounded-xl px-4 py-3 text-sm focus:ring-1">
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
@@ -97,7 +97,7 @@ export function ProductBasicsSection({
                 <FieldLabel>Product Title</FieldLabel>
                 <FormControl>
                   <Input
-                    className="rounded-xl border-border bg-muted/40 px-4 py-3 text-sm placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-primary/40"
+                    className="border-border bg-muted/40 placeholder:text-muted-foreground/40 focus-visible:ring-primary/40 rounded-xl px-4 py-3 text-sm focus-visible:ring-1"
                     placeholder="e.g. Midnight Fjords Kayak Expedition"
                     {...field}
                   />
@@ -116,7 +116,7 @@ export function ProductBasicsSection({
                 <FieldLabel>Description</FieldLabel>
                 <FormControl>
                   <Textarea
-                    className="resize-none rounded-xl border-border bg-muted/40 p-4 text-sm placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-primary/40"
+                    className="border-border bg-muted/40 placeholder:text-muted-foreground/40 focus-visible:ring-primary/40 resize-none rounded-xl p-4 text-sm focus-visible:ring-1"
                     rows={4}
                     placeholder="Describe the experience, highlights, and key features..."
                     {...field}
@@ -137,13 +137,13 @@ export function ProductBasicsSection({
                   <FieldLabel>Base Price</FieldLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-primary">
+                      <span className="text-primary absolute top-1/2 left-4 -translate-y-1/2 text-sm font-medium">
                         {currencySymbol}
                       </span>
                       <Input
                         type="number"
                         step="0.01"
-                        className="rounded-xl border-border bg-muted/40 pl-8 pr-4 py-3 text-sm placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-primary/40"
+                        className="border-border bg-muted/40 placeholder:text-muted-foreground/40 focus-visible:ring-primary/40 rounded-xl py-3 pr-4 pl-8 text-sm focus-visible:ring-1"
                         placeholder="0.00"
                         {...field}
                       />
@@ -162,7 +162,7 @@ export function ProductBasicsSection({
                   <FieldLabel>Currency</FieldLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="rounded-xl border-border bg-muted/40 px-4 py-3 text-sm focus:ring-1 focus:ring-primary/40">
+                      <SelectTrigger className="border-border bg-muted/40 focus:ring-primary/40 rounded-xl px-4 py-3 text-sm focus:ring-1">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>

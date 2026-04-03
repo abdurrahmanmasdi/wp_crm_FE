@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 let isHandlingAuthFailure = false;
 let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 
 type QueuedRequest = {
   resolve: (token: string) => void;
@@ -81,6 +82,7 @@ function processQueue(error: unknown, token: string | null = null) {
   });
 
   failedQueue = [];
+  refreshPromise = null;
 }
 
 function purgeAuthAndRedirect() {
@@ -159,7 +161,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (isRefreshing) {
+    if (isRefreshing && refreshPromise) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token) => {
@@ -176,38 +178,46 @@ api.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    try {
-      const refreshResponse = await axios.post(
-        '/auth/refresh',
-        {},
-        {
-          withCredentials: true,
-          baseURL: api.defaults.baseURL,
-          headers: {
-            'Accept-Language': readCurrentLocale(),
-          },
+    refreshPromise = (async () => {
+      try {
+        const refreshResponse = await axios.post(
+          `${api.defaults.baseURL}/auth/refresh`,
+          {},
+          {
+            withCredentials: true,
+            headers: {
+              'Accept-Language': readCurrentLocale(),
+            },
+            timeout: 10000,
+          }
+        );
+        const newToken = extractAccessToken(refreshResponse.data);
+
+        if (!newToken) {
+          throw new Error('Refresh response missing access token');
         }
-      );
-      const newToken = extractAccessToken(refreshResponse.data);
 
-      if (!newToken) {
-        throw new Error('Refresh response missing access token');
+        persistAccessToken(newToken);
+        api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+        processQueue(null, newToken);
+
+        return newToken;
+      } catch (refreshError) {
+        processQueue(refreshError);
+        purgeAuthAndRedirect();
+        throw refreshError;
+      } finally {
+        isRefreshing = false;
       }
+    })();
 
-      persistAccessToken(newToken);
-      api.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-      processQueue(null, newToken);
-
+    try {
+      const newToken = await refreshPromise;
       originalRequest.headers = originalRequest.headers ?? {};
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
       return api(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError);
-      purgeAuthAndRedirect();
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
+    } catch (error) {
+      return Promise.reject(error);
     }
   }
 );

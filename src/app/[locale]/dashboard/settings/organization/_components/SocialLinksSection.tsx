@@ -8,7 +8,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { orgService, type SocialLink } from '@/lib/org.service';
 import { socialLinkSchema } from '../_schema';
@@ -52,8 +58,8 @@ function SocialLinkRow({
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (isNew) return Promise.resolve({ data: undefined } as any);
-      return orgService.deleteSocialLink(link.id);
+      if (isNew || !link) return;
+      await orgService.deleteSocialLink(link.id);
     },
     onSuccess: () => {
       if (!isNew) toast.success('Social link removed');
@@ -71,8 +77,11 @@ function SocialLinkRow({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="group flex items-center gap-4 rounded-lg">
-        <div className="bg-surface-container-lowest border-outline-variant/10 text-on-surface-variant group-hover:text-primary flex h-10 w-10 items-center justify-center rounded border transition-colors mt-6 shrink-0">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="group flex items-center gap-4 rounded-lg"
+      >
+        <div className="bg-surface-container-lowest border-outline-variant/10 text-on-surface-variant group-hover:text-primary mt-6 flex h-10 w-10 shrink-0 items-center justify-center rounded border transition-colors">
           <Link2 className="h-4 w-4" />
         </div>
 
@@ -97,21 +106,28 @@ function SocialLinkRow({
               <FormItem>
                 <FormLabel>URL</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://linkedin.com/company/kinetic" {...field} />
+                  <Input
+                    placeholder="https://linkedin.com/company/kinetic"
+                    {...field}
+                  />
                 </FormControl>
               </FormItem>
             )}
           />
         </div>
 
-        <div className="flex items-center gap-2 mt-6">
+        <div className="mt-6 flex items-center gap-2">
           <Button
             type="submit"
             size="sm"
             disabled={isSaving || isDeleting || !form.formState.isDirty}
             className={`transition-opacity ${!form.formState.isDirty && !isNew ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} bg-primary/20 text-primary hover:bg-primary/30`}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Save
           </Button>
 
@@ -126,7 +142,11 @@ function SocialLinkRow({
               else deleteMutation.mutate();
             }}
           >
-            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </form>
@@ -141,7 +161,7 @@ export function SocialLinksSection() {
     queryKey: ['social-links'],
     queryFn: async () => {
       const res = await orgService.getSocialLinks();
-      return (res as any).data ?? res;
+      return res.data;
     },
   });
 
@@ -150,21 +170,23 @@ export function SocialLinksSection() {
       <div className="space-y-4">
         {isLoading ? (
           <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Loader2 className="text-primary h-6 w-6 animate-spin" />
           </div>
         ) : (
           <>
             {links.map((link: SocialLink) => (
               <SocialLinkRow key={link.id} link={link} />
             ))}
-            {showNewRow && <SocialLinkRow onRemoveEmpty={() => setShowNewRow(false)} />}
+            {showNewRow && (
+              <SocialLinkRow onRemoveEmpty={() => setShowNewRow(false)} />
+            )}
           </>
         )}
 
         <Button
           type="button"
           variant="outline"
-          className="border-outline-variant/30 text-on-surface-variant hover:border-primary/50 hover:text-primary w-full border-dashed mt-4"
+          className="border-outline-variant/30 text-on-surface-variant hover:border-primary/50 hover:text-primary mt-4 w-full border-dashed"
           onClick={() => setShowNewRow(true)}
           disabled={showNewRow || isLoading}
         >

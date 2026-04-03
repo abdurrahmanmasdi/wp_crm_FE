@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -29,16 +29,13 @@ export function useOrganizationSettings() {
   const {
     data: currentOrg,
     isLoading,
-    isFetching,
     isError,
   } = useQuery({
     queryKey: ['organization', activeOrganizationId],
     queryFn: async () => {
       if (!activeOrganizationId) return null;
       const res = await orgService.getOrganization(activeOrganizationId);
-      console.log('res', res)
-      // orgService wraps API responses in { data: ... }
-      return (res as any).data ?? res;
+      return res.data;
     },
     // Wait for Zustand rehydration so activeOrganizationId is the real value
     enabled: hasHydrated && Boolean(activeOrganizationId),
@@ -46,19 +43,24 @@ export function useOrganizationSettings() {
   });
 
   // ── Form ───────────────────────────────────────────────────────────────────
-  const form = useForm<OrganizationFormInputValues, unknown, OrganizationFormValues>({
+  const form = useForm<
+    OrganizationFormInputValues,
+    unknown,
+    OrganizationFormValues
+  >({
     resolver: zodResolver(organizationFormSchema),
     defaultValues,
   });
 
   // Map API response to hook form payload
-  const getDbValues = () => {
+  const getDbValues = useCallback(() => {
     if (!currentOrg) return defaultValues;
     return {
       name: currentOrg.name ?? '',
       tax_number: currentOrg.tax_number ?? '',
       tax_office: currentOrg.tax_office ?? '',
-      industry_category: currentOrg.industry_category ?? 'Enterprise Software & SaaS',
+      industry_category:
+        currentOrg.industry_category ?? 'Enterprise Software & SaaS',
       address: currentOrg.address ?? '',
       logo_url: currentOrg.logo_url ?? '',
       brand_colors: currentOrg.brand_colors
@@ -72,12 +74,12 @@ export function useOrganizationSettings() {
       public_email: currentOrg.public_email ?? '',
       public_phone: currentOrg.public_phone ?? '',
     };
-  };
+  }, [currentOrg]);
 
   // Populate the form once the API returns data
   useEffect(() => {
     if (currentOrg) form.reset(getDbValues());
-  }, [currentOrg, form]);
+  }, [currentOrg, form, getDbValues]);
 
   const onDiscard = () => {
     form.reset(getDbValues());
@@ -91,7 +93,9 @@ export function useOrganizationSettings() {
     },
     onSuccess: () => {
       toast.success('Organization settings updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['organization', activeOrganizationId] });
+      queryClient.invalidateQueries({
+        queryKey: ['organization', activeOrganizationId],
+      });
       queryClient.invalidateQueries({ queryKey: ['memberships'] });
     },
     onError: () => {
@@ -100,20 +104,27 @@ export function useOrganizationSettings() {
   });
 
   const onSubmit = (data: OrganizationFormValues) => {
-    const finalBrandColors = data.brand_colors?.reduce((acc, curr) => {
-      if (curr.key && curr.value) acc[curr.key] = curr.value;
-      return acc;
-    }, {} as Record<string, string>);
+    const finalBrandColors = data.brand_colors?.reduce(
+      (acc, curr) => {
+        if (curr.key && curr.value) acc[curr.key] = curr.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     const payload = {
       ...data,
-      brand_colors: Object.keys(finalBrandColors || {}).length ? finalBrandColors : null,
+      brand_colors: Object.keys(finalBrandColors || {}).length
+        ? finalBrandColors
+        : null,
     };
     mutation.mutate(payload as OrganizationFormValues);
   };
 
   const onRetry = () =>
-    queryClient.invalidateQueries({ queryKey: ['organization', activeOrganizationId] });
+    queryClient.invalidateQueries({
+      queryKey: ['organization', activeOrganizationId],
+    });
 
   const isFormLoading = !hasHydrated || (!currentOrg && isLoading);
 
