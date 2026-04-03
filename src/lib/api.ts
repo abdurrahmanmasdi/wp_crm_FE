@@ -108,8 +108,10 @@ function purgeAuthAndRedirect() {
   }, 1000);
 }
 
+import { env } from '@/env';
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1',
+  baseURL: env.NEXT_PUBLIC_API_URL,
 });
 
 api.interceptors.request.use((config) => {

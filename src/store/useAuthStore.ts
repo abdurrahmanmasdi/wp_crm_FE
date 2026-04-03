@@ -13,17 +13,15 @@ export type AuthUser = {
   permissions?: string[];
 };
 
-type AuthUserState = AuthUser | Record<string, unknown>;
-
 type AuthStore = {
-  user: AuthUserState | null;
+  user: AuthUser | null;
   activeOrganizationId: string | null;
   permissions: string[] | null; // null = not fetched, [] = fetched but no access
   _hasHydrated: boolean;
   isInitialized: boolean;
   isLoading: boolean;
-  setAuth: (user: AuthUserState | null) => void;
-  setUser: (user: AuthUserState | null) => void;
+  setAuth: (user: AuthUser | null) => void;
+  setUser: (user: AuthUser | null) => void;
   setActiveOrganizationId: (activeOrganizationId: string | null) => void;
   setPermissions: (permissions: string[]) => void;
   clearPermissions: () => void;

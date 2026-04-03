@@ -22,5 +22,14 @@ export const leadsColumns: Array<ColumnDef<LeadWithRelations>> = [
   {
     id: 'created_at',
     accessorKey: 'created_at',
+    cell: ({ row }) => {
+      const date = row.getValue<Date>('created_at');
+      if (!date) return '';
+      return new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(date);
+    },
   },
 ];

@@ -76,12 +76,12 @@ function getStatusBadgeClass(status: string): string {
   }
 }
 
-function formatDateTime(value: string | null): string | null {
+function formatDateTime(value: Date | string | null): string | null {
   if (!value) {
     return null;
   }
 
-  const parsedDate = new Date(value);
+  const parsedDate = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsedDate.getTime())) {
     return null;
   }
@@ -170,12 +170,12 @@ function DetailItem({
   );
 }
 
-function formatRelativeTime(value: string | null, fallback: string): string {
+function formatRelativeTime(value: Date | string | null, fallback: string): string {
   if (!value) {
     return fallback;
   }
 
-  const parsedDate = new Date(value);
+  const parsedDate = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsedDate.getTime())) {
     return fallback;
   }

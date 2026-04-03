@@ -29,14 +29,14 @@ type FlatLeadRow = {
  * @param value Raw date string (or null) from lead fields.
  * @returns Localized date-time text, the original value when invalid, or empty string when absent.
  */
-function formatDate(value: string | null): string {
+function formatDate(value: Date | string | null): string {
   if (!value) {
     return '';
   }
 
-  const parsed = new Date(value);
+  const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    return value;
+    return String(value);
   }
 
   return new Intl.DateTimeFormat(undefined, {

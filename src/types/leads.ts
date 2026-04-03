@@ -38,10 +38,10 @@ export type Lead = {
   priority: LeadPriority;
   estimated_value: string;
   currency: LeadCurrency;
-  expected_service_date: string | null;
-  next_follow_up_at: string | null;
-  created_at: string;
-  updated_at: string;
+  expected_service_date: Date | null;
+  next_follow_up_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type LeadWithRelations = Lead;

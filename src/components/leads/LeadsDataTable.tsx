@@ -144,12 +144,12 @@ function formatEstimatedValue(
   }
 }
 
-function formatCreatedAt(dateValue: string | null, fallback: string): string {
+function formatCreatedAt(dateValue: Date | string | null, fallback: string): string {
   if (!dateValue) {
     return fallback;
   }
 
-  const parsedDate = new Date(dateValue);
+  const parsedDate = dateValue instanceof Date ? dateValue : new Date(dateValue);
   if (Number.isNaN(parsedDate.getTime())) {
     return fallback;
   }

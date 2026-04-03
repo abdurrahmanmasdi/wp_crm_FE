@@ -73,12 +73,12 @@ function splitPhoneNumber(phoneNumber: string): {
   };
 }
 
-function toDateInputValue(value: string | null): string {
+function toDateInputValue(value: Date | string | null): string {
   if (!value) {
     return '';
   }
 
-  const parsed = new Date(value);
+  const parsed = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(parsed.getTime())) {
     return '';
   }

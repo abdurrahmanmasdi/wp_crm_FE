@@ -6,6 +6,7 @@ import type {
   LeadPriority,
   LeadStatus,
 } from '@/types/leads';
+import { emailSchema, nonNegativeNumberSchema, requiredStringSchema } from '@/lib/validations/common';
 
 export type AddLeadFormValues = {
   first_name: string;
@@ -70,24 +71,15 @@ export const defaultValues: AddLeadFormValues = {
 
 export function createAddLeadSchema(t: (key: string) => string) {
   return z.object({
-    first_name: z.string().trim().min(1, t('validation.firstNameRequired')),
-    last_name: z.string().trim().min(1, t('validation.lastNameRequired')),
+    first_name: requiredStringSchema(t('validation.firstNameRequired')),
+    last_name: requiredStringSchema(t('validation.lastNameRequired')),
     native_name: z.string().trim(),
-    email: z.union([
-      z.literal(''),
-      z.string().trim().email(t('validation.emailInvalid')),
-    ]),
-    phone_country_code: z
-      .string()
-      .trim()
-      .min(1, t('validation.phoneCodeRequired')),
-    phone_number: z.string().trim().min(1, t('validation.phoneNumberRequired')),
-    country: z.string().trim().min(1, t('validation.countryRequired')),
-    timezone: z.string().trim().min(1, t('validation.timezoneRequired')),
-    primary_language: z
-      .string()
-      .trim()
-      .min(1, t('validation.primaryLanguageRequired')),
+    email: emailSchema(t),
+    phone_country_code: requiredStringSchema(t('validation.phoneCodeRequired')),
+    phone_number: requiredStringSchema(t('validation.phoneNumberRequired')),
+    country: requiredStringSchema(t('validation.countryRequired')),
+    timezone: requiredStringSchema(t('validation.timezoneRequired')),
+    primary_language: requiredStringSchema(t('validation.primaryLanguageRequired')),
     preferred_language: z.string().trim(),
     status: z.enum(['OPEN', 'WON', 'LOST', 'UNQUALIFIED']),
     priority: z.enum(['HOT', 'WARM', 'COLD']),

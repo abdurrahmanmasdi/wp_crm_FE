@@ -3,25 +3,26 @@ import type {
   CreateProductDto as ApiCreateProductDto,
   UpdateProductDto as ApiUpdateProductDto,
 } from '@/api-generated/model';
+import { requiredStringSchema, positiveNumberSchema, nonNegativeNumberSchema } from '@/lib/validations/common';
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
 // ---------------------------------------------------------------------------
 
 export const addonSchema = z.object({
-  name: z.string().min(1, 'Addon name required'),
-  price: z.coerce.number().positive('Addon price must be positive'),
+  name: requiredStringSchema('Addon name required'),
+  price: positiveNumberSchema('Addon price must be positive'),
 });
 
 export const extraSpecSchema = z.object({
-  key: z.string().min(1, 'Attribute name required'),
-  value: z.string().min(1, 'Value required'),
+  key: requiredStringSchema('Attribute name required'),
+  value: requiredStringSchema('Value required'),
 });
 
 const baseProductSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
+  title: requiredStringSchema('Title must be at least 3 characters'),
   description: z.string().optional(),
-  base_price: z.coerce.number().positive('Base price must be positive'),
+  base_price: positiveNumberSchema('Base price must be positive'),
   currency: z.string().default('USD'),
   available_addons: z.array(addonSchema).optional(),
   /** Freeform key-value pairs shown in the Extra Attributes builder */

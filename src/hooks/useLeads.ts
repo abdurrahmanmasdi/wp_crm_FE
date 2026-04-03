@@ -52,6 +52,29 @@ function asString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value : null;
 }
 
+function asRequiredString(value: unknown, fieldName: string): string {
+  const parsed = asString(value);
+  if (!parsed) {
+    throw new Error(`Malformed data: Missing required field "${fieldName}"`);
+  }
+  return parsed;
+}
+
+function asRequiredDate(value: unknown, fieldName: string): Date {
+  if (!value) throw new Error(`Malformed data: Missing required date field "${fieldName}"`);
+  const parsed = new Date(value as string);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Malformed data: Invalid date format for "${fieldName}"`);
+  }
+  return parsed;
+}
+
+function asNullableDate(value: unknown): Date | null {
+  if (!value) return null;
+  const parsed = new Date(value as string);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function asNullableString(value: unknown): string | null {
   if (value === null || value === undefined) {
     return null;
@@ -164,8 +187,8 @@ function normalizeLead(item: unknown): Lead {
     item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
 
   return {
-    id: asString(record.id) ?? '',
-    organization_id: asString(record.organization_id) ?? '',
+    id: asRequiredString(record.id, 'id'),
+    organization_id: asRequiredString(record.organization_id, 'organization_id'),
     pipeline_stage_id: asNullableString(record.pipeline_stage_id),
     assigned_agent_id: asNullableString(record.assigned_agent_id),
     source_id: asNullableString(record.source_id),
@@ -184,10 +207,10 @@ function normalizeLead(item: unknown): Lead {
     status: normalizeStatus(record.status),
     estimated_value: asString(record.estimated_value) ?? '0',
     currency: normalizeCurrency(record.currency),
-    expected_service_date: asNullableString(record.expected_service_date),
-    next_follow_up_at: asNullableString(record.next_follow_up_at),
-    created_at: asString(record.created_at) ?? '',
-    updated_at: asString(record.updated_at) ?? '',
+    expected_service_date: asNullableDate(record.expected_service_date),
+    next_follow_up_at: asNullableDate(record.next_follow_up_at),
+    created_at: asRequiredDate(record.created_at, 'created_at'),
+    updated_at: asRequiredDate(record.updated_at, 'updated_at'),
   };
 }
 
