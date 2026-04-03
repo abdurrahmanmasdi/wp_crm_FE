@@ -1,4 +1,8 @@
 import * as z from 'zod';
+import type {
+  CreateProductDto as ApiCreateProductDto,
+  UpdateProductDto as ApiUpdateProductDto,
+} from '@/api-generated/model';
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
@@ -87,6 +91,8 @@ export type ProductFormValues = z.infer<typeof productFormSchema>;
 export type AddonFormValues = z.infer<typeof addonSchema>;
 export type ExtraSpecFormValues = z.infer<typeof extraSpecSchema>;
 export type ProductType = ProductFormValues['type'];
+export type CreateProductDto = ApiCreateProductDto;
+export type UpdateProductDto = ApiUpdateProductDto;
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   REAL_ESTATE_ASSET: 'Real Estate Asset',

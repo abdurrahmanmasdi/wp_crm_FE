@@ -1,4 +1,10 @@
 import { api } from '@/lib/api';
+import type {
+  CreateProductDto as ApiCreateProductDto,
+  ProductInstanceDto as ApiProductInstanceDto,
+  ProductMediaDto as ApiProductMediaDto,
+  UpdateProductDto as ApiUpdateProductDto,
+} from '@/api-generated/model';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,33 +70,10 @@ export type PaginatedProducts = {
   };
 };
 
-export type CreateProductMediaDto = {
-  file_url: string;
-  file_name: string;
-};
-
-export type CreateProductInstanceDto = {
-  start_date: string;
-  end_date: string;
-  max_capacity: number;
-};
-
-export type CreateProductDto = {
-  type: string;
-  title: string;
-  description?: string;
-  base_price: number;
-  currency: string;
-  specifications: Record<string, unknown>;
-  available_addons?: Array<{ name: string; price: number }>;
-  /** First item is auto-set as is_primary by backend */
-  media?: CreateProductMediaDto[];
-  instances?: CreateProductInstanceDto[];
-};
-
-export type UpdateProductDto = Partial<
-  Omit<CreateProductDto, 'media' | 'instances'>
->;
+export type CreateProductMediaDto = ApiProductMediaDto;
+export type CreateProductInstanceDto = ApiProductInstanceDto;
+export type CreateProductDto = ApiCreateProductDto;
+export type UpdateProductDto = ApiUpdateProductDto;
 
 // ---------------------------------------------------------------------------
 // Service
