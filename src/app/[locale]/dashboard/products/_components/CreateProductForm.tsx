@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { productFormSchema, type LocalMediaItem, type ProductFormValues } from '../_schema';
-import { productService, type CreateProductDto } from '@/lib/product.service';
+import { productService, type CreateProductDto, type UpdateProductDto } from '@/lib/product.service';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProductBasicsSection } from './ProductBasicsSection';
@@ -95,17 +95,26 @@ function buildPayload(
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export function CreateProductForm() {
+export function ProductForm({
+  productId,
+  initialData,
+  initialMedia = [],
+}: {
+  productId?: string;
+  initialData?: ProductFormValues;
+  initialMedia?: LocalMediaItem[];
+}) {
+  const isEditMode = !!productId;
   const router = useRouter();
   const queryClient = useQueryClient();
   const activeOrganizationId = useAuthStore((s) => s.activeOrganizationId);
 
   // Gallery state is kept outside react-hook-form (File objects aren't serialisable)
-  const [mediaItems, setMediaItems] = useState<LocalMediaItem[]>([]);
+  const [mediaItems, setMediaItems] = useState<LocalMediaItem[]>(initialMedia);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema) as any,
-    defaultValues: {
+    defaultValues: initialData || ({
       type: 'REAL_ESTATE_ASSET',
       title: '',
       description: '',
@@ -114,39 +123,54 @@ export function CreateProductForm() {
       available_addons: [],
       extra_specifications: [],
       specifications: { bedrooms: 0, bathrooms: 0, square_meters: 10, year_built: 2000 },
-    } as ProductFormValues,
+    } as ProductFormValues),
   });
 
   const selectedType = useWatch({ control: form.control, name: 'type' });
+  const [prevType, setPrevType] = useState(form.getValues('type'));
 
   // When type changes, reset only type-specific fields, preserving shared ones
+  // But only if the type actually changed by user, not during initial render
   useEffect(() => {
-    const preserved = {
-      title: form.getValues('title'),
-      description: form.getValues('description'),
-      base_price: form.getValues('base_price'),
-      currency: form.getValues('currency'),
-      available_addons: form.getValues('available_addons'),
-      extra_specifications: form.getValues('extra_specifications'),
-    };
-    form.reset({ ...preserved, ...TYPE_DEFAULTS[selectedType] } as ProductFormValues);
-  }, [selectedType]); // intentionally omitting form
+    if (selectedType !== prevType) {
+      const preserved = {
+        title: form.getValues('title'),
+        description: form.getValues('description'),
+        base_price: form.getValues('base_price'),
+        currency: form.getValues('currency'),
+        available_addons: form.getValues('available_addons'),
+        extra_specifications: [], // Clear extra specs on type change normally
+      };
+      form.reset({ ...preserved, ...TYPE_DEFAULTS[selectedType] } as ProductFormValues);
+      setPrevType(selectedType);
+    }
+  }, [selectedType, prevType, form]);
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
       const payload = buildPayload(data, mediaItems);
-      await productService.create(payload);
+      
+      if (isEditMode) {
+        // Mock updating the product (In reality we patch, but user says passing the same DTO is fine for now due to backend limits)
+        await productService.update(productId, payload as Partial<CreateProductDto>);
+        toast.success('Product updated successfully!');
+      } else {
+        await productService.create(payload);
+        toast.success('Product created successfully!');
+      }
 
-      // Invalidate products list
+      // Invalidate products list and specific query
       queryClient.invalidateQueries({
         queryKey: queryKeys.products.all(activeOrganizationId),
       });
+      if (isEditMode) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.products.detail(activeOrganizationId, productId as string) })
+      }
 
-      toast.success('Product created successfully!');
       router.push('../products'); // navigate back to list
     } catch (err: any) {
       const message =
-        err?.response?.data?.message ?? 'Failed to create product. Please try again.';
+        err?.response?.data?.message ?? `Failed to ${isEditMode ? 'update' : 'create'} product.`;
       toast.error(message);
     }
   };
@@ -157,9 +181,9 @@ export function CreateProductForm() {
     <FormProvider {...form}>
       {/* Page header */}
       <div className="mb-10">
-        <h2 className="text-3xl font-bold tracking-tight">Create New Product</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{isEditMode ? 'Edit Product' : 'Create New Product'}</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Design and configure your dynamic product offerings for any industry.
+          {isEditMode ? 'Update your product details and configuration.' : 'Design and configure your dynamic product offerings for any industry.'}
         </p>
       </div>
 
@@ -212,10 +236,10 @@ export function CreateProductForm() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Publishing…
+                  {isEditMode ? 'Saving…' : 'Publishing…'}
                 </>
               ) : (
-                'Activate & List Product'
+                isEditMode ? 'Save Changes' : 'Activate & List Product'
               )}
             </button>
           </div>

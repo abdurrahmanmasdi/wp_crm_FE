@@ -1601,7 +1601,37 @@ Serialization: **snake_case** keys.
 
 ### GET /api/v1/products
 
-- Response 200: Array of Product objects.
+- Query params:
+  - `page` (optional int, default 1)
+  - `limit` (optional int, default 20)
+  - `search` (optional string, case-insensitive search across title and description)
+  - `type` (optional string, `ProductType` enum)
+  - `sort_by` (optional string, e.g., `base_price`, `created_at`, `title`, `type`)
+  - `sort_dir` (optional string, `asc` or `desc`)
+  - `filters` (optional stringified JSON array, e.g. `[{"field":"base_price","operator":"gte","value":1000},{"field":"specifications.bedrooms","operator":"equals","value":4}]`)
+
+- Response 200:
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "organization_id": "uuid",
+      "type": "RESOURCE_RENTAL",
+      "title": "2024 Mercedes S-Class",
+      "created_at": "2026-04-02T10:00:00.000Z"
+      // ... rest of Product fields
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
 
 ### POST /api/v1/products
 

@@ -44,6 +44,26 @@ export type Product = {
 // Request DTOs
 // ---------------------------------------------------------------------------
 
+export type FindProductsQueryDto = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  type?: string;
+  sort_by?: string;
+  sort_dir?: string;
+  filters?: string; // JSON string of filter rules
+};
+
+export type PaginatedProducts = {
+  data: Product[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export type CreateProductMediaDto = {
   file_url: string;
   file_name: string;
@@ -78,8 +98,8 @@ export type UpdateProductDto = Partial<
 
 export const productService = {
   /** GET /api/v1/products */
-  getAll(): Promise<Product[]> {
-    return api.get<Product[]>('/products').then((r) => r.data);
+  getAll(params?: FindProductsQueryDto): Promise<PaginatedProducts> {
+    return api.get<PaginatedProducts>('/products', { params }).then((r) => r.data);
   },
 
   /** GET /api/v1/products/:id */
