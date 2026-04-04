@@ -19,6 +19,10 @@ import type {
   UpdateLeadPayload,
 } from '@/types/leads';
 
+type ApiResponse<T> = {
+  data: T;
+};
+
 /**
  * Generic value/label option shape used by lead form member selectors.
  */
@@ -61,7 +65,10 @@ function asRequiredString(value: unknown, fieldName: string): string {
 }
 
 function asRequiredDate(value: unknown, fieldName: string): Date {
-  if (!value) throw new Error(`Malformed data: Missing required date field "${fieldName}"`);
+  if (!value)
+    throw new Error(
+      `Malformed data: Missing required date field "${fieldName}"`
+    );
   const parsed = new Date(value as string);
   if (Number.isNaN(parsed.getTime())) {
     throw new Error(`Malformed data: Invalid date format for "${fieldName}"`);
@@ -188,7 +195,10 @@ function normalizeLead(item: unknown): Lead {
 
   return {
     id: asRequiredString(record.id, 'id'),
-    organization_id: asRequiredString(record.organization_id, 'organization_id'),
+    organization_id: asRequiredString(
+      record.organization_id,
+      'organization_id'
+    ),
     pipeline_stage_id: asNullableString(record.pipeline_stage_id),
     assigned_agent_id: asNullableString(record.assigned_agent_id),
     source_id: asNullableString(record.source_id),
@@ -296,9 +306,12 @@ async function fetchLeads(
   orgId: string,
   filters?: LeadsQueryFilters
 ): Promise<LeadsListResponse> {
-  const { data } = await api.get(`/organizations/${orgId}/leads`, {
-    params: toQueryParams(filters),
-  });
+  const { data } = await api.get<unknown, ApiResponse<unknown>>(
+    `/organizations/${orgId}/leads`,
+    {
+      params: toQueryParams(filters),
+    }
+  );
 
   const fallbackPage =
     typeof filters?.page === 'number' && filters.page > 0 ? filters.page : 1;
@@ -317,7 +330,11 @@ async function createLead(
   orgId: string,
   payload: CreateLeadPayload
 ): Promise<Lead> {
-  const { data } = await api.post(`/organizations/${orgId}/leads`, payload);
+  const { data } = await api.post<
+    unknown,
+    ApiResponse<unknown>,
+    CreateLeadPayload
+  >(`/organizations/${orgId}/leads`, payload);
   return normalizeLead(data);
 }
 
@@ -326,10 +343,11 @@ async function updateLead(
   leadId: string,
   payload: UpdateLeadPayload
 ): Promise<Lead> {
-  const { data } = await api.patch(
-    `/organizations/${orgId}/leads/${leadId}`,
-    payload
-  );
+  const { data } = await api.patch<
+    unknown,
+    ApiResponse<unknown>,
+    UpdateLeadPayload
+  >(`/organizations/${orgId}/leads/${leadId}`, payload);
 
   return normalizeLead(data);
 }
@@ -338,11 +356,16 @@ async function bulkUpdateLeads(
   orgId: string,
   payload: BulkUpdateLeadsPayload
 ): Promise<void> {
-  await api.patch(`/organizations/${orgId}/leads/bulk`, payload);
+  await api.patch<unknown, ApiResponse<unknown>, BulkUpdateLeadsPayload>(
+    `/organizations/${orgId}/leads/bulk`,
+    payload
+  );
 }
 
 async function deleteLead(orgId: string, leadId: string): Promise<void> {
-  await api.delete(`/organizations/${orgId}/leads/${leadId}`);
+  await api.delete<unknown, ApiResponse<unknown>>(
+    `/organizations/${orgId}/leads/${leadId}`
+  );
 }
 
 async function fetchOrganizationMemberOptions(

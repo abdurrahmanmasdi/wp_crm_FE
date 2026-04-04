@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import { SharedSearchableSelectField } from '@/components/ui/form-controls/SharedSearchableSelectField';
 import {
   COMMON_ISO_COUNTRIES,
@@ -110,14 +111,12 @@ export function LeadDemographicsSection({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <SharedSearchableSelectField
+        <SharedSelect
           control={control}
           name="primary_language"
           label={t('form.fields.primary_language.label')}
           placeholder={t('form.fields.primary_language.placeholder')}
           options={languageOptions}
-          searchPlaceholder={t('form.searchPlaceholder')}
-          emptyLabel={t('form.noResults')}
           disabled={disabled}
         />
 

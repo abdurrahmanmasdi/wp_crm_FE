@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
-import { SharedSelectField } from '@/components/ui/form-controls/SharedSelectField';
+import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
 import { PhoneInputGroup } from '@/components/ui/phone-input-group';
 import { COUNTRY_CALLING_CODES } from '@/constants/regions';
@@ -80,7 +80,7 @@ export function LeadIdentitySection({
         disabled={disabled}
       />
 
-      <SharedSelectField
+      <SharedSelect
         control={control}
         name="gender"
         label={t('form.fields.gender.label')}

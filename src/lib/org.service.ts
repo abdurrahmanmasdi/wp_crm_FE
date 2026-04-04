@@ -7,7 +7,6 @@ export type JoinOrganizationPayload = {
 
 export type CreateOrganizationPayload = {
   name: string;
-  slug: string;
 };
 
 export type InviteTeamMemberPayload = {

@@ -5,39 +5,13 @@ import { useMemo, useState } from 'react';
 import {
   getCoreRowModel,
   type OnChangeFn,
-  type RowSelectionState,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  Copy,
-  Eye,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Table,
   TableBody,
@@ -46,20 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AppAction, AppResource } from '@/constants/permissions.registry';
-import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
-import {
-  useBulkUpdateLeadsMutation,
-  useOrganizationMembersQuery,
-  useUpdateLeadMutation,
-} from '@/hooks/useLeads';
-import { usePermissions } from '@/hooks/usePermissions';
 import { getErrorMessage } from '@/lib/error-utils';
 import type {
   LeadsMeta,
   LeadSortBy,
   LeadSortDir,
-  LeadStatus,
   LeadWithRelations,
 } from '@/types/leads';
 
@@ -68,8 +33,10 @@ import { LeadDetailSheet } from './LeadDetailSheet';
 import type { LeadFilterRule } from './filters';
 import { LeadsBulkActionBar } from './table/LeadsBulkActionBar';
 import { leadsColumns } from './table/columns';
+import { LeadDataTableRow } from './table/LeadDataTableRow';
 import { LeadsTablePagination } from './table/LeadsTablePagination';
 import { LeadsTableToolbar } from './table/LeadsTableToolbar';
+import { useLeadTableActions } from './table/useLeadTableActions';
 
 type LeadsDataTableProps = {
   leads: LeadWithRelations[];
@@ -91,36 +58,6 @@ type LeadsDataTableProps = {
   sortDir?: LeadSortDir;
   onSortChange: (sortBy?: LeadSortBy, sortDir?: LeadSortDir) => void;
 };
-
-const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
-
-function getPriorityBadgeClass(priority: string): string {
-  switch (priority) {
-    case 'HOT':
-      return 'bg-red-500/10 text-red-400 border-red-500/20';
-    case 'WARM':
-      return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-    case 'COLD':
-      return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
-    default:
-      return 'bg-muted text-muted-foreground border-border';
-  }
-}
-
-function getStatusBadgeClass(status: string): string {
-  switch (status) {
-    case 'OPEN':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-    case 'WON':
-      return 'bg-green-500/10 text-green-400 border-green-500/20';
-    case 'LOST':
-      return 'bg-red-500/10 text-red-400 border-red-500/20';
-    case 'UNQUALIFIED':
-      return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
-    default:
-      return 'bg-muted text-muted-foreground border-border';
-  }
-}
 
 function formatEstimatedValue(
   estimatedValue: string,
@@ -144,12 +81,16 @@ function formatEstimatedValue(
   }
 }
 
-function formatCreatedAt(dateValue: Date | string | null, fallback: string): string {
+function formatCreatedAt(
+  dateValue: Date | string | null,
+  fallback: string
+): string {
   if (!dateValue) {
     return fallback;
   }
 
-  const parsedDate = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  const parsedDate =
+    dateValue instanceof Date ? dateValue : new Date(dateValue);
   if (Number.isNaN(parsedDate.getTime())) {
     return fallback;
   }
@@ -159,24 +100,6 @@ function formatCreatedAt(dateValue: Date | string | null, fallback: string): str
     month: 'short',
     day: '2-digit',
   }).format(parsedDate);
-}
-
-function toInitials(name: string): string {
-  const parts = name
-    .split(' ')
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0)
-    .slice(0, 2);
-
-  if (parts.length === 0) {
-    return '?';
-  }
-
-  return parts.map((part) => part.charAt(0).toUpperCase()).join('');
-}
-
-function getAgentDisplayName(label: string): string {
-  return label.split(' (')[0] || label;
 }
 
 export function LeadsDataTable({
@@ -200,20 +123,32 @@ export function LeadsDataTable({
   onSortChange,
 }: LeadsDataTableProps) {
   const t = useTranslations('Leads');
-  const { hasPermission } = usePermissions();
-  const membersQuery = useOrganizationMembersQuery();
-  const leadSourcesQuery = useLeadSourcesQuery();
-  const updateLeadMutation = useUpdateLeadMutation();
-  const bulkUpdateLeadsMutation = useBulkUpdateLeadsMutation();
+
+  const {
+    rowSelection,
+    setRowSelection,
+    canEditLeads,
+    canDeleteLeads,
+    sourceLabelMap,
+    agentLabelMap,
+    membersQuery,
+    updatingLeadId,
+    isBulkUpdating,
+    handleStatusSelect,
+    handleAgentSelect,
+    handleCopyPhone,
+    handleClearSelection,
+    handleBulkStatusUpdate,
+    handleBulkAgentUpdate,
+    getAgentDisplayName,
+  } = useLeadTableActions();
+
   const [editingLead, setEditingLead] = useState<LeadWithRelations | null>(
     null
   );
   const [viewingLead, setViewingLead] = useState<LeadWithRelations | null>(
     null
   );
-  const [openStatusLeadId, setOpenStatusLeadId] = useState<string | null>(null);
-  const [openAgentLeadId, setOpenAgentLeadId] = useState<string | null>(null);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const sortingState = useMemo<SortingState>(() => {
     if (!sortBy || !sortDir) {
@@ -258,146 +193,10 @@ export function LeadsDataTable({
     },
   });
 
-  const canEditLeads =
-    hasPermission(AppResource.LEADS, AppAction.EDIT) ||
-    hasPermission(AppResource.LEADS, AppAction.EDIT_ALL) ||
-    hasPermission(AppResource.LEADS, 'update');
-  const canDeleteLeads =
-    hasPermission(AppResource.LEADS, AppAction.DELETE) ||
-    hasPermission(AppResource.LEADS, AppAction.DELETE_ALL);
-
-  const sourceLabelMap = useMemo(
-    () =>
-      new Map(
-        (leadSourcesQuery.data ?? []).map(
-          (source) => [source.id, source.name] as const
-        )
-      ),
-    [leadSourcesQuery.data]
-  );
-  const agentLabelMap = useMemo(
-    () =>
-      new Map(
-        (membersQuery.data ?? []).map((agent) => [agent.value, agent.label])
-      ),
-    [membersQuery.data]
-  );
-
-  const updatingLeadId =
-    updateLeadMutation.isPending && updateLeadMutation.variables
-      ? updateLeadMutation.variables.leadId
-      : null;
-
   const tableRows = table.getRowModel().rows;
   const selectedLeadIds = table
     .getSelectedRowModel()
     .rows.map((row) => row.original.id);
-
-  const handleInlineUpdate = async (
-    leadId: string,
-    payload: { status?: LeadStatus; assigned_agent_id?: string | null }
-  ) => {
-    try {
-      await updateLeadMutation.mutateAsync({
-        leadId,
-        payload,
-      });
-      toast.success(t('saved'));
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError) || t('updatedError'));
-    }
-  };
-
-  const handleStatusSelect = async (
-    lead: LeadWithRelations,
-    status: LeadStatus
-  ) => {
-    setOpenStatusLeadId(null);
-
-    if (lead.status === status) {
-      return;
-    }
-
-    await handleInlineUpdate(lead.id, {
-      status,
-    });
-  };
-
-  const handleAgentSelect = async (
-    lead: LeadWithRelations,
-    assignedAgentId: string | null
-  ) => {
-    setOpenAgentLeadId(null);
-
-    if (lead.assigned_agent_id === assignedAgentId) {
-      return;
-    }
-
-    await handleInlineUpdate(lead.id, {
-      assigned_agent_id: assignedAgentId,
-    });
-  };
-
-  const handleCopyPhone = async (phoneNumber: string) => {
-    try {
-      await navigator.clipboard.writeText(phoneNumber);
-      toast.success(t('copyPhoneSuccess'));
-    } catch {
-      toast.error(t('copyPhoneError'));
-    }
-  };
-
-  const handleClearSelection = () => {
-    setRowSelection({});
-  };
-
-  const handleBulkStatusUpdate = async (status: LeadStatus) => {
-    if (selectedLeadIds.length === 0) {
-      return;
-    }
-
-    try {
-      await bulkUpdateLeadsMutation.mutateAsync({
-        lead_ids: selectedLeadIds,
-        update_data: {
-          status,
-        },
-      });
-
-      toast.success(
-        t('bulkBar.statusUpdatedSuccess', {
-          count: selectedLeadIds.length,
-        })
-      );
-      setRowSelection({});
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError) || t('bulkBar.updateError'));
-    }
-  };
-
-  const handleBulkAgentUpdate = async (assignedAgentId: string | null) => {
-    if (selectedLeadIds.length === 0) {
-      return;
-    }
-
-    try {
-      await bulkUpdateLeadsMutation.mutateAsync({
-        lead_ids: selectedLeadIds,
-        update_data: {
-          assigned_agent_id: assignedAgentId,
-        },
-      });
-
-      toast.success(
-        t('bulkBar.agentUpdatedSuccess', {
-          count: selectedLeadIds.length,
-        })
-      );
-      setRowSelection({});
-    } catch (mutationError) {
-      toast.error(getErrorMessage(mutationError) || t('bulkBar.updateError'));
-    }
-  };
 
   const handleSortToggle = (columnId: LeadSortBy) => {
     const column = table.getColumn(columnId);
@@ -555,8 +354,6 @@ export function LeadsDataTable({
                 ) : (
                   tableRows.map((row) => {
                     const lead = row.original;
-                    const leadName =
-                      `${lead.first_name} ${lead.last_name}`.trim();
                     const estimatedValue = formatEstimatedValue(
                       lead.estimated_value,
                       lead.currency,
@@ -581,284 +378,28 @@ export function LeadsDataTable({
                       : null;
 
                     return (
-                      <TableRow
+                      <LeadDataTableRow
                         key={row.id}
-                        className="border-white/5 hover:bg-white/5"
-                      >
-                        <TableCell className="w-10">
-                          <Checkbox
-                            checked={row.getIsSelected()}
-                            onCheckedChange={(checked) =>
-                              row.toggleSelected(checked === true)
-                            }
-                            aria-label={t('bulkBar.selectLead', {
-                              name: leadName || t('unknownLeadName'),
-                            })}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-0.5">
-                            <p className="text-foreground text-sm font-medium">
-                              {leadName || t('unknownLeadName')}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                              {lead.email || t('notSet')}
-                            </p>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-muted-foreground text-sm">
-                          {sourceLabel ?? t('notSet')}
-                        </TableCell>
-
-                        <TableCell>
-                          {canEditLeads ? (
-                            <Popover
-                              open={openAgentLeadId === lead.id}
-                              onOpenChange={(open) =>
-                                setOpenAgentLeadId(open ? lead.id : null)
-                              }
-                            >
-                              <PopoverTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="group hover:bg-accent flex h-8 w-56 items-center justify-between gap-2 rounded-md px-1.5 text-left"
-                                  disabled={
-                                    isUpdating || membersQuery.isLoading
-                                  }
-                                  aria-label={t('editAction')}
-                                >
-                                  <div className="min-w-0 flex-1">
-                                    {assignedDisplayName ? (
-                                      <div className="flex items-center gap-2">
-                                        <Avatar className="h-6 w-6">
-                                          <AvatarFallback className="text-[10px]">
-                                            {toInitials(assignedDisplayName)}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-foreground truncate text-xs font-medium">
-                                          {assignedDisplayName}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <span className="text-muted-foreground text-xs">
-                                        {t('assignAction')}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <Pencil className="text-muted-foreground h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-80" />
-                                </button>
-                              </PopoverTrigger>
-
-                              <PopoverContent
-                                align="start"
-                                className="w-64 p-1"
-                              >
-                                <div className="max-h-64 space-y-1 overflow-auto">
-                                  <button
-                                    type="button"
-                                    className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
-                                    onClick={() =>
-                                      void handleAgentSelect(lead, null)
-                                    }
-                                  >
-                                    <span>{t('notSet')}</span>
-                                    {!lead.assigned_agent_id ? (
-                                      <Check className="h-4 w-4" />
-                                    ) : null}
-                                  </button>
-
-                                  {(membersQuery.data ?? []).map((agent) => {
-                                    const displayName = getAgentDisplayName(
-                                      agent.label
-                                    );
-
-                                    return (
-                                      <button
-                                        key={agent.value}
-                                        type="button"
-                                        className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
-                                        onClick={() =>
-                                          void handleAgentSelect(
-                                            lead,
-                                            agent.value
-                                          )
-                                        }
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          <Avatar className="h-6 w-6">
-                                            <AvatarFallback className="text-[10px]">
-                                              {toInitials(displayName)}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <span className="truncate">
-                                            {displayName}
-                                          </span>
-                                        </span>
-                                        {lead.assigned_agent_id ===
-                                        agent.value ? (
-                                          <Check className="h-4 w-4" />
-                                        ) : null}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          ) : assignedDisplayName ? (
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarFallback className="text-[10px]">
-                                  {toInitials(assignedDisplayName)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-foreground text-xs">
-                                {assignedDisplayName}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">
-                              {t('notSet')}
-                            </span>
-                          )}
-                        </TableCell>
-
-                        <TableCell>
-                          <Badge
-                            className={getPriorityBadgeClass(lead.priority)}
-                          >
-                            {t(`priority.${lead.priority}` as never)}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell>
-                          {canEditLeads ? (
-                            <Popover
-                              open={openStatusLeadId === lead.id}
-                              onOpenChange={(open) =>
-                                setOpenStatusLeadId(open ? lead.id : null)
-                              }
-                            >
-                              <PopoverTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="group hover:bg-accent inline-flex h-8 items-center gap-2 rounded-md px-1.5"
-                                  disabled={isUpdating}
-                                  aria-label={t('editAction')}
-                                >
-                                  <Badge
-                                    className={getStatusBadgeClass(lead.status)}
-                                  >
-                                    {t(`status.${lead.status}` as never)}
-                                  </Badge>
-                                  <Pencil className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-80" />
-                                </button>
-                              </PopoverTrigger>
-
-                              <PopoverContent
-                                align="start"
-                                className="w-44 p-1"
-                              >
-                                <div className="space-y-1">
-                                  {statusOptions.map((status) => (
-                                    <button
-                                      key={status}
-                                      type="button"
-                                      className="hover:bg-accent flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm"
-                                      onClick={() =>
-                                        void handleStatusSelect(lead, status)
-                                      }
-                                    >
-                                      <span>
-                                        {t(`status.${status}` as never)}
-                                      </span>
-                                      {lead.status === status ? (
-                                        <Check className="h-4 w-4" />
-                                      ) : null}
-                                    </button>
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          ) : (
-                            <Badge className={getStatusBadgeClass(lead.status)}>
-                              {t(`status.${lead.status}` as never)}
-                            </Badge>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-foreground text-sm">
-                          {estimatedValue}
-                        </TableCell>
-
-                        <TableCell className="text-muted-foreground text-sm">
-                          {createdAt}
-                        </TableCell>
-
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">{t('actions')}</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="bg-card border-white/10"
-                            >
-                              <DropdownMenuItem
-                                className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                                onClick={() => setViewingLead(lead)}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                {t('viewDetails')}
-                              </DropdownMenuItem>
-
-                              <DropdownMenuSeparator />
-
-                              {canEditLeads ? (
-                                <DropdownMenuItem
-                                  className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                                  onClick={() => setEditingLead(lead)}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  {t('editAction')}
-                                </DropdownMenuItem>
-                              ) : null}
-
-                              <DropdownMenuItem
-                                className="cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                                onClick={() =>
-                                  handleCopyPhone(lead.phone_number)
-                                }
-                              >
-                                <Copy className="mr-2 h-4 w-4" />
-                                {t('copyPhoneAction')}
-                              </DropdownMenuItem>
-
-                              {canDeleteLeads ? (
-                                <DropdownMenuSeparator />
-                              ) : null}
-
-                              {canDeleteLeads ? (
-                                <DropdownMenuItem
-                                  className="text-destructive cursor-pointer hover:bg-white/5 focus:bg-white/5"
-                                  disabled={isDeleting}
-                                  onClick={() => onDeleteLead(lead)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  {isDeleting ? t('deleting') : t('deleteLead')}
-                                </DropdownMenuItem>
-                              ) : null}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                        row={row}
+                        lead={lead}
+                        sourceLabel={sourceLabel ?? undefined}
+                        assignedDisplayName={assignedDisplayName}
+                        estimatedValue={estimatedValue}
+                        createdAt={createdAt}
+                        canEditLeads={canEditLeads}
+                        canDeleteLeads={canDeleteLeads}
+                        isDeleting={isDeleting}
+                        isUpdating={isUpdating || membersQuery.isLoading}
+                        members={membersQuery.data ?? []}
+                        onStatusSelect={handleStatusSelect}
+                        onAgentSelect={handleAgentSelect}
+                        onView={setViewingLead}
+                        onEdit={setEditingLead}
+                        onDelete={onDeleteLead}
+                        onCopyPhone={(phone) => {
+                          void handleCopyPhone(phone);
+                        }}
+                      />
                     );
                   })
                 )}
@@ -877,11 +418,15 @@ export function LeadsDataTable({
 
       <LeadsBulkActionBar
         table={table}
-        isPending={bulkUpdateLeadsMutation.isPending}
+        isPending={isBulkUpdating}
         isAgentsLoading={membersQuery.isLoading}
         agentOptions={membersQuery.data ?? []}
-        onStatusChange={handleBulkStatusUpdate}
-        onAgentAssign={(agentId) => handleBulkAgentUpdate(agentId || null)}
+        onStatusChange={(status) =>
+          handleBulkStatusUpdate(selectedLeadIds, status)
+        }
+        onAgentAssign={(agentId) =>
+          handleBulkAgentUpdate(selectedLeadIds, agentId || null)
+        }
         onClear={handleClearSelection}
       />
 

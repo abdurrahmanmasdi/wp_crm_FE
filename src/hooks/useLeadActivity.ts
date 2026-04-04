@@ -3,6 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 
+type ApiResponse<T> = {
+  data: T;
+};
+
 type LeadNoteRecord = {
   id: string;
   content: string;
@@ -168,7 +172,7 @@ async function fetchLeadNotes(
   orgId: string,
   leadId: string
 ): Promise<LeadNoteRecord[]> {
-  const { data } = await api.get(
+  const { data } = await api.get<unknown, ApiResponse<unknown>>(
     `/organizations/${orgId}/leads/${leadId}/notes`
   );
 
@@ -180,10 +184,11 @@ async function createLeadNote(
   leadId: string,
   payload: CreateLeadNotePayload
 ): Promise<LeadNoteRecord> {
-  const { data } = await api.post(
-    `/organizations/${orgId}/leads/${leadId}/notes`,
-    payload
-  );
+  const { data } = await api.post<
+    unknown,
+    ApiResponse<unknown>,
+    CreateLeadNotePayload
+  >(`/organizations/${orgId}/leads/${leadId}/notes`, payload);
 
   const normalized = normalizeLeadNote(data);
 
@@ -198,7 +203,7 @@ async function fetchLeadAttachments(
   orgId: string,
   leadId: string
 ): Promise<LeadAttachmentRecord[]> {
-  const { data } = await api.get(
+  const { data } = await api.get<unknown, ApiResponse<unknown>>(
     `/organizations/${orgId}/leads/${leadId}/attachments`
   );
 
@@ -210,10 +215,11 @@ async function createLeadAttachment(
   leadId: string,
   payload: CreateLeadAttachmentPayload
 ): Promise<LeadAttachmentRecord> {
-  const { data } = await api.post(
-    `/organizations/${orgId}/leads/${leadId}/attachments`,
-    payload
-  );
+  const { data } = await api.post<
+    unknown,
+    ApiResponse<unknown>,
+    CreateLeadAttachmentPayload
+  >(`/organizations/${orgId}/leads/${leadId}/attachments`, payload);
 
   const normalized = normalizeLeadAttachment(data);
 

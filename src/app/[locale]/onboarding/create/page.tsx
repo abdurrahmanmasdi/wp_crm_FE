@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
@@ -20,14 +20,6 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 const createWorkspaceSchema = z.object({
   name: z.string().trim().min(2, 'Company Name must be at least 2 characters'),
-  slug: z
-    .string()
-    .trim()
-    .min(3, 'Workspace URL must be at least 3 characters')
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      'Use lowercase letters, numbers, and hyphens only'
-    ),
 });
 
 type CreateWorkspaceFormValues = z.infer<typeof createWorkspaceSchema>;
@@ -50,13 +42,12 @@ export default function CreateWorkspacePage() {
     (state) => state.activeOrganizationId
   );
   const logout = useAuthStore((state) => state.logout);
-  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
-    setError,
+    // setError,
     clearErrors,
     formState: { errors, isSubmitting },
     control,
@@ -64,12 +55,10 @@ export default function CreateWorkspacePage() {
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: '',
-      slug: '',
     },
   });
 
   const name = useWatch({ control, name: 'name' });
-  const slug = useWatch({ control, name: 'slug' });
 
   useEffect(() => {
     if (!_hasHydrated) {
@@ -83,7 +72,7 @@ export default function CreateWorkspacePage() {
 
   useEffect(() => {
     // Auto-fill the slug from the company name until the user starts customizing it.
-    if (!name || isSlugManuallyEdited) {
+    if (!name) {
       return;
     }
 
@@ -92,21 +81,12 @@ export default function CreateWorkspacePage() {
     if (!nextSlug) {
       return;
     }
-
-    if (slug !== nextSlug) {
-      setValue('slug', nextSlug, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      clearErrors('slug');
-    }
-  }, [clearErrors, isSlugManuallyEdited, name, setValue, slug]);
+  }, [clearErrors, name, setValue]);
 
   const onSubmit = async (values: CreateWorkspaceFormValues) => {
     try {
       const response = await orgService.createOrganization({
         name: values.name.trim(),
-        slug: values.slug.trim(),
       });
 
       useAuthStore.getState().setActiveOrganizationId(response.data.id);
@@ -115,10 +95,6 @@ export default function CreateWorkspacePage() {
       router.push('/onboarding/invite');
     } catch (error) {
       const message = getErrorMessage(error);
-      setError('slug', {
-        type: 'server',
-        message: message,
-      });
       toast.error(message);
     }
   };
@@ -192,49 +168,6 @@ export default function CreateWorkspacePage() {
               {errors.name?.message ? (
                 <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
                   {errors.name.message}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-3">
-              <label
-                className="font-label text-muted-foreground block text-xs font-bold tracking-widest uppercase"
-                htmlFor="slug"
-              >
-                {t('slugLabel')}
-              </label>
-
-              <div className="group relative flex">
-                <div className="bg-secondary/40 text-muted-foreground rounded-l-2xl border border-r-0 border-white/10 px-4 py-4 font-medium whitespace-nowrap">
-                  {t('slugPrefix')}
-                </div>
-
-                <div className="relative w-full">
-                  <Input
-                    id="slug"
-                    placeholder={t('slugPlaceholder')}
-                    autoComplete="off"
-                    className="bg-secondary text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 h-auto rounded-l-none rounded-r-2xl border-white/10 px-4 py-4 focus-visible:ring-1"
-                    {...register('slug', {
-                      onChange: (event) => {
-                        const nextValue = event.target.value.trim();
-                        const generatedSlug = slugifyWorkspaceName(name ?? '');
-
-                        setIsSlugManuallyEdited(nextValue !== generatedSlug);
-                      },
-                    })}
-                  />
-                  <div className="bg-primary absolute bottom-0 left-0 h-px w-0 shadow-[0_0_8px_var(--glow-primary-full)] transition-all duration-500 group-focus-within:w-full" />
-                </div>
-              </div>
-
-              <p className="text-muted-foreground mt-2 text-[10px] italic">
-                {t('slugHint')}
-              </p>
-
-              {errors.slug?.message ? (
-                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-                  {errors.slug.message}
                 </div>
               ) : null}
             </div>

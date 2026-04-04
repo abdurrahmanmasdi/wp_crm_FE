@@ -8,7 +8,7 @@ import {
   SharedSearchableSelectField,
   type SharedSearchableSelectOption,
 } from '@/components/ui/form-controls/SharedSearchableSelectField';
-import { SharedSelectField } from '@/components/ui/form-controls/SharedSelectField';
+import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
 import {
   useLeadSourcesQuery,
@@ -89,7 +89,7 @@ export function LeadSalesSection({
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <SharedSelectField
+        <SharedSelect
           control={control}
           name="status"
           label={t('form.fields.status.label')}
@@ -97,7 +97,7 @@ export function LeadSalesSection({
           disabled={disabled}
         />
 
-        <SharedSelectField
+        <SharedSelect
           control={control}
           name="priority"
           label={t('form.fields.priority.label')}
@@ -107,7 +107,7 @@ export function LeadSalesSection({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <SharedSelectField
+        <SharedSelect
           control={control}
           name="currency"
           label={t('form.fields.currency.label')}

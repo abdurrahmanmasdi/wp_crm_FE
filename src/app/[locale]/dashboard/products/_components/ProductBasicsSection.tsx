@@ -8,7 +8,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
+import { SharedTextarea } from '@/components/ui/form-controls/SharedTextarea';
+import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import {
   Select,
   SelectContent,
@@ -47,6 +49,20 @@ export function ProductBasicsSection({
   const currency = useWatch({ control, name: 'currency' }) as string;
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
+  const productTypeOptions = (
+    Object.keys(PRODUCT_TYPE_LABELS) as Array<
+      keyof typeof PRODUCT_TYPE_LABELS
+    >
+  ).map((key) => ({
+    value: key,
+    label: PRODUCT_TYPE_LABELS[key],
+  }));
+
+  const currencyOptions = CURRENCIES.map((c) => ({
+    value: c,
+    label: `${c} (${CURRENCY_SYMBOLS[c]})`,
+  }));
+
   return (
     <section className="border-border bg-card rounded-[20px] border p-8 shadow-sm">
       {/* Section header */}
@@ -59,72 +75,28 @@ export function ProductBasicsSection({
         {/* Left column – form fields */}
         <div className="space-y-6">
           {/* Product Type */}
-          <FormField
+          <SharedSelect
             control={control}
             name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FieldLabel>Product Type</FieldLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="border-border bg-muted/40 focus:ring-primary/40 rounded-xl px-4 py-3 text-sm focus:ring-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {(
-                      Object.keys(PRODUCT_TYPE_LABELS) as Array<
-                        keyof typeof PRODUCT_TYPE_LABELS
-                      >
-                    ).map((key) => (
-                      <SelectItem key={key} value={key}>
-                        {PRODUCT_TYPE_LABELS[key]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Product Type"
+            options={productTypeOptions}
           />
 
           {/* Title */}
-          <FormField
+          <SharedTextField
             control={control}
             name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FieldLabel>Product Title</FieldLabel>
-                <FormControl>
-                  <Input
-                    className="border-border bg-muted/40 placeholder:text-muted-foreground/40 focus-visible:ring-primary/40 rounded-xl px-4 py-3 text-sm focus-visible:ring-1"
-                    placeholder="e.g. Midnight Fjords Kayak Expedition"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Product Title"
+            placeholder="e.g. Midnight Fjords Kayak Expedition"
           />
 
           {/* Description */}
-          <FormField
+          <SharedTextarea
             control={control}
             name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FieldLabel>Description</FieldLabel>
-                <FormControl>
-                  <Textarea
-                    className="border-border bg-muted/40 placeholder:text-muted-foreground/40 focus-visible:ring-primary/40 resize-none rounded-xl p-4 text-sm focus-visible:ring-1"
-                    rows={4}
-                    placeholder="Describe the experience, highlights, and key features..."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Description"
+            placeholder="Describe the experience, highlights, and key features..."
+            rows={4}
           />
 
           {/* Price + Currency */}
@@ -154,29 +126,11 @@ export function ProductBasicsSection({
               )}
             />
 
-            <FormField
+            <SharedSelect
               control={control}
               name="currency"
-              render={({ field }) => (
-                <FormItem>
-                  <FieldLabel>Currency</FieldLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="border-border bg-muted/40 focus:ring-primary/40 rounded-xl px-4 py-3 text-sm focus:ring-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CURRENCIES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c} ({CURRENCY_SYMBOLS[c]})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Currency"
+              options={currencyOptions}
             />
           </div>
         </div>
