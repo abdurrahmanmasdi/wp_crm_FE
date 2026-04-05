@@ -39,13 +39,21 @@ export function DashboardLayoutClient({
    * Enforce tenant cache isolation on organization switch to prevent stale UI bleed.
    */
   useEffect(() => {
+    // First mount on hard reload: capture current org and do not clear cache.
+    if (previousOrganizationIdRef.current === null) {
+      previousOrganizationIdRef.current = activeOrganizationId;
+      return;
+    }
+
     if (previousOrganizationIdRef.current === activeOrganizationId) {
       return;
     }
 
+    const previousOrganizationId = previousOrganizationIdRef.current;
     previousOrganizationIdRef.current = activeOrganizationId;
 
-    if (!activeOrganizationId) {
+    // Only clear when switching between two concrete org IDs.
+    if (!previousOrganizationId || !activeOrganizationId) {
       return;
     }
 
@@ -103,7 +111,7 @@ export function DashboardLayoutClient({
         <div className={cn('min-h-screen', isRTL ? 'mr-64' : 'ml-64')}>
           <DashboardHeader />
 
-          <main className="bg-secondary min-h-[calc(100vh-64px)] px-6 py-8 lg:px-8">
+          <main className="bg-secondary min-h-[calc(100vh-64px)] px-6 lg:px-8">
             {children}
           </main>
         </div>

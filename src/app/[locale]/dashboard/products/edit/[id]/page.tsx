@@ -144,7 +144,7 @@ export default function EditProductPage({
   if (!initialFormData) return null;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 pb-24 md:px-10">
+    <div className="mx-auto px-6 py-8 pb-24 md:px-10">
       <Link
         href="/dashboard/products"
         className="text-muted-foreground hover:text-foreground mb-8 -ml-2 inline-flex items-center gap-2 rounded-lg p-2 text-xs font-bold tracking-widest uppercase transition-colors hover:bg-zinc-900/50"

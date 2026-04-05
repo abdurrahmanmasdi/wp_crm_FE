@@ -44,10 +44,13 @@ export default function ProductsCatalog() {
   const debouncedFilters = useDebounce(filters, 600);
   const itemsPerPage = 12;
 
-  const filtersQueryParam = useMemo(
-    () => encodeURIComponent(JSON.stringify(debouncedFilters)),
-    [debouncedFilters]
-  );
+  const filtersQueryParam = useMemo(() => {
+    if (debouncedFilters.length > 0) {
+      return encodeURIComponent(JSON.stringify(debouncedFilters));
+    }
+
+    return '';
+  }, [debouncedFilters]);
 
   const handleSetFilters: Dispatch<SetStateAction<FilterNode[]>> = (update) => {
     setCurrentPage(1);
