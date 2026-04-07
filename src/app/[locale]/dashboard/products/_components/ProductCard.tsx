@@ -27,7 +27,7 @@ export function ProductCard({
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -4 }}
       onClick={onClick}
-      className="group relative flex cursor-pointer flex-col overflow-visible rounded-xl border border-white/10 bg-zinc-900 shadow-lg transition-all hover:border-white/20 hover:shadow-2xl"
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-zinc-900 shadow-lg transition-all hover:border-white/20 hover:shadow-2xl"
     >
       <div className="absolute top-3 right-3 z-10 opacity-0 transition-opacity group-hover:opacity-100">
         <ProductActionsMenu product={product} />
@@ -36,7 +36,7 @@ export function ProductCard({
       <div className="relative h-48 w-full overflow-hidden rounded-t-xl bg-zinc-800">
         {primaryMedia ? (
           <img
-            src={primaryMedia.file_url}
+            src={process.env.NEXT_PUBLIC_BACKEND_URL + primaryMedia.file_url}
             alt={product.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

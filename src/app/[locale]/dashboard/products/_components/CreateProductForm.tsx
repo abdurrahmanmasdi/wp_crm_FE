@@ -26,6 +26,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { ProductBasicsSection } from './ProductBasicsSection';
 import { DynamicSpecsSection } from './DynamicSpecsSection';
 import { AddonsSection } from './AddonsSection';
+import { setProductPrimaryMedia } from '@/lib/api/products';
 
 // ---------------------------------------------------------------------------
 // Default values per product type (used on type switch to clear specs)
@@ -64,11 +65,9 @@ const TYPE_DEFAULTS: Record<
 
 // ---------------------------------------------------------------------------
 // Payload builder — maps form values → backend DTO
+// Excludes media items (handled separately in two-step upload)
 // ---------------------------------------------------------------------------
-function buildPayload(
-  data: ProductFormValues,
-  mediaItems: LocalMediaItem[]
-): CreateProductDto {
+function buildPayload(data: ProductFormValues): CreateProductDto {
   // Merge extra_specifications key-value pairs into the specifications object
   const extraEntries = (data.extra_specifications ?? []).reduce<
     Record<string, string>
@@ -78,16 +77,6 @@ function buildPayload(
   }, {});
 
   const specifications = { ...data.specifications, ...extraEntries };
-
-  // Media — primary item goes first so backend auto-sets is_primary on it
-  const primaryMedia = mediaItems.filter((m) => m.isPrimary);
-  const restMedia = mediaItems.filter((m) => !m.isPrimary);
-  const orderedMedia = [...primaryMedia, ...restMedia];
-
-  const media = orderedMedia.map((m) => ({
-    file_url: m.previewUrl, // TODO: replace with upload CDN URLs when upload endpoint is available
-    file_name: m.file.name,
-  }));
 
   // Instances — only for SCHEDULED_EVENT (one slot per creation)
   const instances =
@@ -109,7 +98,6 @@ function buildPayload(
     currency: data.currency,
     specifications,
     available_addons: data.available_addons,
-    media: media.length > 0 ? media : undefined,
     instances: instances.length > 0 ? instances : undefined,
   };
 }
@@ -185,7 +173,10 @@ export function ProductForm({
         return;
       }
 
-      const payload = buildPayload(data, mediaItems);
+      // ── STEP 1: Create product with JSON data (excluding media) ──────────
+      const payload = buildPayload(data);
+
+      let createdProduct;
 
       if (isEditMode) {
         if (!productId) {
@@ -193,16 +184,84 @@ export function ProductForm({
           return;
         }
 
-        // Mock updating the product (In reality we patch, but user says passing the same DTO is fine for now due to backend limits)
-        await productService.update(
+        // Update mode: patch the product
+        createdProduct = await productService.update(
           activeOrganizationId,
           productId,
           payload as Partial<CreateProductDto>
         );
-        toast.success('Product updated successfully!');
       } else {
-        await productService.create(activeOrganizationId, payload);
-        toast.success('Product created successfully!');
+        // Create mode: post the product
+        createdProduct = await productService.create(
+          activeOrganizationId,
+          payload
+        );
+      }
+
+      // Extract the product ID for media upload
+      const currentProductId = createdProduct.id;
+
+      // ── STEP 2: Upload files conditionally ──────────────────────────────
+      let mediaUploadError = false;
+
+      const filesToUpload = mediaItems
+        .map((item) => item.file)
+        .filter((file): file is File => file instanceof File);
+
+      if (filesToUpload.length > 0) {
+        try {
+          const formData = new FormData();
+          filesToUpload.forEach((file) => {
+            formData.append('files', file);
+          });
+
+          const productMedia = await productService.uploadMedia(
+            activeOrganizationId,
+            currentProductId,
+            formData
+          );
+          productMedia.data.forEach((media) => {
+            // Optimistically set the first uploaded image as primary
+            const matchingItem = mediaItems.find(
+              (item) => item.file?.name === media.file_name
+            );
+            if (matchingItem && matchingItem.isPrimary) {
+              try {
+                setProductPrimaryMedia(
+                  activeOrganizationId,
+                  currentProductId,
+                  media.id
+                );
+              } catch (error) {
+                mediaUploadError = true;
+                const uploadErrorMsg =
+                  getErrorMessage(error) || 'Unknown upload error';
+                console.error('Failed to set primary media:', uploadErrorMsg);
+              }
+            }
+          });
+          // await setProductPrimaryMedia(activeOrganizationId, currentProductId, mediaId);
+        } catch (uploadErr: unknown) {
+          // Edge case: Product created successfully but file upload failed
+          mediaUploadError = true;
+          const uploadErrorMsg =
+            getErrorMessage(uploadErr) || 'Unknown upload error';
+          console.error('Media upload failed:', uploadErrorMsg);
+        }
+      }
+
+      // ── Success & Redirect ─────────────────────────────────────────────
+      if (mediaUploadError) {
+        // Product was created, but images failed — warn user but don't block
+        toast.warning(
+          'Product created, but images failed to upload. Please edit the product to try again.'
+        );
+      } else {
+        toast.success(
+          isEditMode
+            ? 'Product updated successfully!'
+            : 'Product created successfully!'
+        );
       }
 
       // Invalidate products list and specific query
@@ -218,7 +277,8 @@ export function ProductForm({
         });
       }
 
-      router.push('../products'); // navigate back to list
+      // Always redirect to catalog on success
+      router.push('../products');
     } catch (err: unknown) {
       const fallback = `Failed to ${isEditMode ? 'update' : 'create'} product.`;
       toast.error(getErrorMessage(err) || fallback);
@@ -246,6 +306,7 @@ export function ProductForm({
         <ProductBasicsSection
           mediaItems={mediaItems}
           onMediaChange={setMediaItems}
+          productId={productId}
         />
 
         {/* Section 2 – Specs (animated on type change) */}

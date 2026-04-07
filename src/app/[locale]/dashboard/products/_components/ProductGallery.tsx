@@ -1,17 +1,25 @@
 'use client';
 
 import { useRef, useCallback } from 'react';
-import { CloudUpload, Star, Trash2, ImageIcon } from 'lucide-react';
+import { CloudUpload, Star, Trash2, ImageIcon, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import { useSetProductPrimaryMediaMutation } from '@/hooks/useProductMedia';
 import type { LocalMediaItem } from '../_schema';
 
 interface ProductGalleryProps {
   items: LocalMediaItem[];
   onChange: (items: LocalMediaItem[]) => void;
+  productId?: string;
 }
 
-export function ProductGallery({ items, onChange }: ProductGalleryProps) {
+export function ProductGallery({
+  items,
+  onChange,
+  productId,
+}: ProductGalleryProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const setPrimaryMutation = useSetProductPrimaryMediaMutation();
 
   // ── File input handler ──────────────────────────────────────────────────
   const handleFiles = useCallback(
@@ -39,7 +47,7 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
     [handleFiles]
   );
 
-  // ── Set cover ──────────────────────────────────────────────────────────
+  // ── Set cover locally ──────────────────────────────────────────────────
   const setPrimary = useCallback(
     (index: number) => {
       onChange(items.map((item, i) => ({ ...item, isPrimary: i === index })));
@@ -47,15 +55,45 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
     [items, onChange]
   );
 
+  // ── Set cover (persisted media uses API, local items fallback to local state) ──
+  const handleSetPrimary = useCallback(
+    (index: number) => {
+      const selectedItem = items[index];
+      if (!selectedItem) return;
+
+      if (productId && selectedItem.mediaId) {
+        setPrimaryMutation.mutate(
+          {
+            productId,
+            mediaId: selectedItem.mediaId,
+          },
+          {
+            onSuccess: () => {
+              setPrimary(index);
+            },
+          }
+        );
+        return;
+      }
+
+      setPrimary(index);
+    },
+    [items, productId, setPrimaryMutation, setPrimary]
+  );
+
   // ── Remove ─────────────────────────────────────────────────────────────
   const remove = useCallback(
     (index: number) => {
-      URL.revokeObjectURL(items[index].previewUrl);
+      if (items[index].previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(items[index].previewUrl);
+      }
+
       const next = items.filter((_, i) => i !== index);
       // If we removed the cover, promote the first remaining item
       if (next.length > 0 && !next.some((it) => it.isPrimary)) {
         next[0] = { ...next[0], isPrimary: true };
       }
+
       onChange(next);
     },
     [items, onChange]
@@ -96,61 +134,86 @@ export function ProductGallery({ items, onChange }: ProductGalleryProps) {
       {items.length > 0 && (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
           <AnimatePresence initial={false}>
-            {items.map((item, index) => (
-              <motion.div
-                key={item.previewUrl}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.18 }}
-                className="group border-border bg-muted/20 relative aspect-square overflow-hidden rounded-2xl border"
-              >
-                {/* Preview image */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.previewUrl}
-                  alt={item.file.name}
-                  className="h-full w-full object-cover"
-                />
+            {items.map((item, index) => {
+              const isPendingCurrent =
+                setPrimaryMutation.isPending &&
+                setPrimaryMutation.variables?.mediaId === item.mediaId;
 
-                {/* Cover badge */}
-                {item.isPrimary && (
-                  <div className="bg-primary absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5">
-                    <Star className="fill-primary-foreground text-primary-foreground h-2.5 w-2.5" />
-                    <span className="text-primary-foreground text-[9px] font-bold tracking-wider uppercase">
-                      Cover
-                    </span>
-                  </div>
-                )}
-
-                {/* Hover actions overlay */}
-                <div className="absolute inset-0 flex items-end justify-between gap-1 bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                  {!item.isPrimary && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPrimary(index);
-                      }}
-                      className="bg-primary/90 text-primary-foreground hover:bg-primary flex items-center gap-1 rounded-lg px-2 py-1 text-[9px] font-bold tracking-wider uppercase transition-all"
-                    >
-                      <Star className="h-2.5 w-2.5" />
-                      Set Cover
-                    </button>
-                  )}
+              return (
+                <motion.div
+                  key={item.mediaId || item.previewUrl}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration: 0.18 }}
+                  className={`group bg-muted/20 relative aspect-square overflow-hidden rounded-2xl border ${
+                    item.isPrimary
+                      ? 'border-amber-300/70 ring-1 ring-amber-300/50'
+                      : 'border-border'
+                  }`}
+                >
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      remove(index);
+                      handleSetPrimary(index);
                     }}
-                    className="ml-auto rounded-lg bg-red-500/90 p-1 text-white transition-all hover:bg-red-500"
+                    disabled={setPrimaryMutation.isPending}
+                    className={`absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border transition-all ${
+                      item.isPrimary
+                        ? 'border-amber-300/80 bg-amber-400 text-zinc-950 shadow-sm'
+                        : 'border-white/20 bg-black/55 text-white/80 opacity-20 group-hover:opacity-100 hover:bg-black/75'
+                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                    aria-label={
+                      item.isPrimary
+                        ? 'Primary cover image'
+                        : 'Set as primary cover image'
+                    }
+                    title={
+                      item.isPrimary
+                        ? 'Primary cover image'
+                        : 'Set as primary cover image'
+                    }
                   >
-                    <Trash2 className="h-3 w-3" />
+                    {isPendingCurrent ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Star
+                        className={`h-3.5 w-3.5 ${
+                          item.isPrimary ? 'fill-current' : ''
+                        }`}
+                      />
+                    )}
                   </button>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Preview image */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={
+                      (item.previewUrl.includes('/products/')
+                        ? process.env.NEXT_PUBLIC_BACKEND_URL
+                        : '') + item.previewUrl
+                    }
+                    alt={item.file?.name || 'Product media'}
+                    className="h-full w-full object-cover"
+                  />
+
+                  {/* Hover actions overlay */}
+                  <div className="absolute inset-0 flex items-end justify-between gap-1 bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(index);
+                      }}
+                      className="ml-auto rounded-lg bg-red-500/90 p-1 text-white transition-all hover:bg-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
 
             {/* Add more slot */}
             <motion.div

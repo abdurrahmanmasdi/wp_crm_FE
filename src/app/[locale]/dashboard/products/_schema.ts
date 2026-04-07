@@ -3,7 +3,10 @@ import type {
   CreateProductDto as ApiCreateProductDto,
   UpdateProductDto as ApiUpdateProductDto,
 } from '@/api-generated/model';
-import { requiredStringSchema, positiveNumberSchema, nonNegativeNumberSchema } from '@/lib/validations/common';
+import {
+  requiredStringSchema,
+  positiveNumberSchema,
+} from '@/lib/validations/common';
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
@@ -112,9 +115,12 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
 
 /** Local media item tracked in the gallery — not part of the zod schema */
 export type LocalMediaItem = {
+  /** persisted media id from backend (present for uploaded files) */
+  mediaId?: string;
   /** browser-level preview URL (createObjectURL) */
   previewUrl: string;
-  file: File;
+  /** local file object (present for newly selected files) */
+  file?: File;
   /** user-designated cover */
   isPrimary: boolean;
 };

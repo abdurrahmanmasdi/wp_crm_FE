@@ -155,4 +155,27 @@ export const productService = {
       )
       .then(() => undefined);
   },
+
+  /**
+   * POST /api/v1/organizations/:organizationId/products/:productId/media/upload
+   * Uploads files as FormData (multipart/form-data).
+   * Expects FormData with 'files' entries appended for each file.
+   */
+  uploadMedia(
+    organizationId: string,
+    productId: string,
+    formData: FormData
+  ): Promise<{ data: ProductMedia[] }> {
+    return api
+      .post<{ data: ProductMedia[] }>(
+        `/organizations/${organizationId}/products/${productId}/media/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+      .then((r) => r.data);
+  },
 };

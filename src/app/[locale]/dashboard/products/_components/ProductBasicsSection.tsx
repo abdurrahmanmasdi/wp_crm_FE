@@ -12,13 +12,6 @@ import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
 import { SharedTextarea } from '@/components/ui/form-controls/SharedTextarea';
 import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   CURRENCY_SYMBOLS,
   PRODUCT_TYPE_LABELS,
   type LocalMediaItem,
@@ -39,20 +32,20 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 interface ProductBasicsSectionProps {
   mediaItems: LocalMediaItem[];
   onMediaChange: (items: LocalMediaItem[]) => void;
+  productId?: string;
 }
 
 export function ProductBasicsSection({
   mediaItems,
   onMediaChange,
+  productId,
 }: ProductBasicsSectionProps) {
   const { control } = useFormContext<ProductFormValues>();
   const currency = useWatch({ control, name: 'currency' }) as string;
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
   const productTypeOptions = (
-    Object.keys(PRODUCT_TYPE_LABELS) as Array<
-      keyof typeof PRODUCT_TYPE_LABELS
-    >
+    Object.keys(PRODUCT_TYPE_LABELS) as Array<keyof typeof PRODUCT_TYPE_LABELS>
   ).map((key) => ({
     value: key,
     label: PRODUCT_TYPE_LABELS[key],
@@ -138,7 +131,11 @@ export function ProductBasicsSection({
         {/* Right column – Product Gallery */}
         <div>
           <FieldLabel>Product Gallery</FieldLabel>
-          <ProductGallery items={mediaItems} onChange={onMediaChange} />
+          <ProductGallery
+            items={mediaItems}
+            onChange={onMediaChange}
+            productId={productId}
+          />
         </div>
       </div>
     </section>

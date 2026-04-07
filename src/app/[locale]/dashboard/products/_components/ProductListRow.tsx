@@ -35,7 +35,7 @@ export function ProductListRow({
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-white/5 bg-zinc-800 sm:h-20 sm:w-20">
         {primaryMedia ? (
           <img
-            src={primaryMedia.file_url}
+            src={process.env.NEXT_PUBLIC_BACKEND_URL + primaryMedia.file_url}
             alt={product.title}
             className="h-full w-full object-cover"
           />

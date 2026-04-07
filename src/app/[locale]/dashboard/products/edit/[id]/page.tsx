@@ -104,10 +104,8 @@ export default function EditProductPage({
     } as unknown as ProductFormValues;
 
     const initialMedia: LocalMediaItem[] = (product.media || []).map((m) => ({
+      mediaId: m.id,
       previewUrl: m.file_url,
-      file: new File([''], m.file_name || 'image.jpg', {
-        type: 'image/jpeg',
-      }),
       isPrimary: m.is_primary,
     }));
 
