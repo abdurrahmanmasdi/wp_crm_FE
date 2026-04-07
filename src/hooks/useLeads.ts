@@ -287,19 +287,34 @@ function toQueryParams(filters?: LeadsQueryFilters): Record<string, unknown> {
     return {};
   }
 
-  return Object.fromEntries(
-    Object.entries(filters).filter(([, value]) => {
-      if (value === null || value === undefined) {
-        return false;
-      }
+  const params: Record<string, unknown> = {};
 
-      if (typeof value === 'string') {
-        return value.trim().length > 0;
-      }
+  if (typeof filters.page === 'number') params.page = filters.page;
+  if (typeof filters.limit === 'number') params.limit = filters.limit;
 
-      return true;
-    })
-  );
+  if (typeof filters.search === 'string' && filters.search.trim().length > 0) {
+    params.search = filters.search.trim();
+  }
+
+  // The 'filters' property is already a stringified AST from the UI filter bar
+  if (
+    typeof filters.filters === 'string' &&
+    filters.filters.trim().length > 0
+  ) {
+    params.filters = filters.filters;
+  }
+
+  // Convert sortBy/sortDir into the backend's expected 'sorts' AST array
+  if (filters.sortBy && filters.sortDir) {
+    params.sorts = JSON.stringify([
+      {
+        field: filters.sortBy,
+        direction: filters.sortDir,
+      },
+    ]);
+  }
+
+  return params;
 }
 
 async function fetchLeads(

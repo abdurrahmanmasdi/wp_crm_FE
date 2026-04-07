@@ -1,65 +1,16 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import {
-  Controller,
-  type Path,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import { Plus, X } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  MultiSelectFilter,
-  type MultiSelectFilterOption,
-} from '@/components/ui/multi-select-filter';
-import { SearchableSelect } from '@/components/ui/searchable-select';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { COMMON_ISO_COUNTRIES } from '@/constants/regions';
-import {
-  useLeadSourcesQuery,
-  usePipelineStagesQuery,
-} from '@/hooks/useCrmSettings';
-import { useOrganizationMembersQuery } from '@/hooks/useLeads';
-import { cn } from '@/lib/utils';
+import { UniversalFilterBuilder } from '@/components/ui/universal-filter/UniversalFilterBuilder';
+import type {
+  FilterAstNode,
+  FilterConfig,
+  FilterOperator,
+  FilterRule,
+} from '@/components/ui/universal-filter/filter.types';
 import type { LeadPriority, LeadStatus } from '@/types/leads';
-
-export type LeadFilterField =
-  | 'status'
-  | 'priority'
-  | 'country'
-  | 'assigned_agent_id'
-  | 'pipeline_stage_id'
-  | 'source_id';
-
-export type LeadFilterOperator = 'equals' | 'in';
-export type LeadFilterValue = string | string[];
-
-export type LeadFilterRule = {
-  field: LeadFilterField;
-  operator: LeadFilterOperator;
-  value: LeadFilterValue;
-};
-
-type LeadFiltersFormValues = {
-  rules: LeadFilterRule[];
-};
 
 type LeadFiltersBarProps = {
   initialRules: LeadFilterRule[];
@@ -67,84 +18,78 @@ type LeadFiltersBarProps = {
   className?: string;
 };
 
-const FILTER_FIELDS: LeadFilterField[] = [
-  'status',
-  'priority',
-  'country',
-  'assigned_agent_id',
-  'pipeline_stage_id',
-  'source_id',
-];
+export type LeadFilterRule = FilterRule;
 
-const MULTI_SELECT_FIELDS: LeadFilterField[] = [
-  'status',
-  'priority',
-  'assigned_agent_id',
-  'source_id',
-  'pipeline_stage_id',
-];
-
-const FILTER_OPERATORS: LeadFilterOperator[] = ['equals', 'in'];
 const STATUS_OPTIONS: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
 const PRIORITY_OPTIONS: LeadPriority[] = ['HOT', 'WARM', 'COLD'];
 
-function isFilterField(value: unknown): value is LeadFilterField {
+function isFilterOperator(value: unknown): value is FilterOperator {
   return (
-    typeof value === 'string' &&
-    FILTER_FIELDS.includes(value as LeadFilterField)
+    value === 'equals' ||
+    value === 'not_equals' ||
+    value === 'contains' ||
+    value === 'greater_than' ||
+    value === 'less_than'
   );
 }
 
-function isFilterOperator(value: unknown): value is LeadFilterOperator {
-  return (
-    typeof value === 'string' &&
-    FILTER_OPERATORS.includes(value as LeadFilterOperator)
-  );
-}
+function normalizeRuleValue(value: unknown): string | number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : '';
+  }
 
-function isMultiSelectField(field: LeadFilterField): boolean {
-  return MULTI_SELECT_FIELDS.includes(field);
-}
+  if (typeof value === 'string') {
+    return value;
+  }
 
-function createRegionDisplayNames(locale: string): Intl.DisplayNames | null {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'region' });
-  } catch {
-    try {
-      return new Intl.DisplayNames(['en'], { type: 'region' });
-    } catch {
-      return null;
+  if (Array.isArray(value)) {
+    const firstValue = value.find(
+      (entry) => typeof entry === 'string' || typeof entry === 'number'
+    );
+
+    if (typeof firstValue === 'number') {
+      return Number.isFinite(firstValue) ? firstValue : '';
     }
-  }
-}
 
-function normalizeStringArray(input: unknown): string[] {
-  if (Array.isArray(input)) {
-    return input
-      .filter((entry): entry is string => typeof entry === 'string')
-      .map((entry) => entry.trim())
-      .filter((entry) => entry.length > 0);
-  }
-
-  if (typeof input === 'string') {
-    const normalized = input.trim();
-    return normalized.length > 0 ? [normalized] : [];
-  }
-
-  return [];
-}
-
-function normalizeStringValue(input: unknown): string {
-  if (typeof input === 'string') {
-    return input.trim();
-  }
-
-  if (Array.isArray(input)) {
-    const firstString = input.find((entry) => typeof entry === 'string');
-    return typeof firstString === 'string' ? firstString.trim() : '';
+    if (typeof firstValue === 'string') {
+      return firstValue;
+    }
   }
 
   return '';
+}
+
+function parseRulesPayload(payload: unknown): LeadFilterRule[] {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.flatMap((item, index) => {
+    const record =
+      item && typeof item === 'object'
+        ? (item as Record<string, unknown>)
+        : null;
+
+    if (!record || typeof record.field !== 'string' || !record.field.trim()) {
+      return [];
+    }
+
+    const id =
+      typeof record.id === 'string' && record.id.trim()
+        ? record.id
+        : `rule-${index}-${record.field}`;
+
+    return [
+      {
+        id,
+        field: record.field,
+        operator: isFilterOperator(record.operator)
+          ? record.operator
+          : 'equals',
+        value: normalizeRuleValue(record.value),
+      },
+    ];
+  });
 }
 
 export function parseLeadFiltersParam(param: string | null): LeadFilterRule[] {
@@ -152,62 +97,11 @@ export function parseLeadFiltersParam(param: string | null): LeadFilterRule[] {
     return [];
   }
 
-  const parsePayload = (payload: unknown): LeadFilterRule[] => {
-    if (!Array.isArray(payload)) {
-      return [];
-    }
-
-    const parsedRules: LeadFilterRule[] = [];
-
-    for (const item of payload) {
-      const record =
-        item && typeof item === 'object'
-          ? (item as Record<string, unknown>)
-          : null;
-
-      if (!record || !isFilterField(record.field)) {
-        continue;
-      }
-
-      const operator = isFilterOperator(record.operator)
-        ? record.operator
-        : isMultiSelectField(record.field)
-          ? 'in'
-          : 'equals';
-
-      if (isMultiSelectField(record.field)) {
-        const rawValues = Array.isArray(record.value)
-          ? normalizeStringArray(record.value)
-          : operator === 'in' && typeof record.value === 'string'
-            ? record.value
-                .split(',')
-                .map((entry) => entry.trim())
-                .filter((entry) => entry.length > 0)
-            : normalizeStringArray(record.value);
-
-        parsedRules.push({
-          field: record.field,
-          operator,
-          value: rawValues,
-        });
-        continue;
-      }
-
-      parsedRules.push({
-        field: record.field,
-        operator,
-        value: normalizeStringValue(record.value),
-      });
-    }
-
-    return parsedRules;
-  };
-
   try {
-    return parsePayload(JSON.parse(param));
+    return parseRulesPayload(JSON.parse(param));
   } catch {
     try {
-      return parsePayload(JSON.parse(decodeURIComponent(param)));
+      return parseRulesPayload(JSON.parse(decodeURIComponent(param)));
     } catch {
       return [];
     }
@@ -217,69 +111,39 @@ export function parseLeadFiltersParam(param: string | null): LeadFilterRule[] {
 export function serializeLeadFiltersParam(
   rules: LeadFilterRule[]
 ): string | null {
-  type SerializedRule = {
-    field: LeadFilterField;
-    operator: LeadFilterOperator;
-    value: string | string[];
-  };
+  const payload: FilterAstNode[] = rules.flatMap((rule): FilterAstNode[] => {
+    if (!rule.field || !rule.operator) {
+      return [];
+    }
 
-  const payload: SerializedRule[] = [];
-
-  for (const rule of rules) {
-    if (isMultiSelectField(rule.field)) {
-      const values = normalizeStringArray(rule.value);
-
-      if (values.length === 0) {
-        continue;
+    if (typeof rule.value === 'number') {
+      if (!Number.isFinite(rule.value)) {
+        return [];
       }
 
-      if (rule.operator === 'equals') {
-        payload.push({
+      return [
+        {
           field: rule.field,
           operator: rule.operator,
-          value: values[0],
-        });
-        continue;
-      }
-
-      payload.push({
-        field: rule.field,
-        operator: 'in',
-        value: values,
-      });
-      continue;
+          value: rule.value,
+        },
+      ];
     }
 
-    const value = normalizeStringValue(rule.value);
+    const value = String(rule.value ?? '').trim();
 
-    if (value.length === 0) {
-      continue;
+    if (!value) {
+      return [];
     }
 
-    if (rule.operator === 'in') {
-      const values = value
-        .split(',')
-        .map((entry) => entry.trim())
-        .filter((entry) => entry.length > 0);
-
-      if (values.length === 0) {
-        continue;
-      }
-
-      payload.push({
+    return [
+      {
         field: rule.field,
         operator: rule.operator,
-        value: values,
-      });
-      continue;
-    }
-
-    payload.push({
-      field: rule.field,
-      operator: rule.operator,
-      value,
-    });
-  }
+        value,
+      },
+    ];
+  });
 
   if (payload.length === 0) {
     return null;
@@ -288,338 +152,75 @@ export function serializeLeadFiltersParam(
   return JSON.stringify(payload);
 }
 
-function getDefaultRule(field: LeadFilterField): LeadFilterRule {
-  if (isMultiSelectField(field)) {
-    return {
-      field,
-      operator: 'in',
-      value: [],
-    };
-  }
-
-  return {
-    field,
-    operator: 'equals',
-    value: '',
-  };
-}
-
-function getMultiSelectOptions(
-  field: LeadFilterField,
-  params: {
-    statusOptions: MultiSelectFilterOption[];
-    priorityOptions: MultiSelectFilterOption[];
-    stageOptions: MultiSelectFilterOption[];
-    sourceOptions: MultiSelectFilterOption[];
-    agentOptions: MultiSelectFilterOption[];
-  }
-): MultiSelectFilterOption[] {
-  switch (field) {
-    case 'status':
-      return params.statusOptions;
-    case 'priority':
-      return params.priorityOptions;
-    case 'pipeline_stage_id':
-      return params.stageOptions;
-    case 'source_id':
-      return params.sourceOptions;
-    case 'assigned_agent_id':
-      return params.agentOptions;
-    default:
-      return [];
-  }
-}
-
 export function LeadFiltersBar({
   initialRules,
   onRulesChange,
   className,
 }: LeadFiltersBarProps) {
   const t = useTranslations('Leads');
-  const locale = useLocale();
-  const membersQuery = useOrganizationMembersQuery();
-  const pipelineStagesQuery = usePipelineStagesQuery();
-  const leadSourcesQuery = useLeadSourcesQuery();
 
-  const form = useForm<LeadFiltersFormValues>({
-    defaultValues: {
-      rules: initialRules,
+  const safeTranslate = useCallback(
+    (key: string, fallback: string): string => {
+      try {
+        const translated = t(key as never);
+        return translated && translated !== key ? translated : fallback;
+      } catch {
+        return fallback;
+      }
     },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'rules',
-  });
-
-  const watchedRules = useWatch({
-    control: form.control,
-    name: 'rules',
-  });
-
-  useEffect(() => {
-    form.reset({ rules: initialRules });
-  }, [form, initialRules]);
-
-  useEffect(() => {
-    onRulesChange(watchedRules ?? []);
-  }, [onRulesChange, watchedRules]);
-
-  const regionDisplayNames = useMemo(
-    () => createRegionDisplayNames(locale),
-    [locale]
-  );
-
-  const countryOptions = useMemo(
-    () =>
-      COMMON_ISO_COUNTRIES.map((country) => ({
-        value: country.value,
-        label: regionDisplayNames?.of(country.value) ?? country.label,
-      })),
-    [regionDisplayNames]
-  );
-
-  const statusOptions = useMemo(
-    () =>
-      STATUS_OPTIONS.map((status) => ({
-        value: status,
-        label: t(`status.${status}` as never),
-      })),
     [t]
   );
 
-  const priorityOptions = useMemo(
-    () =>
-      PRIORITY_OPTIONS.map((priority) => ({
-        value: priority,
-        label: t(`priority.${priority}` as never),
-      })),
-    [t]
+  const leadFilterConfig = useMemo<FilterConfig>(
+    () => [
+      {
+        id: 'status',
+        label: safeTranslate('form.fields.status.label', 'Status'),
+        type: 'select',
+        options: STATUS_OPTIONS.map((status) => ({
+          value: status,
+          label: safeTranslate(`status.${status}`, status),
+        })),
+      },
+      {
+        id: 'priority',
+        label: safeTranslate('form.fields.priority.label', 'Priority'),
+        type: 'select',
+        options: PRIORITY_OPTIONS.map((priority) => ({
+          value: priority,
+          label: safeTranslate(`priority.${priority}`, priority),
+        })),
+      },
+      {
+        id: 'first_name',
+        label: safeTranslate('form.fields.first_name.label', 'First name'),
+        type: 'text',
+      },
+      {
+        id: 'estimated_value',
+        label: safeTranslate(
+          'form.fields.estimated_value.label',
+          'Estimated value'
+        ),
+        type: 'number',
+      },
+    ],
+    [safeTranslate]
   );
 
-  const stageOptions = useMemo(
-    () =>
-      (pipelineStagesQuery.data ?? []).map((stage) => ({
-        value: stage.id,
-        label: stage.name,
-      })),
-    [pipelineStagesQuery.data]
+  const handleBuilderChange = useCallback(
+    (serializedAst: string) => {
+      onRulesChange(parseLeadFiltersParam(serializedAst));
+    },
+    [onRulesChange]
   );
-
-  const sourceOptions = useMemo(
-    () =>
-      (leadSourcesQuery.data ?? []).map((source) => ({
-        value: source.id,
-        label: source.name,
-      })),
-    [leadSourcesQuery.data]
-  );
-
-  const agentOptions = membersQuery.data ?? [];
-
-  const renderValueInput = (
-    index: number,
-    field: LeadFilterField,
-    operator: LeadFilterOperator
-  ) => {
-    const valuePath = `rules.${index}.value` as Path<LeadFiltersFormValues>;
-
-    if (isMultiSelectField(field)) {
-      const options = getMultiSelectOptions(field, {
-        statusOptions,
-        priorityOptions,
-        stageOptions,
-        sourceOptions,
-        agentOptions,
-      });
-
-      return (
-        <Controller
-          control={form.control}
-          name={valuePath}
-          render={({ field: valueField }) => {
-            const selectedValues = normalizeStringArray(valueField.value);
-
-            return (
-              <MultiSelectFilter
-                options={options}
-                value={selectedValues}
-                onChange={valueField.onChange}
-                placeholder={t('filters.multiSelectPlaceholder')}
-                searchPlaceholder={t('form.searchPlaceholder')}
-                emptyLabel={t('form.noResults')}
-                selectedCountLabel={(count) =>
-                  t('filters.selectedCount', { count })
-                }
-                disabled={
-                  (field === 'assigned_agent_id' && membersQuery.isLoading) ||
-                  (field === 'pipeline_stage_id' &&
-                    pipelineStagesQuery.isLoading) ||
-                  (field === 'source_id' && leadSourcesQuery.isLoading)
-                }
-                className={field === 'assigned_agent_id' ? 'w-64' : 'w-56'}
-              />
-            );
-          }}
-        />
-      );
-    }
-
-    switch (field) {
-      case 'country':
-        return (
-          <div className="min-w-56">
-            <SearchableSelect
-              control={form.control}
-              name={valuePath}
-              label={t('filters.value')}
-              hideLabel
-              placeholder={t('filters.valuePlaceholder')}
-              options={countryOptions}
-              searchPlaceholder={t('form.searchPlaceholder')}
-              emptyLabel={t('form.noResults')}
-            />
-          </div>
-        );
-
-      default:
-        return (
-          <Controller
-            control={form.control}
-            name={valuePath}
-            render={({ field: valueField }) => (
-              <Input
-                value={normalizeStringValue(valueField.value)}
-                onChange={valueField.onChange}
-                placeholder={
-                  operator === 'in'
-                    ? `${t('filters.valuePlaceholder')} (${t('filters.in')})`
-                    : t('filters.valuePlaceholder')
-                }
-                className="w-56"
-              />
-            )}
-          />
-        );
-    }
-  };
 
   return (
-    <div
-      className={cn(
-        'flex min-w-0 flex-1 flex-wrap items-center gap-2',
-        className
-      )}
-    >
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button type="button" variant="outline" size="sm" className="h-8">
-            <Plus className="mr-2 h-4 w-4" />
-            {t('filters.addFilter')}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-56">
-          {FILTER_FIELDS.map((field) => (
-            <DropdownMenuItem
-              key={field}
-              onClick={() => append(getDefaultRule(field))}
-            >
-              {t(`form.fields.${field}.label` as never)}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {fields.map((fieldEntry, index) => {
-        const activeRule = watchedRules?.[index] ?? fieldEntry;
-        const activeField = isFilterField(activeRule.field)
-          ? activeRule.field
-          : 'status';
-        const activeOperator = isFilterOperator(activeRule.operator)
-          ? activeRule.operator
-          : isMultiSelectField(activeField)
-            ? 'in'
-            : 'equals';
-
-        return (
-          <div
-            key={fieldEntry.id}
-            className="bg-background flex flex-wrap items-start gap-2 rounded-lg border border-white/10 px-2 py-1"
-          >
-            <p className="text-foreground pt-2 text-sm font-medium">
-              {t(`form.fields.${activeField}.label` as never)}
-            </p>
-
-            <Controller
-              control={form.control}
-              name={`rules.${index}.operator` as const}
-              render={({ field }) => (
-                <Select
-                  value={
-                    typeof field.value === 'string' ? field.value : 'equals'
-                  }
-                  onValueChange={(nextOperator) => {
-                    field.onChange(nextOperator);
-
-                    const currentValue = form.getValues(`rules.${index}.value`);
-                    const isActiveMulti = isMultiSelectField(activeField);
-
-                    if (isActiveMulti && nextOperator === 'in') {
-                      form.setValue(
-                        `rules.${index}.value`,
-                        normalizeStringArray(currentValue),
-                        { shouldDirty: true, shouldTouch: true }
-                      );
-                      return;
-                    }
-
-                    if (isActiveMulti && nextOperator === 'equals') {
-                      const values = normalizeStringArray(currentValue);
-                      form.setValue(
-                        `rules.${index}.value`,
-                        values.length > 0 ? [values[0]] : [],
-                        { shouldDirty: true, shouldTouch: true }
-                      );
-                      return;
-                    }
-
-                    if (!isActiveMulti) {
-                      form.setValue(
-                        `rules.${index}.value`,
-                        normalizeStringValue(currentValue),
-                        { shouldDirty: true, shouldTouch: true }
-                      );
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder={t('filters.operator')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="equals">
-                      {t('filters.equals')}
-                    </SelectItem>
-                    <SelectItem value="in">{t('filters.in')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
-            {renderValueInput(index, activeField, activeOperator)}
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="mt-1 h-7 w-7"
-              onClick={() => remove(index)}
-              aria-label={t('filters.removeFilter')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      })}
-    </div>
+    <UniversalFilterBuilder
+      config={leadFilterConfig}
+      initialRules={initialRules}
+      onChange={handleBuilderChange}
+      className={className}
+    />
   );
 }

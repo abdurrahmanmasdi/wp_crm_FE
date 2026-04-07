@@ -743,10 +743,22 @@
       "estimatedValueMin": "Tahmini değer sıfır veya daha büyük olmalıdır"
     },
     "filters": {
+      "filter": "Filtre",
+      "field": "Alan",
+      "emptyState": "Henüz filtre eklenmemiş.",
+      "addRule": "Kural ekle",
+      "apply": "Uygula",
+      "removeRule": "Kuralı kaldır",
       "addFilter": "Filtre Ekle",
       "removeFilter": "Filtreyi kaldır",
       "operator": "Operatör",
-      "equals": "Eşittir",
+      "operators": {
+        "equals": "Eşittir",
+        "not_equals": "Eşit değildir",
+        "contains": "İçerir",
+        "greater_than": "Büyüktür",
+        "less_than": "Küçüktür"
+      },
       "in": "İçinde",
       "value": "Değer",
       "valuePlaceholder": "Değer seçin",

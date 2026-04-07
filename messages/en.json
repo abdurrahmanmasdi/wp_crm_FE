@@ -743,10 +743,22 @@
       "estimatedValueMin": "Estimated value must be zero or greater"
     },
     "filters": {
+      "filter": "Filter",
+      "field": "Field",
+      "emptyState": "No filters added yet.",
+      "addRule": "Add rule",
+      "apply": "Apply",
+      "removeRule": "Remove rule",
       "addFilter": "Add Filter",
       "removeFilter": "Remove filter",
       "operator": "Operator",
-      "equals": "Equals",
+      "operators": {
+        "equals": "Equals",
+        "not_equals": "Not equals",
+        "contains": "Contains",
+        "greater_than": "Greater than",
+        "less_than": "Less than"
+      },
       "in": "In",
       "value": "Value",
       "valuePlaceholder": "Select value",

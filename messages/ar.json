@@ -743,10 +743,22 @@
       "estimatedValueMin": "يجب أن تكون القيمة التقديرية صفرًا أو أكثر"
     },
     "filters": {
+      "filter": "فلتر",
+      "field": "الحقل",
+      "emptyState": "لم يتم إضافة فلاتر بعد.",
+      "addRule": "إضافة قاعدة",
+      "apply": "تطبيق",
+      "removeRule": "إزالة القاعدة",
       "addFilter": "إضافة فلتر",
       "removeFilter": "إزالة الفلتر",
       "operator": "المعامل",
-      "equals": "يساوي",
+      "operators": {
+        "equals": "يساوي",
+        "not_equals": "لا يساوي",
+        "contains": "يحتوي على",
+        "greater_than": "أكبر من",
+        "less_than": "أقل من"
+      },
       "in": "ضمن",
       "value": "القيمة",
       "valuePlaceholder": "اختر قيمة",
