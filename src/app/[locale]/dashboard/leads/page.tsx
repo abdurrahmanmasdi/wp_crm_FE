@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
-import { useLeadTableActions } from '@/components/leads/table/useLeadTableActions';
 import {
   parseLeadFiltersParam,
   serializeLeadFiltersParam,
@@ -21,8 +20,15 @@ import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useLeads } from '@/hooks/useLeads';
+import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Lead, LeadSortBy, LeadSortDir } from '@/types/leads';
+import type {
+  Lead,
+  LeadsListResponse,
+  LeadSortBy,
+  LeadSortDir,
+} from '@/types/leads';
+import { exportLeadsToCSV } from '@/utils/csv-export';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -66,6 +72,37 @@ function parseSortDir(value: string | null): LeadSortDir | undefined {
   return value === 'asc' || value === 'desc' ? value : undefined;
 }
 
+type LeadsExportResponse =
+  | Lead[]
+  | Pick<LeadsListResponse, 'data'>
+  | { items?: Lead[]; leads?: Lead[] };
+
+function extractLeadsFromResponse(data: LeadsExportResponse): Lead[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  const record = data as {
+    data?: Lead[];
+    items?: Lead[];
+    leads?: Lead[];
+  };
+
+  if (Array.isArray(record.data)) {
+    return record.data;
+  }
+
+  if (Array.isArray(record.items)) {
+    return record.items;
+  }
+
+  if (Array.isArray(record.leads)) {
+    return record.leads;
+  }
+
+  return [];
+}
+
 function parsePositiveQueryNumber(
   value: string | null,
   fallback: number
@@ -84,8 +121,7 @@ export default function LeadsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('Leads');
-  const { handleExportCsv: handleTableExportCsv, isExporting } =
-    useLeadTableActions();
+  const [isExporting, setIsExporting] = useState(false);
 
   const filtersParam = searchParams.get('filters');
   const searchParam = searchParams.get('search') ?? '';
@@ -263,22 +299,39 @@ export default function LeadsPage() {
       return;
     }
 
-    await handleTableExportCsv({
-      organizationId,
-      filters: filtersParam ?? undefined,
-      search: searchParam || undefined,
-      sortBy: sortByParam,
-      sortDir: sortDirParam,
-    });
-  }, [
-    filtersParam,
-    handleTableExportCsv,
-    isExporting,
-    organizationId,
-    searchParam,
-    sortByParam,
-    sortDirParam,
-  ]);
+    const exportParams = new URLSearchParams(searchParams.toString());
+    exportParams.set('page', '1');
+    exportParams.set('limit', '5000');
+
+    try {
+      setIsExporting(true);
+
+      const { data } = await api.get<LeadsExportResponse>(
+        `/organizations/${organizationId}/leads`,
+        {
+          params: Object.fromEntries(exportParams.entries()),
+        }
+      );
+
+      const leadsForExport = extractLeadsFromResponse(data);
+
+      if (leadsForExport.length === 0) {
+        toast.error(t('export.empty'));
+        return;
+      }
+
+      exportLeadsToCSV(leadsForExport);
+      toast.success(
+        t('export.success', {
+          count: leadsForExport.length,
+        })
+      );
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t('export.error'));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [isExporting, organizationId, searchParams, t]);
 
   const deletingLeadId =
     deleteLeadMutation.isPending &&

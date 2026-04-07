@@ -55,9 +55,8 @@ export type FindProductsQueryDto = {
   limit?: number;
   search?: string;
   type?: string;
-  sort_by?: string;
-  sort_dir?: string;
   filters?: string; // JSON string of filter rules
+  sorts?: string; // JSON string of sort rules in format: [{"field":"title","direction":"asc"}]
 };
 
 export type PaginatedProducts = {

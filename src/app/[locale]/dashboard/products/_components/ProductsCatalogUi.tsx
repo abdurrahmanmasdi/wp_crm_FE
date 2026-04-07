@@ -1,7 +1,21 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { LayoutGrid, List as ListIcon, Search } from 'lucide-react';
+import {
+  LayoutGrid,
+  List as ListIcon,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export function ProductsToolbar({
   viewMode,
@@ -97,5 +111,80 @@ export function EmptyState() {
         {t('noProductsDescription')}
       </p>
     </div>
+  );
+}
+
+export function ProductsPagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <button
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm hover:enabled:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="ml-1">Previous</span>
+          </button>
+        </PaginationItem>
+
+        <div className="flex items-center gap-1">
+          {Array.from({ length: totalPages }).map((_, i) => {
+            const page = i + 1;
+            const isCurrentPage = page === currentPage;
+            const isVisible =
+              page === 1 ||
+              page === totalPages ||
+              Math.abs(page - currentPage) <= 1;
+
+            if (!isVisible) {
+              if (page === 2 || page === totalPages - 1) {
+                return (
+                  <PaginationItem key={page}>
+                    <span className="px-1 text-zinc-500">...</span>
+                  </PaginationItem>
+                );
+              }
+              return null;
+            }
+
+            return (
+              <PaginationItem key={page}>
+                <button
+                  onClick={() => onPageChange(page)}
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded-md border text-sm ${
+                    isCurrentPage
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-zinc-700 bg-zinc-900 hover:bg-zinc-800'
+                  }`}
+                >
+                  {page}
+                </button>
+              </PaginationItem>
+            );
+          })}
+        </div>
+
+        <PaginationItem>
+          <button
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm hover:enabled:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="mr-1">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   );
 }

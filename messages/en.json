@@ -948,6 +948,14 @@
     "subtitle": "Manage your inventory, schedule events, and configure dynamic services.",
     "newProduct": "New Product",
     "noProductsFound": "No products found",
-    "noProductsDescription": "No products match your current filtering criteria. Adjust your filters or create a new product."
+    "noProductsDescription": "No products match your current filtering criteria. Adjust your filters or create a new product.",
+    "filters": {
+      "filter": "Filter",
+      "field": "Field",
+      "emptyState": "No filters added yet.",
+      "addRule": "Add rule",
+      "apply": "Apply",
+      "removeRule": "Remove rule"
+    }
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Search } from 'lucide-react';
+import { Download } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
@@ -10,7 +10,6 @@ import {
   type LeadFilterRule,
 } from '@/components/leads/filters';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
 
 const ImportLeadsModal = dynamic(
@@ -35,8 +34,6 @@ export function LeadsTableToolbar({
   organizationId,
   initialRules,
   onRulesChange,
-  searchValue,
-  onSearchChange,
   onExportCsv,
   isExporting,
   isLoading,
@@ -45,21 +42,13 @@ export function LeadsTableToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="relative min-w-[220px] flex-1">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-        <Input
-          value={searchValue}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder={t('form.searchPlaceholder')}
-          className="pl-9"
+      <div className="flex-1">
+        <LeadFiltersBar
+          className="min-w-0"
+          initialRules={initialRules}
+          onRulesChange={onRulesChange}
         />
       </div>
-
-      <LeadFiltersBar
-        className="min-w-0 flex-1"
-        initialRules={initialRules}
-        onRulesChange={onRulesChange}
-      />
 
       <Button
         type="button"

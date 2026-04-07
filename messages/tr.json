@@ -948,6 +948,14 @@
     "subtitle": "Envanterinizi yönetin, etkinlikleri planlayın ve dinamik hizmetleri yapılandırın.",
     "newProduct": "Yeni Ürün",
     "noProductsFound": "Ürün Bulunamadı",
-    "noProductsDescription": "Geçerli filtreleme ölçütlerinize uyan ürün yok. Filtrelerinizi ayarlayın veya yeni bir ürün oluşturun."
+    "noProductsDescription": "Mevcut filtreleriniz ile eşleşen ürün yok. Filtrelerinizi ayarlayın veya yeni bir ürün oluşturun.",
+    "filters": {
+      "filter": "Filtre",
+      "field": "Alan",
+      "emptyState": "Henüz filtre eklenmemiş.",
+      "addRule": "Kural ekle",
+      "apply": "Uygula",
+      "removeRule": "Kuralı kaldır"
+    }
   }
 }

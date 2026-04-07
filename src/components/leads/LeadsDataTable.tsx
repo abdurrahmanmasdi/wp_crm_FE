@@ -8,7 +8,7 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,6 +58,29 @@ type LeadsDataTableProps = {
   sortDir?: LeadSortDir;
   onSortChange: (sortBy?: LeadSortBy, sortDir?: LeadSortDir) => void;
 };
+
+function getNextSortDir(
+  currentSortBy: LeadSortBy | undefined,
+  currentSortDir: LeadSortDir | undefined,
+  clickedColumn: LeadSortBy
+): {
+  nextSortBy: LeadSortBy | undefined;
+  nextSortDir: LeadSortDir | undefined;
+} {
+  if (currentSortBy !== clickedColumn) {
+    return { nextSortBy: clickedColumn, nextSortDir: 'asc' };
+  }
+
+  if (currentSortDir === 'asc') {
+    return { nextSortBy: clickedColumn, nextSortDir: 'desc' };
+  }
+
+  if (currentSortDir === 'desc') {
+    return { nextSortBy: undefined, nextSortDir: undefined };
+  }
+
+  return { nextSortBy: clickedColumn, nextSortDir: 'asc' };
+}
 
 function formatEstimatedValue(
   estimatedValue: string,
@@ -199,26 +222,28 @@ export function LeadsDataTable({
     .rows.map((row) => row.original.id);
 
   const handleSortToggle = (columnId: LeadSortBy) => {
-    const column = table.getColumn(columnId);
-    if (!column) {
-      return;
-    }
-
-    column.toggleSorting(column.getIsSorted() === 'asc');
+    const { nextSortBy, nextSortDir } = getNextSortDir(
+      sortBy,
+      sortDir,
+      columnId
+    );
+    onSortChange(nextSortBy, nextSortDir);
   };
 
   const getSortIndicator = (columnId: LeadSortBy) => {
-    const sortedState = table.getColumn(columnId)?.getIsSorted();
+    if (sortBy !== columnId) {
+      return <ArrowUpDown className="text-muted-foreground h-3.5 w-3.5" />;
+    }
 
-    if (sortedState === 'asc') {
+    if (sortDir === 'asc') {
       return <ArrowUp className="h-3.5 w-3.5" />;
     }
 
-    if (sortedState === 'desc') {
+    if (sortDir === 'desc') {
       return <ArrowDown className="h-3.5 w-3.5" />;
     }
 
-    return null;
+    return <ArrowUpDown className="text-muted-foreground h-3.5 w-3.5" />;
   };
 
   if (isLoading) {
@@ -282,7 +307,7 @@ export function LeadsDataTable({
                     <button
                       type="button"
                       onClick={() => handleSortToggle('first_name')}
-                      className="inline-flex items-center gap-1"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
                     >
                       {t('tableHeaders.lead')}
                       {getSortIndicator('first_name')}
@@ -298,7 +323,7 @@ export function LeadsDataTable({
                     <button
                       type="button"
                       onClick={() => handleSortToggle('priority')}
-                      className="inline-flex items-center gap-1"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
                     >
                       {t('tableHeaders.priority')}
                       {getSortIndicator('priority')}
@@ -308,7 +333,7 @@ export function LeadsDataTable({
                     <button
                       type="button"
                       onClick={() => handleSortToggle('status')}
-                      className="inline-flex items-center gap-1"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
                     >
                       {t('tableHeaders.status')}
                       {getSortIndicator('status')}
@@ -318,7 +343,7 @@ export function LeadsDataTable({
                     <button
                       type="button"
                       onClick={() => handleSortToggle('estimated_value')}
-                      className="inline-flex items-center gap-1"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
                     >
                       {t('tableHeaders.estimatedValue')}
                       {getSortIndicator('estimated_value')}
@@ -328,7 +353,7 @@ export function LeadsDataTable({
                     <button
                       type="button"
                       onClick={() => handleSortToggle('created_at')}
-                      className="inline-flex items-center gap-1"
+                      className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
                     >
                       {t('tableHeaders.createdAt')}
                       {getSortIndicator('created_at')}

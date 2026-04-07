@@ -1,22 +1,20 @@
 'use client';
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePermissions } from '@/hooks/usePermissions';
+import {
+  serializeProductFiltersParam,
+  type ProductFilterRule,
+  ProductFiltersBar,
+} from '@/components/products/filters/ProductFiltersBar';
 import { productService } from '@/lib/product.service';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -27,42 +25,122 @@ import {
   EmptyState,
   LoadingSkeleton,
   ProductsToolbar,
+  ProductsPagination,
 } from './ProductsCatalogUi';
-import { ProductsFilterBar } from './ProductsFilterBar';
-import type { FilterNode, Product } from './product-types';
+import type { Product } from './product-types';
+
+type ProductSortBy = 'title' | 'base_price' | 'created_at';
+
+const ITEMS_PER_PAGE = 12;
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = ITEMS_PER_PAGE;
+
+function buildSortsParam(
+  sortBy: ProductSortBy | null,
+  sortDir: 'asc' | 'desc' | null
+): string | null {
+  if (!sortBy || !sortDir) {
+    return null;
+  }
+
+  const sorts = [{ field: sortBy, direction: sortDir }];
+  return JSON.stringify(sorts);
+}
 
 export default function ProductsCatalog() {
   const t = useTranslations('Products');
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { hasPermission } = usePermissions();
   const activeOrganizationId = useAuthStore((s) => s.activeOrganizationId);
 
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [filters, setFilters] = useState<FilterNode[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [filterRules, setFilterRules] = useState<ProductFilterRule[]>([]);
 
-  const debouncedFilters = useDebounce(filters, 600);
-  const itemsPerPage = 12;
+  // Parse URL params
+  const currentPage = useMemo(() => {
+    const page = searchParams.get('page');
+    return page ? Math.max(1, parseInt(page, 10)) : DEFAULT_PAGE;
+  }, [searchParams]);
+
+  const currentLimit = useMemo(() => {
+    const limit = searchParams.get('limit');
+    return limit ? Math.max(1, parseInt(limit, 10)) : DEFAULT_LIMIT;
+  }, [searchParams]);
+
+  const sortBy = useMemo(() => {
+    const sort = searchParams.get('sortBy');
+    return sort && ['title', 'base_price', 'created_at'].includes(sort)
+      ? (sort as ProductSortBy)
+      : null;
+  }, [searchParams]);
+
+  const sortDir = useMemo(() => {
+    const dir = searchParams.get('sortDir');
+    return dir === 'asc' || dir === 'desc' ? dir : null;
+  }, [searchParams]);
+
+  const debouncedFilterRules = useDebounce(filterRules, 600);
 
   const filtersQueryParam = useMemo(() => {
-    if (debouncedFilters.length > 0) {
-      return encodeURIComponent(JSON.stringify(debouncedFilters));
-    }
+    const serialized = serializeProductFiltersParam(debouncedFilterRules);
+    return serialized ?? '';
+  }, [debouncedFilterRules]);
 
-    return '';
-  }, [debouncedFilters]);
+  const sortsParam = useMemo(() => {
+    return buildSortsParam(sortBy, sortDir);
+  }, [sortBy, sortDir]);
 
-  const handleSetFilters: Dispatch<SetStateAction<FilterNode[]>> = (update) => {
-    setCurrentPage(1);
-    setFilters(update);
-  };
+  const handleRulesChange = useCallback(
+    (rules: ProductFilterRule[]) => {
+      setFilterRules(rules);
+      // Reset to page 1 when filters change
+      const params = new URLSearchParams(searchParams);
+      params.set('page', '1');
+      router.replace(`?${params.toString()}`, { scroll: false } as Parameters<
+        typeof router.replace
+      >[1]);
+    },
+    [searchParams, router]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('page', String(page));
+      router.replace(`?${params.toString()}`, { scroll: false } as Parameters<
+        typeof router.replace
+      >[1]);
+    },
+    [searchParams, router]
+  );
+
+  const handleSortChange = useCallback(
+    (field: ProductSortBy | null, direction: 'asc' | 'desc' | null) => {
+      const params = new URLSearchParams(searchParams);
+      if (field && direction) {
+        params.set('sortBy', field);
+        params.set('sortDir', direction);
+      } else {
+        params.delete('sortBy');
+        params.delete('sortDir');
+      }
+      params.set('page', '1');
+      router.replace(`?${params.toString()}`, { scroll: false } as Parameters<
+        typeof router.replace
+      >[1]);
+    },
+    [searchParams, router]
+  );
 
   const { data: responseData, isLoading } = useQuery({
     queryKey: [
       ...queryKeys.products.all(activeOrganizationId),
       filtersQueryParam,
+      sortsParam,
       currentPage,
-      itemsPerPage,
+      currentLimit,
     ],
     queryFn: async () => {
       if (!activeOrganizationId) {
@@ -71,8 +149,9 @@ export default function ProductsCatalog() {
 
       return productService.getAll(activeOrganizationId, {
         page: currentPage,
-        limit: itemsPerPage,
+        limit: currentLimit,
         filters: filtersQueryParam,
+        sorts: sortsParam ?? undefined,
       });
     },
     enabled: !!activeOrganizationId,
@@ -84,7 +163,7 @@ export default function ProductsCatalog() {
 
   const meta = responseData?.meta ?? {
     page: 1,
-    limit: itemsPerPage,
+    limit: currentLimit,
     total: 0,
     totalPages: 1,
   };
@@ -112,7 +191,13 @@ export default function ProductsCatalog() {
         )}
       </div>
 
-      <ProductsFilterBar filters={filters} setFilters={handleSetFilters} />
+      <ProductFiltersBar
+        initialRules={filterRules}
+        onRulesChange={handleRulesChange}
+        sortBy={sortBy}
+        sortDir={sortDir}
+        onSortChange={handleSortChange}
+      />
       <ProductsToolbar viewMode={viewMode} setViewMode={setViewMode} />
 
       <ProductDetailsDrawer
@@ -152,45 +237,11 @@ export default function ProductsCatalog() {
           </AnimatePresence>
 
           {meta.totalPages > 1 && (
-            <Pagination className="mt-8 opacity-90 transition-opacity hover:opacity-100">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={
-                      currentPage === 1
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-
-                {Array.from({ length: meta.totalPages }).map((_, i) => (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      isActive={currentPage === i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className="cursor-pointer"
-                    >
-                      {i + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(meta.totalPages, p + 1))
-                    }
-                    className={
-                      currentPage === meta.totalPages
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <ProductsPagination
+              currentPage={meta.page}
+              totalPages={meta.totalPages}
+              onPageChange={handlePageChange}
+            />
           )}
         </div>
       )}
