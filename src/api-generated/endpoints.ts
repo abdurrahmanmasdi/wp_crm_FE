@@ -21,7 +21,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import axios from 'axios';
+import { api as axios } from '@/lib/api';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import type {
@@ -34,6 +34,7 @@ import type {
   AccessControlControllerUpdateRoleV1200,
   AnalyticsControllerGetDashboardMetricsV1Params,
   ApproveMembershipRequestDto,
+  BulkCreateLeadsDto,
   BulkUpdateLeadsDto,
   ChatControllerGetConversationMessagesV1Params,
   CreateBankAccountDto,
@@ -53,6 +54,7 @@ import type {
   InviteToOrganizationDto,
   JoinOrganizationDto,
   LeadSourcesControllerFindAllV1Params,
+  LeadsControllerExportAllV1Params,
   LeadsControllerFindAllV1Params,
   LoginDto,
   MembershipAccessControlControllerAssignRoleV1200,
@@ -87,6 +89,7 @@ import type {
   UsersControllerGetUserOrganizationsV1200Item,
   VerifyEmailDto,
 } from './model';
+import { Lead } from '@/types/leads';
 
 export const appControllerGetHelloV1 = (
   options?: AxiosRequestConfig
@@ -240,7 +243,7 @@ export const authControllerLoginV1 = (
   loginDto: LoginDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/login`, loginDto, options);
+  return axios.post(`/auth/login`, loginDto, options);
 };
 
 export const getAuthControllerLoginV1MutationOptions = <
@@ -322,7 +325,7 @@ export const authControllerVerifyEmailV1 = (
   verifyEmailDto: VerifyEmailDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/verify-email`, verifyEmailDto, options);
+  return axios.post(`/auth/verify-email`, verifyEmailDto, options);
 };
 
 export const getAuthControllerVerifyEmailV1MutationOptions = <
@@ -406,7 +409,7 @@ export const authControllerResendVerificationV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/auth/resend-verification`,
+    `/auth/resend-verification`,
     resendVerificationDto,
     options
   );
@@ -495,7 +498,7 @@ export const authControllerRequestPasswordResetV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/auth/request-password-reset`,
+    `/auth/request-password-reset`,
     requestPasswordResetDto,
     options
   );
@@ -583,7 +586,7 @@ export const authControllerResetPasswordV1 = (
   resetPasswordDto: ResetPasswordDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/reset-password`, resetPasswordDto, options);
+  return axios.post(`/auth/reset-password`, resetPasswordDto, options);
 };
 
 export const getAuthControllerResetPasswordV1MutationOptions = <
@@ -665,7 +668,7 @@ export const useAuthControllerResetPasswordV1 = <
 export const authControllerRefreshV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/refresh`, undefined, options);
+  return axios.post(`/auth/refresh`, undefined, options);
 };
 
 export const getAuthControllerRefreshV1MutationOptions = <
@@ -744,7 +747,7 @@ export const useAuthControllerRefreshV1 = <
 export const authControllerLogoutV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/logout`, undefined, options);
+  return axios.post(`/auth/logout`, undefined, options);
 };
 
 export const getAuthControllerLogoutV1MutationOptions = <
@@ -824,7 +827,7 @@ export const authControllerRegisterV1 = (
   registerDto: RegisterDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/auth/register`, registerDto, options);
+  return axios.post(`/auth/register`, registerDto, options);
 };
 
 export const getAuthControllerRegisterV1MutationOptions = <
@@ -905,11 +908,11 @@ export const useAuthControllerRegisterV1 = <
 export const authControllerGetProfileV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/auth/me`, options);
+  return axios.get(`/auth/me`, options);
 };
 
 export const getAuthControllerGetProfileV1QueryKey = () => {
-  return [`/api/v1/auth/me`] as const;
+  return [`/auth/me`] as const;
 };
 
 export const getAuthControllerGetProfileV1QueryOptions = <
@@ -1057,13 +1060,13 @@ export const organizationsControllerGetPendingRequestsV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${id}/requests`, options);
+  return axios.get(`/organizations/${id}/requests`, options);
 };
 
 export const getOrganizationsControllerGetPendingRequestsV1QueryKey = (
   id?: string
 ) => {
-  return [`/api/v1/organizations/${id}/requests`] as const;
+  return [`/organizations/${id}/requests`] as const;
 };
 
 export const getOrganizationsControllerGetPendingRequestsV1QueryOptions = <
@@ -1250,7 +1253,7 @@ export const organizationsControllerCreateV1 = (
   createOrganizationDto: CreateOrganizationDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerCreateV1201>> => {
-  return axios.post(`/api/v1/organizations`, createOrganizationDto, options);
+  return axios.post(`/organizations`, createOrganizationDto, options);
 };
 
 export const getOrganizationsControllerCreateV1MutationOptions = <
@@ -1335,13 +1338,13 @@ export const organizationsControllerGetOrganizationV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${id}`, options);
+  return axios.get(`/organizations/${id}`, options);
 };
 
 export const getOrganizationsControllerGetOrganizationV1QueryKey = (
   id?: string
 ) => {
-  return [`/api/v1/organizations/${id}`] as const;
+  return [`/organizations/${id}`] as const;
 };
 
 export const getOrganizationsControllerGetOrganizationV1QueryOptions = <
@@ -1510,7 +1513,7 @@ export const organizationsControllerUpdateOrganizationV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${id}`,
+    `/organizations/${id}`,
     updateOrganizationDto,
     options
   );
@@ -1600,7 +1603,7 @@ export const organizationsControllerJoinV1 = (
   joinOrganizationDto: JoinOrganizationDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerJoinV1201>> => {
-  return axios.post(`/api/v1/organizations/join`, joinOrganizationDto, options);
+  return axios.post(`/organizations/join`, joinOrganizationDto, options);
 };
 
 export const getOrganizationsControllerJoinV1MutationOptions = <
@@ -1688,7 +1691,7 @@ export const organizationsControllerInviteV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerInviteV1201>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/invite`,
+    `/organizations/${organizationId}/invite`,
     inviteToOrganizationDto,
     options
   );
@@ -1780,13 +1783,13 @@ export const organizationsControllerListPendingInvitationsV1 = (
 ): Promise<
   AxiosResponse<OrganizationsControllerListPendingInvitationsV1200Item[]>
 > => {
-  return axios.get(`/api/v1/organizations/${id}/invitations`, options);
+  return axios.get(`/organizations/${id}/invitations`, options);
 };
 
 export const getOrganizationsControllerListPendingInvitationsV1QueryKey = (
   id?: string
 ) => {
-  return [`/api/v1/organizations/${id}/invitations`] as const;
+  return [`/organizations/${id}/invitations`] as const;
 };
 
 export const getOrganizationsControllerListPendingInvitationsV1QueryOptions = <
@@ -1983,13 +1986,13 @@ export const organizationsControllerGetInvitationByTokenV1 = (
   token: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerGetInvitationByTokenV1200>> => {
-  return axios.get(`/api/v1/organizations/invitations/${token}`, options);
+  return axios.get(`/organizations/invitations/${token}`, options);
 };
 
 export const getOrganizationsControllerGetInvitationByTokenV1QueryKey = (
   token?: string
 ) => {
-  return [`/api/v1/organizations/invitations/${token}`] as const;
+  return [`/organizations/invitations/${token}`] as const;
 };
 
 export const getOrganizationsControllerGetInvitationByTokenV1QueryOptions = <
@@ -2189,7 +2192,7 @@ export const organizationsControllerAcceptInvitationV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerAcceptInvitationV1200>> => {
   return axios.post(
-    `/api/v1/organizations/invitations/${token}/accept`,
+    `/organizations/invitations/${token}/accept`,
     undefined,
     options
   );
@@ -2282,7 +2285,7 @@ export const organizationsControllerApproveRequestV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${id}/requests/${membershipId}/approve`,
+    `/organizations/${id}/requests/${membershipId}/approve`,
     approveMembershipRequestDto,
     options
   );
@@ -2379,7 +2382,7 @@ export const organizationsControllerRejectRequestV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${id}/requests/${membershipId}/reject`,
+    `/organizations/${id}/requests/${membershipId}/reject`,
     undefined,
     options
   );
@@ -2471,11 +2474,11 @@ export const organizationsControllerGetMembersV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<OrganizationsControllerGetMembersV1200Item[]>> => {
-  return axios.get(`/api/v1/organizations/${id}/members`, options);
+  return axios.get(`/organizations/${id}/members`, options);
 };
 
 export const getOrganizationsControllerGetMembersV1QueryKey = (id?: string) => {
-  return [`/api/v1/organizations/${id}/members`] as const;
+  return [`/organizations/${id}/members`] as const;
 };
 
 export const getOrganizationsControllerGetMembersV1QueryOptions = <
@@ -2643,13 +2646,13 @@ export const accessControlControllerGetRolesV1 = (
   orgId: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<AccessControlControllerGetRolesV1200Item[]>> => {
-  return axios.get(`/api/v1/organizations/${orgId}/roles`, options);
+  return axios.get(`/organizations/${orgId}/roles`, options);
 };
 
 export const getAccessControlControllerGetRolesV1QueryKey = (
   orgId?: string
 ) => {
-  return [`/api/v1/organizations/${orgId}/roles`] as const;
+  return [`/organizations/${orgId}/roles`] as const;
 };
 
 export const getAccessControlControllerGetRolesV1QueryOptions = <
@@ -2819,7 +2822,7 @@ export const accessControlControllerCreateRoleV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<AccessControlControllerCreateRoleV1201>> => {
   return axios.post(
-    `/api/v1/organizations/${orgId}/roles`,
+    `/organizations/${orgId}/roles`,
     createRoleDto,
     options
   );
@@ -2911,7 +2914,7 @@ export const accessControlControllerUpdateRoleV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<AccessControlControllerUpdateRoleV1200>> => {
   return axios.patch(
-    `/api/v1/organizations/${orgId}/roles/${roleId}`,
+    `/organizations/${orgId}/roles/${roleId}`,
     updateRoleDto,
     options
   );
@@ -3007,7 +3010,7 @@ export const accessControlControllerDeleteRoleV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<AccessControlControllerDeleteRoleV1200>> => {
   return axios.delete(
-    `/api/v1/organizations/${orgId}/roles/${roleId}`,
+    `/organizations/${orgId}/roles/${roleId}`,
     options
   );
 };
@@ -3098,7 +3101,7 @@ export const accessControlControllerChangeMemberRoleV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<AccessControlControllerChangeMemberRoleV1200>> => {
   return axios.patch(
-    `/api/v1/organizations/${orgId}/roles/memberships/${membershipId}/role`,
+    `/organizations/${orgId}/roles/memberships/${membershipId}/role`,
     updateMemberRoleDto,
     options
   );
@@ -3199,7 +3202,7 @@ export const accessControlControllerAssignPermissionOverrideV1 = (
   AxiosResponse<AccessControlControllerAssignPermissionOverrideV1201>
 > => {
   return axios.post(
-    `/api/v1/organizations/${orgId}/roles/memberships/${membershipId}/overrides`,
+    `/organizations/${orgId}/roles/memberships/${membershipId}/overrides`,
     createPermissionOverrideDto,
     options
   );
@@ -3319,7 +3322,7 @@ export const accessControlControllerGetMemberPermissionBreakdownV1 = (
   AxiosResponse<AccessControlControllerGetMemberPermissionBreakdownV1200>
 > => {
   return axios.get(
-    `/api/v1/organizations/${orgId}/roles/memberships/${membershipId}/permissions-breakdown`,
+    `/organizations/${orgId}/roles/memberships/${membershipId}/permissions-breakdown`,
     options
   );
 };
@@ -3327,7 +3330,7 @@ export const accessControlControllerGetMemberPermissionBreakdownV1 = (
 export const getAccessControlControllerGetMemberPermissionBreakdownV1QueryKey =
   (orgId?: string, membershipId?: string) => {
     return [
-      `/api/v1/organizations/${orgId}/roles/memberships/${membershipId}/permissions-breakdown`,
+      `/organizations/${orgId}/roles/memberships/${membershipId}/permissions-breakdown`,
     ] as const;
   };
 
@@ -3566,7 +3569,7 @@ export const membershipAccessControlControllerAssignRoleV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<MembershipAccessControlControllerAssignRoleV1200>> => {
   return axios.patch(
-    `/api/v1/organizations/${orgId}/memberships/${membershipId}/role`,
+    `/organizations/${orgId}/memberships/${membershipId}/role`,
     updateMemberRoleDto,
     options
   );
@@ -3666,7 +3669,7 @@ export const membershipAccessControlControllerCreatePermissionOverrideV1 = (
   AxiosResponse<MembershipAccessControlControllerCreatePermissionOverrideV1201>
 > => {
   return axios.post(
-    `/api/v1/organizations/${orgId}/memberships/${membershipId}/overrides`,
+    `/organizations/${orgId}/memberships/${membershipId}/overrides`,
     createPermissionOverrideDto,
     options
   );
@@ -3799,11 +3802,11 @@ export const permissionsControllerGetAllPermissionsV1 = (
 ): Promise<
   AxiosResponse<PermissionsControllerGetAllPermissionsV1200Item[]>
 > => {
-  return axios.get(`/api/v1/permissions`, options);
+  return axios.get(`/permissions`, options);
 };
 
 export const getPermissionsControllerGetAllPermissionsV1QueryKey = () => {
-  return [`/api/v1/permissions`] as const;
+  return [`/permissions`] as const;
 };
 
 export const getPermissionsControllerGetAllPermissionsV1QueryOptions = <
@@ -3955,11 +3958,11 @@ export function usePermissionsControllerGetAllPermissionsV1<
 export const usersControllerGetCurrentUserV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<UsersControllerGetCurrentUserV1200>> => {
-  return axios.get(`/api/v1/users/me`, options);
+  return axios.get(`/users/me`, options);
 };
 
 export const getUsersControllerGetCurrentUserV1QueryKey = () => {
-  return [`/api/v1/users/me`] as const;
+  return [`/users/me`] as const;
 };
 
 export const getUsersControllerGetCurrentUserV1QueryOptions = <
@@ -4108,11 +4111,11 @@ export function useUsersControllerGetCurrentUserV1<
 export const usersControllerGetPermissionsV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<UsersControllerGetPermissionsV1200>> => {
-  return axios.get(`/api/v1/users/me/permissions`, options);
+  return axios.get(`/users/me/permissions`, options);
 };
 
 export const getUsersControllerGetPermissionsV1QueryKey = () => {
-  return [`/api/v1/users/me/permissions`] as const;
+  return [`/users/me/permissions`] as const;
 };
 
 export const getUsersControllerGetPermissionsV1QueryOptions = <
@@ -4261,11 +4264,11 @@ export function useUsersControllerGetPermissionsV1<
 export const usersControllerGetUserOrganizationsV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<UsersControllerGetUserOrganizationsV1200Item[]>> => {
-  return axios.get(`/api/v1/users/me/organizations`, options);
+  return axios.get(`/users/me/organizations`, options);
 };
 
 export const getUsersControllerGetUserOrganizationsV1QueryKey = () => {
-  return [`/api/v1/users/me/organizations`] as const;
+  return [`/users/me/organizations`] as const;
 };
 
 export const getUsersControllerGetUserOrganizationsV1QueryOptions = <
@@ -4418,7 +4421,7 @@ export const usersControllerAcceptInviteV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<UsersControllerAcceptInviteV1200>> => {
   return axios.post(
-    `/api/v1/users/invites/${inviteId}/accept`,
+    `/users/invites/${inviteId}/accept`,
     undefined,
     options
   );
@@ -4507,7 +4510,7 @@ export const usersControllerCancelJoinRequestV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.delete(`/api/v1/users/me/requests/${id}/cancel`, options);
+  return axios.delete(`/users/me/requests/${id}/cancel`, options);
 };
 
 export const getUsersControllerCancelJoinRequestV1MutationOptions = <
@@ -4591,11 +4594,11 @@ export const useUsersControllerCancelJoinRequestV1 = <
 export const chatControllerGetConversationsV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/chat/conversations`, options);
+  return axios.get(`/chat/conversations`, options);
 };
 
 export const getChatControllerGetConversationsV1QueryKey = () => {
-  return [`/api/v1/chat/conversations`] as const;
+  return [`/chat/conversations`] as const;
 };
 
 export const getChatControllerGetConversationsV1QueryOptions = <
@@ -4747,7 +4750,7 @@ export const chatControllerCreateConversationV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/chat/conversations`,
+    `/chat/conversations`,
     createConversationDto,
     options
   );
@@ -4836,7 +4839,7 @@ export const chatControllerCreateGroupConversationV1 = (
   createGroupConversationDto: CreateGroupConversationDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/chat/groups`, createGroupConversationDto, options);
+  return axios.post(`/chat/groups`, createGroupConversationDto, options);
 };
 
 export const getChatControllerCreateGroupConversationV1MutationOptions = <
@@ -4923,7 +4926,7 @@ export const chatControllerGetConversationMessagesV1 = (
   params: ChatControllerGetConversationMessagesV1Params,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/chat/conversations/${conversationId}/messages`, {
+  return axios.get(`/chat/conversations/${conversationId}/messages`, {
     ...options,
     params: { ...params, ...options?.params },
   });
@@ -4934,7 +4937,7 @@ export const getChatControllerGetConversationMessagesV1QueryKey = (
   params?: ChatControllerGetConversationMessagesV1Params
 ) => {
   return [
-    `/api/v1/chat/conversations/${conversationId}/messages`,
+    `/chat/conversations/${conversationId}/messages`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -5114,7 +5117,7 @@ export const leadsControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/leads`,
+    `/organizations/${organizationId}/leads`,
     createLeadDto,
     options
   );
@@ -5200,7 +5203,7 @@ export const leadsControllerFindAllV1 = (
   params?: LeadsControllerFindAllV1Params,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${organizationId}/leads`, {
+  return axios.get(`/organizations/${organizationId}/leads`, {
     ...options,
     params: { ...params, ...options?.params },
   });
@@ -5211,7 +5214,7 @@ export const getLeadsControllerFindAllV1QueryKey = (
   params?: LeadsControllerFindAllV1Params
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/leads`,
+    `/organizations/${organizationId}/leads`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -5381,6 +5384,194 @@ export function useLeadsControllerFindAllV1<
 }
 
 /**
+ * @summary Export all matching leads in organization
+ */
+export const leadsControllerExportAllV1 = (
+  organizationId: string,
+  params?: LeadsControllerExportAllV1Params,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<Lead[]>> => {
+  return axios.get(`/organizations/${organizationId}/leads/export`, {
+    ...options,
+    params: { ...params, ...options?.params },
+  });
+};
+
+export const getLeadsControllerExportAllV1QueryKey = (
+  organizationId?: string,
+  params?: LeadsControllerExportAllV1Params
+) => {
+  return [
+    `/organizations/${organizationId}/leads/export`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getLeadsControllerExportAllV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+  TError = AxiosError<unknown>,
+>(
+  organizationId: string,
+  params?: LeadsControllerExportAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+        TError,
+        TData
+      >
+    >;
+    axios?: AxiosRequestConfig;
+  }
+) => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getLeadsControllerExportAllV1QueryKey(organizationId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof leadsControllerExportAllV1>>
+  > = ({ signal }) =>
+    leadsControllerExportAllV1(organizationId, params, {
+      signal,
+      ...axiosOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!organizationId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type LeadsControllerExportAllV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof leadsControllerExportAllV1>>
+>;
+export type LeadsControllerExportAllV1QueryError = AxiosError<unknown>;
+
+export function useLeadsControllerExportAllV1<
+  TData = Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+  TError = AxiosError<unknown>,
+>(
+  organizationId: string,
+  params: undefined | LeadsControllerExportAllV1Params,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerExportAllV1>>
+        >,
+        'initialData'
+      >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useLeadsControllerExportAllV1<
+  TData = Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+  TError = AxiosError<unknown>,
+>(
+  organizationId: string,
+  params?: LeadsControllerExportAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerExportAllV1>>
+        >,
+        'initialData'
+      >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useLeadsControllerExportAllV1<
+  TData = Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+  TError = AxiosError<unknown>,
+>(
+  organizationId: string,
+  params?: LeadsControllerExportAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+        TError,
+        TData
+      >
+    >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Export all matching leads in organization
+ */
+
+export function useLeadsControllerExportAllV1<
+  TData = Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+  TError = AxiosError<unknown>,
+>(
+  organizationId: string,
+  params?: LeadsControllerExportAllV1Params,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof leadsControllerExportAllV1>>,
+        TError,
+        TData
+      >
+    >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getLeadsControllerExportAllV1QueryOptions(
+    organizationId,
+    params,
+    options
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
  * @summary Get a single lead from an organization
  */
 export const leadsControllerFindOneV1 = (
@@ -5389,7 +5580,7 @@ export const leadsControllerFindOneV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}`,
+    `/organizations/${organizationId}/leads/${leadId}`,
     options
   );
 };
@@ -5398,7 +5589,7 @@ export const getLeadsControllerFindOneV1QueryKey = (
   organizationId?: string,
   leadId?: string
 ) => {
-  return [`/api/v1/organizations/${organizationId}/leads/${leadId}`] as const;
+  return [`/organizations/${organizationId}/leads/${leadId}`] as const;
 };
 
 export const getLeadsControllerFindOneV1QueryOptions = <
@@ -5575,7 +5766,7 @@ export const leadsControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}`,
+    `/organizations/${organizationId}/leads/${leadId}`,
     updateLeadDto,
     options
   );
@@ -5662,7 +5853,7 @@ export const leadsControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}`,
+    `/organizations/${organizationId}/leads/${leadId}`,
     options
   );
 };
@@ -5740,6 +5931,94 @@ export const useLeadsControllerRemoveV1 = <
 };
 
 /**
+ * @summary Bulk create leads in an organization
+ */
+export const leadsControllerBulkCreateV1 = (
+  organizationId: string,
+  bulkCreateLeadsDto: BulkCreateLeadsDto,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<void>> => {
+  return axios.post(
+    `/organizations/${organizationId}/leads/bulk-create`,
+    bulkCreateLeadsDto,
+    options
+  );
+};
+
+export const getLeadsControllerBulkCreateV1MutationOptions = <
+  TError = AxiosError<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>,
+    TError,
+    { organizationId: string; data: BulkCreateLeadsDto },
+    TContext
+  >;
+  axios?: AxiosRequestConfig;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>,
+  TError,
+  { organizationId: string; data: BulkCreateLeadsDto },
+  TContext
+> => {
+  const mutationKey = ['leadsControllerBulkCreateV1'];
+  const { mutation: mutationOptions, axios: axiosOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, axios: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>,
+    { organizationId: string; data: BulkCreateLeadsDto }
+  > = (props) => {
+    const { organizationId, data } = props ?? {};
+
+    return leadsControllerBulkCreateV1(organizationId, data, axiosOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LeadsControllerBulkCreateV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>
+>;
+export type LeadsControllerBulkCreateV1MutationBody = BulkCreateLeadsDto;
+export type LeadsControllerBulkCreateV1MutationError = AxiosError<unknown>;
+
+/**
+ * @summary Bulk create leads in an organization
+ */
+export const useLeadsControllerBulkCreateV1 = <
+  TError = AxiosError<unknown>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>,
+      TError,
+      { organizationId: string; data: BulkCreateLeadsDto },
+      TContext
+    >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof leadsControllerBulkCreateV1>>,
+  TError,
+  { organizationId: string; data: BulkCreateLeadsDto },
+  TContext
+> => {
+  const mutationOptions =
+    getLeadsControllerBulkCreateV1MutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
  * @summary Bulk update leads in an organization
  */
 export const leadsControllerBulkUpdateV1 = (
@@ -5748,7 +6027,7 @@ export const leadsControllerBulkUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/leads/bulk`,
+    `/organizations/${organizationId}/leads/bulk`,
     bulkUpdateLeadsDto,
     options
   );
@@ -5835,7 +6114,7 @@ export const pipelineStagesControllerFindAllV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/pipeline-stages`,
+    `/organizations/${organizationId}/pipeline-stages`,
     options
   );
 };
@@ -5843,7 +6122,7 @@ export const pipelineStagesControllerFindAllV1 = (
 export const getPipelineStagesControllerFindAllV1QueryKey = (
   organizationId?: string
 ) => {
-  return [`/api/v1/organizations/${organizationId}/pipeline-stages`] as const;
+  return [`/organizations/${organizationId}/pipeline-stages`] as const;
 };
 
 export const getPipelineStagesControllerFindAllV1QueryOptions = <
@@ -6013,7 +6292,7 @@ export const pipelineStagesControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/pipeline-stages`,
+    `/organizations/${organizationId}/pipeline-stages`,
     createPipelineStageDto,
     options
   );
@@ -6103,7 +6382,7 @@ export const pipelineStagesControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/pipeline-stages/${stageId}`,
+    `/organizations/${organizationId}/pipeline-stages/${stageId}`,
     updatePipelineStageDto,
     options
   );
@@ -6197,7 +6476,7 @@ export const pipelineStagesControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/pipeline-stages/${stageId}`,
+    `/organizations/${organizationId}/pipeline-stages/${stageId}`,
     options
   );
 };
@@ -6287,7 +6566,7 @@ export const leadSourcesControllerFindAllV1 = (
   params: LeadSourcesControllerFindAllV1Params,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${organizationId}/lead-sources`, {
+  return axios.get(`/organizations/${organizationId}/lead-sources`, {
     ...options,
     params: { ...params, ...options?.params },
   });
@@ -6298,7 +6577,7 @@ export const getLeadSourcesControllerFindAllV1QueryKey = (
   params?: LeadSourcesControllerFindAllV1Params
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/lead-sources`,
+    `/organizations/${organizationId}/lead-sources`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -6476,7 +6755,7 @@ export const leadSourcesControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/lead-sources`,
+    `/organizations/${organizationId}/lead-sources`,
     createLeadSourceDto,
     options
   );
@@ -6565,7 +6844,7 @@ export const leadSourcesControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/lead-sources/${sourceId}`,
+    `/organizations/${organizationId}/lead-sources/${sourceId}`,
     updateLeadSourceDto,
     options
   );
@@ -6658,7 +6937,7 @@ export const leadSourcesControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/lead-sources/${sourceId}`,
+    `/organizations/${organizationId}/lead-sources/${sourceId}`,
     options
   );
 };
@@ -6749,7 +7028,7 @@ export const leadNotesControllerFindAllV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/notes`,
+    `/organizations/${organizationId}/leads/${leadId}/notes`,
     options
   );
 };
@@ -6759,7 +7038,7 @@ export const getLeadNotesControllerFindAllV1QueryKey = (
   leadId?: string
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/notes`,
+    `/organizations/${organizationId}/leads/${leadId}/notes`,
   ] as const;
 };
 
@@ -6937,7 +7216,7 @@ export const leadNotesControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/notes`,
+    `/organizations/${organizationId}/leads/${leadId}/notes`,
     createLeadNoteDto,
     options
   );
@@ -7031,7 +7310,7 @@ export const leadNotesControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/notes/${noteId}`,
+    `/organizations/${organizationId}/leads/${leadId}/notes/${noteId}`,
     options
   );
 };
@@ -7123,7 +7402,7 @@ export const leadAttachmentsControllerFindAllV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/attachments`,
+    `/organizations/${organizationId}/leads/${leadId}/attachments`,
     options
   );
 };
@@ -7133,7 +7412,7 @@ export const getLeadAttachmentsControllerFindAllV1QueryKey = (
   leadId?: string
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/attachments`,
+    `/organizations/${organizationId}/leads/${leadId}/attachments`,
   ] as const;
 };
 
@@ -7311,7 +7590,7 @@ export const leadAttachmentsControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/attachments`,
+    `/organizations/${organizationId}/leads/${leadId}/attachments`,
     createLeadAttachmentDto,
     options
   );
@@ -7407,7 +7686,7 @@ export const leadAttachmentsControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/leads/${leadId}/attachments/${attachmentId}`,
+    `/organizations/${organizationId}/leads/${leadId}/attachments/${attachmentId}`,
     options
   );
 };
@@ -7500,7 +7779,7 @@ export const analyticsControllerGetDashboardMetricsV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/analytics/dashboard`,
+    `/organizations/${organizationId}/analytics/dashboard`,
     {
       ...options,
       params: { ...params, ...options?.params },
@@ -7513,7 +7792,7 @@ export const getAnalyticsControllerGetDashboardMetricsV1QueryKey = (
   params?: AnalyticsControllerGetDashboardMetricsV1Params
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/analytics/dashboard`,
+    `/organizations/${organizationId}/analytics/dashboard`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -7690,7 +7969,7 @@ export const bankAccountsControllerCreateV1 = (
   createBankAccountDto: CreateBankAccountDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/bank-accounts`, createBankAccountDto, options);
+  return axios.post(`/bank-accounts`, createBankAccountDto, options);
 };
 
 export const getBankAccountsControllerCreateV1MutationOptions = <
@@ -7772,11 +8051,11 @@ export const useBankAccountsControllerCreateV1 = <
 export const bankAccountsControllerFindAllV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/bank-accounts`, options);
+  return axios.get(`/bank-accounts`, options);
 };
 
 export const getBankAccountsControllerFindAllV1QueryKey = () => {
-  return [`/api/v1/bank-accounts`] as const;
+  return [`/bank-accounts`] as const;
 };
 
 export const getBankAccountsControllerFindAllV1QueryOptions = <
@@ -7927,7 +8206,7 @@ export const bankAccountsControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/bank-accounts/${id}`,
+    `/bank-accounts/${id}`,
     updateBankAccountDto,
     options
   );
@@ -8013,7 +8292,7 @@ export const bankAccountsControllerRemoveV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.delete(`/api/v1/bank-accounts/${id}`, options);
+  return axios.delete(`/bank-accounts/${id}`, options);
 };
 
 export const getBankAccountsControllerRemoveV1MutationOptions = <
@@ -8096,7 +8375,7 @@ export const socialLinksControllerCreateV1 = (
   createSocialLinkDto: CreateSocialLinkDto,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.post(`/api/v1/social-links`, createSocialLinkDto, options);
+  return axios.post(`/social-links`, createSocialLinkDto, options);
 };
 
 export const getSocialLinksControllerCreateV1MutationOptions = <
@@ -8178,11 +8457,11 @@ export const useSocialLinksControllerCreateV1 = <
 export const socialLinksControllerFindAllV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/social-links`, options);
+  return axios.get(`/social-links`, options);
 };
 
 export const getSocialLinksControllerFindAllV1QueryKey = () => {
-  return [`/api/v1/social-links`] as const;
+  return [`/social-links`] as const;
 };
 
 export const getSocialLinksControllerFindAllV1QueryOptions = <
@@ -8333,7 +8612,7 @@ export const socialLinksControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/social-links/${id}`,
+    `/social-links/${id}`,
     updateSocialLinkDto,
     options
   );
@@ -8419,7 +8698,7 @@ export const socialLinksControllerRemoveV1 = (
   id: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.delete(`/api/v1/social-links/${id}`, options);
+  return axios.delete(`/social-links/${id}`, options);
 };
 
 export const getSocialLinksControllerRemoveV1MutationOptions = <
@@ -8504,7 +8783,7 @@ export const productsControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/products`,
+    `/organizations/${organizationId}/products`,
     createProductDto,
     options
   );
@@ -8590,7 +8869,7 @@ export const productsControllerFindAllV1 = (
   params?: ProductsControllerFindAllV1Params,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${organizationId}/products`, {
+  return axios.get(`/organizations/${organizationId}/products`, {
     ...options,
     params: { ...params, ...options?.params },
   });
@@ -8601,7 +8880,7 @@ export const getProductsControllerFindAllV1QueryKey = (
   params?: ProductsControllerFindAllV1Params
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/products`,
+    `/organizations/${organizationId}/products`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -8779,7 +9058,7 @@ export const productsControllerFindOneV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/products/${id}`,
+    `/organizations/${organizationId}/products/${id}`,
     options
   );
 };
@@ -8788,7 +9067,7 @@ export const getProductsControllerFindOneV1QueryKey = (
   organizationId?: string,
   id?: string
 ) => {
-  return [`/api/v1/organizations/${organizationId}/products/${id}`] as const;
+  return [`/organizations/${organizationId}/products/${id}`] as const;
 };
 
 export const getProductsControllerFindOneV1QueryOptions = <
@@ -8965,7 +9244,7 @@ export const productsControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/products/${id}`,
+    `/organizations/${organizationId}/products/${id}`,
     updateProductDto,
     options
   );
@@ -9052,7 +9331,7 @@ export const productsControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/products/${id}`,
+    `/organizations/${organizationId}/products/${id}`,
     options
   );
 };
@@ -9138,7 +9417,7 @@ export const productsControllerAddMediaV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/products/${id}/media`,
+    `/organizations/${organizationId}/products/${id}/media`,
     undefined,
     options
   );
@@ -9226,15 +9505,15 @@ export const productsControllerSetPrimaryMediaV1 = (
   mediaId: string,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.put(
-    `/api/v1/organizations/${organizationId}/products/${id}/media/${mediaId}/primary`,
+  return axios.patch(
+    `/organizations/${organizationId}/products/${id}/media/${mediaId}/primary`,
     undefined,
     options
   );
 };
 
 export const getProductsControllerSetPrimaryMediaV1MutationOptions = <
-  TError = AxiosError<unknown>,
+  TError = AxiosError<void | void>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -9280,14 +9559,15 @@ export type ProductsControllerSetPrimaryMediaV1MutationResult = NonNullable<
   Awaited<ReturnType<typeof productsControllerSetPrimaryMediaV1>>
 >;
 
-export type ProductsControllerSetPrimaryMediaV1MutationError =
-  AxiosError<unknown>;
+export type ProductsControllerSetPrimaryMediaV1MutationError = AxiosError<
+  void | void
+>;
 
 /**
  * @summary Set primary media for a product
  */
 export const useProductsControllerSetPrimaryMediaV1 = <
-  TError = AxiosError<unknown>,
+  TError = AxiosError<void | void>,
   TContext = unknown,
 >(
   options?: {
@@ -9313,6 +9593,96 @@ export const useProductsControllerSetPrimaryMediaV1 = <
 };
 
 /**
+ * @summary Upload media files for a product
+ */
+export const productsControllerUploadMediaV1 = (
+  organizationId: string,
+  id: string,
+  options?: AxiosRequestConfig
+): Promise<AxiosResponse<void>> => {
+  return axios.post(
+    `/organizations/${organizationId}/products/${id}/media/upload`,
+    undefined,
+    options
+  );
+};
+
+export const getProductsControllerUploadMediaV1MutationOptions = <
+  TError = AxiosError<void | void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof productsControllerUploadMediaV1>>,
+    TError,
+    { organizationId: string; id: string },
+    TContext
+  >;
+  axios?: AxiosRequestConfig;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof productsControllerUploadMediaV1>>,
+  TError,
+  { organizationId: string; id: string },
+  TContext
+> => {
+  const mutationKey = ['productsControllerUploadMediaV1'];
+  const { mutation: mutationOptions, axios: axiosOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, axios: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof productsControllerUploadMediaV1>>,
+    { organizationId: string; id: string }
+  > = (props) => {
+    const { organizationId, id } = props ?? {};
+
+    return productsControllerUploadMediaV1(organizationId, id, axiosOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ProductsControllerUploadMediaV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof productsControllerUploadMediaV1>>
+>;
+
+export type ProductsControllerUploadMediaV1MutationError = AxiosError<
+  void | void
+>;
+
+/**
+ * @summary Upload media files for a product
+ */
+export const useProductsControllerUploadMediaV1 = <
+  TError = AxiosError<void | void>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof productsControllerUploadMediaV1>>,
+      TError,
+      { organizationId: string; id: string },
+      TContext
+    >;
+    axios?: AxiosRequestConfig;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof productsControllerUploadMediaV1>>,
+  TError,
+  { organizationId: string; id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getProductsControllerUploadMediaV1MutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
  * @summary Create a proposal in an organization
  */
 export const proposalsControllerCreateV1 = (
@@ -9321,7 +9691,7 @@ export const proposalsControllerCreateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/proposals`,
+    `/organizations/${organizationId}/proposals`,
     createProposalDto,
     options
   );
@@ -9408,7 +9778,7 @@ export const proposalsControllerFindAllV1 = (
   params?: ProposalsControllerFindAllV1Params,
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
-  return axios.get(`/api/v1/organizations/${organizationId}/proposals`, {
+  return axios.get(`/organizations/${organizationId}/proposals`, {
     ...options,
     params: { ...params, ...options?.params },
   });
@@ -9419,7 +9789,7 @@ export const getProposalsControllerFindAllV1QueryKey = (
   params?: ProposalsControllerFindAllV1Params
 ) => {
   return [
-    `/api/v1/organizations/${organizationId}/proposals`,
+    `/organizations/${organizationId}/proposals`,
     ...(params ? [params] : []),
   ] as const;
 };
@@ -9597,7 +9967,7 @@ export const proposalsControllerFindOneV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.get(
-    `/api/v1/organizations/${organizationId}/proposals/${id}`,
+    `/organizations/${organizationId}/proposals/${id}`,
     options
   );
 };
@@ -9606,7 +9976,7 @@ export const getProposalsControllerFindOneV1QueryKey = (
   organizationId?: string,
   id?: string
 ) => {
-  return [`/api/v1/organizations/${organizationId}/proposals/${id}`] as const;
+  return [`/organizations/${organizationId}/proposals/${id}`] as const;
 };
 
 export const getProposalsControllerFindOneV1QueryOptions = <
@@ -9783,7 +10153,7 @@ export const proposalsControllerUpdateV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.patch(
-    `/api/v1/organizations/${organizationId}/proposals/${id}`,
+    `/organizations/${organizationId}/proposals/${id}`,
     updateProposalDto,
     options
   );
@@ -9871,7 +10241,7 @@ export const proposalsControllerRemoveV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.delete(
-    `/api/v1/organizations/${organizationId}/proposals/${id}`,
+    `/organizations/${organizationId}/proposals/${id}`,
     options
   );
 };
@@ -9958,7 +10328,7 @@ export const proposalsControllerVerifyV1 = (
   options?: AxiosRequestConfig
 ): Promise<AxiosResponse<void>> => {
   return axios.post(
-    `/api/v1/organizations/${organizationId}/proposals/${id}/verify`,
+    `/organizations/${organizationId}/proposals/${id}/verify`,
     undefined,
     options
   );
