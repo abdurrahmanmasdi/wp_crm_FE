@@ -30,9 +30,7 @@
     "crmSettings": "CRM Ayarları",
     "logout": "Çıkış Yap",
     "Sidebar": {
-      "dashboardSuite": "Kontrol Paneli Paketi",
-      "liveMode": "Canlı mod",
-      "liveDescription": "Aday müşterileri, turları ve satış hattı hareketini tek bir yerden izleyin."
+      "dashboardSuite": "Kontrol Paneli Paketi"
     }
   },
   "OnboardingFooter": {

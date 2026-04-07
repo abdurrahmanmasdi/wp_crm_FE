@@ -18,7 +18,7 @@ export default function ChatPage() {
         </aside>
 
         {/* Right Main Area: Chat Feed */}
-        <main className="flex h-full flex-col">
+        <main className="flex h-full max-h-[calc(100vh-65px)] flex-col">
           {activeConversationId ? (
             <ActiveChat conversationId={activeConversationId} />
           ) : (

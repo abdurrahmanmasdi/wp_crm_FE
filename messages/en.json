@@ -30,9 +30,7 @@
     "crmSettings": "CRM Settings",
     "logout": "Log Out",
     "Sidebar": {
-      "dashboardSuite": "Dashboard Suite",
-      "liveMode": "Live mode",
-      "liveDescription": "Track leads, tours, and pipeline movement from one place."
+      "dashboardSuite": "Dashboard Suite"
     }
   },
   "OnboardingFooter": {

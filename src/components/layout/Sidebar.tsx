@@ -258,15 +258,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      <div className="mt-auto rounded-2xl border border-white/5 bg-white/5 p-4">
-        <p className="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
-          {t('Sidebar.liveMode')}
-        </p>
-        <p className="text-foreground mt-2 text-sm leading-6">
-          {t('Sidebar.liveDescription')}
-        </p>
-      </div>
     </aside>
   );
 }

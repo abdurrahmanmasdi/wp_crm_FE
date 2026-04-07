@@ -30,9 +30,7 @@
     "crmSettings": "إعدادات CRM",
     "logout": "تسجيل الخروج",
     "Sidebar": {
-      "dashboardSuite": "مجموعة لوحة التحكم",
-      "liveMode": "الوضع المباشر",
-      "liveDescription": "تتبع العملاء المحتملين والجولات وحركة خط الإيرادات من مكان واحد."
+      "dashboardSuite": "مجموعة لوحة التحكم"
     }
   },
   "OnboardingFooter": {
