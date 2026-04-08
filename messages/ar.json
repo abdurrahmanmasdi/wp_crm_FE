@@ -193,6 +193,12 @@
       "roleCreateSuccess": "تم إنشاء الدور بنجاح",
       "roleUpdateSuccess": "تم تحديث الدور بنجاح"
     },
+    "OrganizationSettings": {
+      "workspaceSlugLabel": "رابط مساحة العمل",
+      "workspaceSlugTooltip": "نسخ رابط مساحة العمل",
+      "slugCopiedSuccess": "تم نسخ الرابط إلى الحافظة!",
+      "legalBusinessTitle": "القانونية والأعمال"
+    },
     "CRM": {
       "tabs": {
         "pipelineStages": "مراحل خط المبيعات",

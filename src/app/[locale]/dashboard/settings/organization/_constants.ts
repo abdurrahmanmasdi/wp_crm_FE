@@ -23,6 +23,7 @@ export const currencyOptions = [
 
 export const defaultValues: OrganizationFormInputValues = {
   name: '',
+  slug: '',
   tax_number: '',
   tax_office: '',
   industry_category: 'Enterprise Software & SaaS',

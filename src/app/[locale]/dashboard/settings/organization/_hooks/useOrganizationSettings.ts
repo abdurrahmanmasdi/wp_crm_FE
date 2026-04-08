@@ -57,6 +57,7 @@ export function useOrganizationSettings() {
     if (!currentOrg) return defaultValues;
     return {
       name: currentOrg.name ?? '',
+      slug: currentOrg.slug ?? '',
       tax_number: currentOrg.tax_number ?? '',
       tax_office: currentOrg.tax_office ?? '',
       industry_category:
@@ -104,6 +105,9 @@ export function useOrganizationSettings() {
   });
 
   const onSubmit = (data: OrganizationFormValues) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { slug, ...dataWithoutSlug } = data;
+
     const finalBrandColors = data.brand_colors?.reduce(
       (acc, curr) => {
         if (curr.key && curr.value) acc[curr.key] = curr.value;
@@ -113,7 +117,7 @@ export function useOrganizationSettings() {
     );
 
     const payload = {
-      ...data,
+      ...dataWithoutSlug,
       brand_colors: Object.keys(finalBrandColors || {}).length
         ? finalBrandColors
         : null,

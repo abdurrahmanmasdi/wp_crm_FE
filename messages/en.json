@@ -193,6 +193,12 @@
       "roleCreateSuccess": "Role created successfully",
       "roleUpdateSuccess": "Role updated successfully"
     },
+    "OrganizationSettings": {
+      "workspaceSlugLabel": "Workspace Slug",
+      "workspaceSlugTooltip": "Copy slug to clipboard",
+      "slugCopiedSuccess": "Slug copied to clipboard!",
+      "legalBusinessTitle": "Legal & Business"
+    },
     "CRM": {
       "tabs": {
         "pipelineStages": "Pipeline Stages",

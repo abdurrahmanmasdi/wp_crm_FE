@@ -193,6 +193,12 @@
       "roleCreateSuccess": "Rol başarıyla oluşturuldu",
       "roleUpdateSuccess": "Rol başarıyla güncellendi"
     },
+    "OrganizationSettings": {
+      "workspaceSlugLabel": "Çalışma Alanı URL'si",
+      "workspaceSlugTooltip": "Çalışma alanı URL'sini panoya kopyala",
+      "slugCopiedSuccess": "URL panoya kopyalandı!",
+      "legalBusinessTitle": "Yasal ve İşletme"
+    },
     "CRM": {
       "tabs": {
         "pipelineStages": "Satış Hattı Aşamaları",
