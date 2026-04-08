@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Search, Plus, Users } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Conversation } from '@/lib/chat.service';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -159,13 +159,13 @@ export function ConversationList() {
             >
               <Plus className="h-5 w-5" />
             </button>
-            <button
+            {/* <button
               onClick={() => setIsNewGroupOpen(true)}
               className="text-muted-foreground hover:text-foreground transition-colors"
               title={t('createGroupChat')}
             >
               <Users className="h-5 w-5" />
-            </button>
+            </button> */}
           </div>
         </div>
 
