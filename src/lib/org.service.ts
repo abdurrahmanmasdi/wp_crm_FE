@@ -30,6 +30,10 @@ export type Organization = {
   public_phone?: string | null;
   social_links?: SocialLink[];
   bank_accounts?: BankAccount[];
+  terms_and_conditions?: string | null;
+  privacy_policy?: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type BankAccount = {

@@ -70,6 +70,8 @@ export const organizationFormSchema = z.object({
     .optional()
     .or(z.literal('')),
   public_phone: z.string().max(255, 'Max 255 characters').optional(),
+  terms_and_conditions: z.string().optional(),
+  privacy_policy: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------

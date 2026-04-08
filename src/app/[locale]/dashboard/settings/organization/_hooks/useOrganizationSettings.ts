@@ -74,6 +74,8 @@ export function useOrganizationSettings() {
       website_url: currentOrg.website_url ?? '',
       public_email: currentOrg.public_email ?? '',
       public_phone: currentOrg.public_phone ?? '',
+      terms_and_conditions: currentOrg.terms_and_conditions ?? '',
+      privacy_policy: currentOrg.privacy_policy ?? '',
     };
   }, [currentOrg]);
 
@@ -106,7 +108,7 @@ export function useOrganizationSettings() {
 
   const onSubmit = (data: OrganizationFormValues) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { slug, ...dataWithoutSlug } = data;
+    const { slug, privacy_policy, terms_and_conditions, ...pureData } = data;
 
     const finalBrandColors = data.brand_colors?.reduce(
       (acc, curr) => {
@@ -117,7 +119,7 @@ export function useOrganizationSettings() {
     );
 
     const payload = {
-      ...dataWithoutSlug,
+      ...pureData,
       brand_colors: Object.keys(finalBrandColors || {}).length
         ? finalBrandColors
         : null,

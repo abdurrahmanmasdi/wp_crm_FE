@@ -71,7 +71,7 @@ function OrganizationSettingsForm() {
                 </div>
 
                 <ContactLocalizationSection control={form.control} />
-                <LegalDocumentsSection />
+                <LegalDocumentsSection values={form.getValues()} />
               </div>
             </div>
 
