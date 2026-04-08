@@ -197,7 +197,12 @@
       "workspaceSlugLabel": "رابط مساحة العمل",
       "workspaceSlugTooltip": "نسخ رابط مساحة العمل",
       "slugCopiedSuccess": "تم نسخ الرابط إلى الحافظة!",
-      "legalBusinessTitle": "القانونية والأعمال"
+      "legalBusinessTitle": "القانونية والأعمال",
+      "discardChanges": "إلغاء التغييرات",
+      "savingText": "جاري الحفظ...",
+      "saveWorkspaceConfiguration": "حفظ تكوين مساحة العمل",
+      "standaloneSettings": "الإعدادات المستقلة",
+      "standaloneSettingsDescription": "يتم حفظ هذه العناصر فوراً."
     },
     "CRM": {
       "tabs": {

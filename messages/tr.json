@@ -197,7 +197,12 @@
       "workspaceSlugLabel": "Çalışma Alanı URL'si",
       "workspaceSlugTooltip": "Çalışma alanı URL'sini panoya kopyala",
       "slugCopiedSuccess": "URL panoya kopyalandı!",
-      "legalBusinessTitle": "Yasal ve İşletme"
+      "legalBusinessTitle": "Yasal ve İşletme",
+      "discardChanges": "Değişiklikleri İptal Et",
+      "savingText": "Kaydediliyor...",
+      "saveWorkspaceConfiguration": "Çalışma Alanı Yapılandırmasını Kaydet",
+      "standaloneSettings": "Bağımsız Ayarlar",
+      "standaloneSettingsDescription": "Bu öğeler hemen kaydedilir."
     },
     "CRM": {
       "tabs": {

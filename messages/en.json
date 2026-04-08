@@ -197,7 +197,12 @@
       "workspaceSlugLabel": "Workspace Slug",
       "workspaceSlugTooltip": "Copy slug to clipboard",
       "slugCopiedSuccess": "Slug copied to clipboard!",
-      "legalBusinessTitle": "Legal & Business"
+      "legalBusinessTitle": "Legal & Business",
+      "discardChanges": "Discard Changes",
+      "savingText": "Saving...",
+      "saveWorkspaceConfiguration": "Save Workspace Configuration",
+      "standaloneSettings": "Standalone Settings",
+      "standaloneSettingsDescription": "These items are saved immediately."
     },
     "CRM": {
       "tabs": {
