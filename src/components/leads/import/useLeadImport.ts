@@ -18,7 +18,7 @@ import {
 } from '@/hooks/useCrmSettings';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
-import { useLeadsControllerBulkCreateV1 } from '@/api-generated/endpoints';
+import { useLeadsControllerBulkCreateV1 } from '@/api-generated/endpoints/leads';
 import type { CreateLeadDto } from '@/api-generated/model';
 import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 

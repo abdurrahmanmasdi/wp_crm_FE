@@ -7,7 +7,7 @@ import { Edit, Loader2, MoreVertical, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { usePermissions } from '@/hooks/usePermissions';
-import { productService } from '@/lib/product.service';
+import { productService } from '@/lib/api/products';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { Product } from './product-types';

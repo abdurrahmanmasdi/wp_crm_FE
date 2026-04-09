@@ -1,15 +1,17 @@
 import { cookies } from 'next/headers';
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
 
+import { productsControllerFindAllV1 } from '@/api-generated/endpoints/products';
+import { usersControllerGetUserOrganizationsV1 } from '@/api-generated/endpoints/users';
 import { getQueryClient } from '@/lib/get-query-client';
-import type { PaginatedProducts } from '@/lib/product.service';
+import type { PaginatedProducts } from '@/lib/api/products';
 import { queryKeys } from '@/lib/query-keys';
 import { MembershipStatus } from '@/types/enums';
 import ProductsCatalog from './_components/ProductsCatalog';
 
 const INITIAL_PAGE = 1;
 const INITIAL_LIMIT = 12;
-const INITIAL_FILTERS_QUERY = encodeURIComponent(JSON.stringify([]));
+const INITIAL_FILTERS_QUERY = '';
 
 type MembershipRecord = {
   status?: string;
@@ -53,21 +55,18 @@ async function getServerOrganizationIdAndToken() {
     return { organizationId: null, token: null, locale };
   }
 
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
-  const response = await fetch(`${apiBase}/users/me/organizations`, {
+  const membershipsResponse = await usersControllerGetUserOrganizationsV1({
     headers: {
       Authorization: `Bearer ${token}`,
       'Accept-Language': locale,
     },
-    cache: 'no-store',
-  });
+  }).catch(() => null);
 
-  if (!response.ok) {
+  if (!membershipsResponse) {
     return { organizationId: null, token, locale };
   }
 
-  const data = (await response.json()) as MembershipResponse;
+  const data = membershipsResponse as MembershipResponse;
   const memberships = normalizeMemberships(data);
   const activeMembership = memberships.find((membership) => {
     const status = membership.status ?? MembershipStatus.ACTIVE;
@@ -91,27 +90,23 @@ async function prefetchProducts(
   token: string,
   locale: string
 ): Promise<PaginatedProducts> {
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
-  const url = new URL(`${apiBase}/organizations/${organizationId}/products`);
-  url.searchParams.set('page', String(INITIAL_PAGE));
-  url.searchParams.set('limit', String(INITIAL_LIMIT));
-  url.searchParams.set('filters', INITIAL_FILTERS_QUERY);
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-organization-id': organizationId,
-      'Accept-Language': locale,
+  const response = (await productsControllerFindAllV1(
+    organizationId,
+    {
+      page: INITIAL_PAGE,
+      limit: INITIAL_LIMIT,
+      ...(INITIAL_FILTERS_QUERY ? { filters: INITIAL_FILTERS_QUERY } : {}),
     },
-    cache: 'no-store',
-  });
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'x-organization-id': organizationId,
+        'Accept-Language': locale,
+      },
+    }
+  )) as unknown;
 
-  if (!response.ok) {
-    throw new Error('Failed to prefetch products');
-  }
-
-  return (await response.json()) as PaginatedProducts;
+  return response as PaginatedProducts;
 }
 
 export default async function ProductsCatalogPage() {

@@ -19,7 +19,7 @@ import {
   type LocalMediaItem,
   type ProductFormValues,
 } from '../_schema';
-import { productService, type CreateProductDto } from '@/lib/product.service';
+import { productService, type CreateProductDto } from '@/lib/api/products';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';

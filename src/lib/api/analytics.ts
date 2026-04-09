@@ -1,4 +1,4 @@
-import { api } from '@/lib/api';
+import { analyticsControllerGetDashboardMetricsV1 } from '@/api-generated/endpoints/analytics';
 import type { LeadStatus } from '@/types/leads-generated';
 
 /**
@@ -238,11 +238,9 @@ export async function getDashboardMetrics(
   params?: DashboardMetricsParams
 ): Promise<DashboardMetricsResponse> {
   const normalizedAgentId = params?.agentId?.trim();
-  const { data } = await api.get(
-    `/organizations/${orgId}/analytics/dashboard`,
-    {
-      params: normalizedAgentId ? { agent_id: normalizedAgentId } : undefined,
-    }
-  );
+  const data = (await analyticsControllerGetDashboardMetricsV1(
+    orgId,
+    normalizedAgentId ? { agent_id: normalizedAgentId } : undefined
+  )) as unknown;
   return normalizeMetricsResponse(data);
 }

@@ -15,7 +15,7 @@ import {
   type ProductFilterRule,
   ProductFiltersBar,
 } from '@/components/products/filters/ProductFiltersBar';
-import { productService } from '@/lib/product.service';
+import { productService } from '@/lib/api/products';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProductCard } from './ProductCard';

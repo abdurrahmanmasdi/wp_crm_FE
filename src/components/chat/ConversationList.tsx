@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type Conversation } from '@/lib/chat.service';
+import type { Conversation } from '@/types/chat-generated';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useConversationsQuery } from '@/hooks/useChat';
 import { NewChatDialog } from './NewChatDialog';

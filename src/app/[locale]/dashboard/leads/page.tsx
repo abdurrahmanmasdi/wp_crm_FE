@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AddLeadSheet } from '@/components/leads/AddLeadSheet';
+import { leadsControllerExportAllV1 } from '@/api-generated/endpoints/leads';
 import {
   parseLeadFiltersParam,
   serializeLeadFiltersParam,
@@ -20,8 +21,8 @@ import { AppAction, AppResource } from '@/constants/permissions.registry';
 import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useLeads } from '@/hooks/useLeads';
-import { api } from '@/lib/api';
 import { getErrorMessage } from '@/lib/error-utils';
+import type { LeadsControllerExportAllV1Params } from '@/api-generated/model';
 import type {
   Lead,
   LeadsListResponse,
@@ -303,18 +304,18 @@ export default function LeadsPage() {
     }
 
     const exportParams = new URLSearchParams(searchParams.toString());
-    exportParams.set('page', '1');
-    exportParams.set('limit', '5000');
+    exportParams.delete('page');
+    exportParams.delete('limit');
 
     try {
       setIsExporting(true);
 
-      const { data } = await api.get<LeadsExportResponse>(
-        `/organizations/${organizationId}/leads`,
-        {
-          params: Object.fromEntries(exportParams.entries()),
-        }
-      );
+      const data = (await leadsControllerExportAllV1(
+        organizationId,
+        Object.fromEntries(
+          exportParams.entries()
+        ) as unknown as LeadsControllerExportAllV1Params
+      )) as unknown as LeadsExportResponse;
 
       const leadsForExport = extractLeadsFromResponse(data);
 

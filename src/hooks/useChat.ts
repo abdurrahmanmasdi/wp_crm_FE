@@ -7,7 +7,7 @@ import axios from 'axios';
 
 import { getConversations, getConversationMessages } from '@/lib/api/chat';
 import { queryKeys } from '@/lib/query-keys';
-import { Conversation, Message } from '@/lib/chat.service';
+import type { Conversation, Message } from '@/types/chat-generated';
 import { useAuthStore } from '@/store/useAuthStore';
 
 /**

@@ -1,11 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api';
+import {
+  leadAttachmentsControllerCreateV1,
+  leadAttachmentsControllerFindAllV1,
+} from '@/api-generated/endpoints/lead-attachments';
+import {
+  leadNotesControllerCreateV1,
+  leadNotesControllerFindAllV1,
+} from '@/api-generated/endpoints/lead-notes';
+import type {
+  CreateLeadAttachmentDto,
+  CreateLeadNoteDto,
+} from '@/api-generated/model';
 import { queryKeys } from '@/lib/query-keys';
-
-type ApiResponse<T> = {
-  data: T;
-};
 
 type LeadNoteRecord = {
   id: string;
@@ -172,9 +179,7 @@ async function fetchLeadNotes(
   orgId: string,
   leadId: string
 ): Promise<LeadNoteRecord[]> {
-  const { data } = await api.get<unknown, ApiResponse<unknown>>(
-    `/organizations/${orgId}/leads/${leadId}/notes`
-  );
+  const data = (await leadNotesControllerFindAllV1(orgId, leadId)) as unknown;
 
   return normalizeListResponse(data, normalizeLeadNote);
 }
@@ -184,11 +189,11 @@ async function createLeadNote(
   leadId: string,
   payload: CreateLeadNotePayload
 ): Promise<LeadNoteRecord> {
-  const { data } = await api.post<
-    unknown,
-    ApiResponse<unknown>,
-    CreateLeadNotePayload
-  >(`/organizations/${orgId}/leads/${leadId}/notes`, payload);
+  const data = (await leadNotesControllerCreateV1(
+    orgId,
+    leadId,
+    payload as CreateLeadNoteDto
+  )) as unknown;
 
   const normalized = normalizeLeadNote(data);
 
@@ -203,9 +208,10 @@ async function fetchLeadAttachments(
   orgId: string,
   leadId: string
 ): Promise<LeadAttachmentRecord[]> {
-  const { data } = await api.get<unknown, ApiResponse<unknown>>(
-    `/organizations/${orgId}/leads/${leadId}/attachments`
-  );
+  const data = (await leadAttachmentsControllerFindAllV1(
+    orgId,
+    leadId
+  )) as unknown;
 
   return normalizeListResponse(data, normalizeLeadAttachment);
 }
@@ -215,11 +221,11 @@ async function createLeadAttachment(
   leadId: string,
   payload: CreateLeadAttachmentPayload
 ): Promise<LeadAttachmentRecord> {
-  const { data } = await api.post<
-    unknown,
-    ApiResponse<unknown>,
-    CreateLeadAttachmentPayload
-  >(`/organizations/${orgId}/leads/${leadId}/attachments`, payload);
+  const data = (await leadAttachmentsControllerCreateV1(
+    orgId,
+    leadId,
+    payload as CreateLeadAttachmentDto
+  )) as unknown;
 
   const normalized = normalizeLeadAttachment(data);
 

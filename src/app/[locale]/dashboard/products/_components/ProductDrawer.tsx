@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
-import { productService } from '@/lib/product.service';
+import { productService } from '@/lib/api/products';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import {

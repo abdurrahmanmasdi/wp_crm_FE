@@ -4,7 +4,7 @@ import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { type Message } from '@/lib/chat.service';
+import type { Message } from '@/types/chat-generated';
 import { useChatSocket } from '@/providers/ChatSocketProvider';
 import { useAuthStore } from '@/store/useAuthStore';
 import {

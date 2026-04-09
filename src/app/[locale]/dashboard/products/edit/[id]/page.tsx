@@ -6,7 +6,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { ProductForm } from '../../_components/CreateProductForm';
-import { productService } from '@/lib/product.service';
+import { productService } from '@/lib/api/products';
 import {
   type ProductFormValues,
   type LocalMediaItem,

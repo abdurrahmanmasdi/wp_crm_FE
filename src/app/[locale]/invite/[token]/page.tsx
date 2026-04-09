@@ -8,7 +8,10 @@ import { useTranslations } from 'next-intl';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-import { api } from '@/lib/api';
+import {
+  organizationsControllerAcceptInvitationV1,
+  organizationsControllerGetInvitationByTokenV1,
+} from '@/api-generated/endpoints/organizations';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -64,16 +67,18 @@ export default function InvitationLandingPage() {
     enabled: token.length > 0,
     retry: false,
     queryFn: async () => {
-      const { data } = await api.get(`/organizations/invitations/${token}`);
+      const data = (await organizationsControllerGetInvitationByTokenV1(
+        token
+      )) as unknown;
       return normalizeInvitationDetails(data);
     },
   });
 
   const acceptMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await api.post<AcceptInvitationResponse>(
-        `/organizations/invitations/${token}/accept`
-      );
+      const data = (await organizationsControllerAcceptInvitationV1(
+        token
+      )) as AcceptInvitationResponse;
       return data;
     },
     onSuccess: (data) => {

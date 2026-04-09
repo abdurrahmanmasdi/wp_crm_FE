@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { api } from '@/lib/api';
+import {
+  organizationsControllerInviteV1,
+  organizationsControllerListPendingInvitationsV1,
+} from '@/api-generated/endpoints/organizations';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
-
-type ApiResponse<T> = {
-  data: T;
-};
 
 /**
  * Payload for generating an invitation link for a member.
@@ -117,9 +116,9 @@ function normalizeGeneratedInvite(data: unknown): GeneratedInvite {
 }
 
 async function fetchPendingInvites(orgId: string): Promise<PendingInvite[]> {
-  const { data } = await api.get<unknown, ApiResponse<unknown>>(
-    `/organizations/${orgId}/invitations`
-  );
+  const data = (await organizationsControllerListPendingInvitationsV1(
+    orgId
+  )) as unknown;
   return normalizePendingInvitesResponse(data);
 }
 
@@ -127,14 +126,10 @@ async function createInvite(
   orgId: string,
   payload: GenerateInvitePayload
 ): Promise<GeneratedInvite> {
-  const { data } = await api.post<
-    unknown,
-    ApiResponse<unknown>,
-    { email: string; roleId: string }
-  >(`/organizations/${orgId}/invite`, {
+  const data = (await organizationsControllerInviteV1(orgId, {
     email: payload.email,
     roleId: payload.roleId,
-  });
+  })) as unknown;
 
   return normalizeGeneratedInvite(data);
 }
