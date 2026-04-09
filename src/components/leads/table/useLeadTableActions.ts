@@ -23,7 +23,7 @@ import type {
   LeadSortDir,
   Lead,
   LeadsListResponse,
-} from '@/types/leads';
+} from '@/types/leads-generated';
 
 type UpdateLeadPayload = {
   status?: LeadStatus;

@@ -27,7 +27,7 @@ import type {
   LeadsListResponse,
   LeadSortBy,
   LeadSortDir,
-} from '@/types/leads';
+} from '@/types/leads-generated';
 import { exportLeadsToCSV } from '@/utils/csv-export';
 
 const DEFAULT_PAGE = 1;
@@ -48,7 +48,7 @@ const LeadsKanbanBoard = dynamic(
     ),
   {
     loading: () => (
-      <div className="border-muted h-[600px] w-full animate-pulse rounded-xl border-2 border-dashed" />
+      <div className="border-muted h-150 w-full animate-pulse rounded-xl border-2 border-dashed" />
     ),
     ssr: false,
   }
@@ -145,8 +145,11 @@ export default function LeadsPage() {
       filters: filtersParam ?? undefined,
       page: currentPage,
       limit: currentLimit,
-      sortBy: sortByParam,
-      sortDir: sortDirParam,
+      sorts: sortByParam
+        ? JSON.stringify([
+            { field: sortByParam, direction: sortDirParam ?? 'asc' },
+          ])
+        : undefined,
     },
     debouncedSearch
   );

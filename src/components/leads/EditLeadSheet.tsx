@@ -20,7 +20,7 @@ import {
   useUpdateLeadMutation,
 } from '@/hooks/useLeads';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Lead } from '@/types/leads';
+import type { Lead } from '@/types/leads-generated';
 
 import { LeadDemographicsSection } from './form/LeadDemographicsSection';
 import { LeadIdentitySection } from './form/LeadIdentitySection';

@@ -1,4 +1,4 @@
-import type { Lead } from '@/types/leads';
+import type { Lead } from '@/types/leads-generated';
 
 type FlatLeadRow = {
   id: string;

@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { LeadWithRelations } from '@/types/leads';
+import type { LeadWithRelations } from '@/types/leads-generated';
 
 export const leadsColumns: Array<ColumnDef<LeadWithRelations>> = [
   {

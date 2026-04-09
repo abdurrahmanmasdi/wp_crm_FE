@@ -26,7 +26,7 @@ import type {
   LeadSortBy,
   LeadSortDir,
   LeadWithRelations,
-} from '@/types/leads';
+} from '@/types/leads-generated';
 
 import { EditLeadSheet } from './EditLeadSheet';
 import { LeadDetailSheet } from './LeadDetailSheet';

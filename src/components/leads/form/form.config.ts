@@ -5,7 +5,7 @@ import type {
   LeadGender,
   LeadPriority,
   LeadStatus,
-} from '@/types/leads';
+} from '@/types/leads-generated';
 import { emailSchema, nonNegativeNumberSchema, requiredStringSchema } from '@/lib/validations/common';
 
 export type AddLeadFormValues = {

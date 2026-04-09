@@ -1,5 +1,9 @@
 import { COUNTRY_CALLING_CODES } from '@/constants/regions';
-import type { CreateLeadPayload, Lead, UpdateLeadPayload } from '@/types/leads';
+import type {
+  CreateLeadPayload,
+  Lead,
+  UpdateLeadPayload,
+} from '@/types/leads-generated';
 
 import type { AddLeadFormValues } from './form.config';
 

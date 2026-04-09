@@ -1,7 +1,7 @@
 import { Globe } from 'lucide-react';
 import { SharedSelectField } from '@/components/ui/form-controls/SharedSelectField';
 import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
-import { type LeadCurrency } from '@/types/leads';
+import { type LeadCurrency } from '@/types/leads-generated';
 import type { OrganizationFormControl } from '../_schema';
 import { SectionCard } from './SectionCard';
 

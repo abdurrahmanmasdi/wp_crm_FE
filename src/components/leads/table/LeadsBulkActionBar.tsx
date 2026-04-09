@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { LeadStatus, LeadWithRelations } from '@/types/leads';
+import type { LeadStatus, LeadWithRelations } from '@/types/leads-generated';
 
 const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
 const UNASSIGNED_AGENT_VALUE = '__unassigned__';

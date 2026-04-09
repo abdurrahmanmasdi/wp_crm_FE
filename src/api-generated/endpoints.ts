@@ -89,7 +89,7 @@ import type {
   UsersControllerGetUserOrganizationsV1200Item,
   VerifyEmailDto,
 } from './model';
-import { Lead } from '@/types/leads';
+import { Lead } from '@/types/leads-generated';
 
 export const appControllerGetHelloV1 = (
   options?: AxiosRequestConfig

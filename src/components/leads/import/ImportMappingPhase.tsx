@@ -3,7 +3,7 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslations } from 'next-intl';
 
-import type { LeadPriority, LeadStatus } from '@/types/leads';
+import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 import type { BatchSettings, ImportMapping } from './import.types';
 import { ImportBatchSettingsSection } from './ImportBatchSettingsSection';
 import { ImportMappingSection } from './ImportMappingSection';

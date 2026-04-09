@@ -21,9 +21,5 @@ export type ProposalsControllerFindAllV1Params = {
    * A JSON-stringified array of sort nodes.
    */
   sorts?: string;
-  /**
-   * Generic search text
-   */
-  search?: string;
   status?: ProposalsControllerFindAllV1Status;
 };

@@ -22,10 +22,6 @@ export type LeadsControllerFindAllV1Params = {
    * A JSON-stringified array of sort nodes.
    */
   sorts?: string;
-  /**
-   * Generic search text
-   */
-  search?: string;
   status?: LeadsControllerFindAllV1Status;
   priority?: LeadsControllerFindAllV1Priority;
 };

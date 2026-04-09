@@ -10,7 +10,7 @@ import type {
   FilterOperator,
   FilterRule,
 } from '@/components/ui/universal-filter/filter.types';
-import type { LeadPriority, LeadStatus } from '@/types/leads';
+import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 
 type LeadFiltersBarProps = {
   initialRules: LeadFilterRule[];

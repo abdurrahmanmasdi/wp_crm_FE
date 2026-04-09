@@ -1,7 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import { api } from '@/lib/api';
+import {
+  leadsControllerBulkUpdateV1,
+  leadsControllerCreateV1,
+  leadsControllerFindAllV1,
+  leadsControllerRemoveV1,
+  leadsControllerUpdateV1,
+} from '@/api-generated/endpoints/leads';
+import type {
+  BulkUpdateLeadsDto,
+  CreateLeadDto,
+  LeadsControllerFindAllV1Params,
+  UpdateLeadDto,
+} from '@/api-generated/model';
 import { orgService } from '@/lib/org.service';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -15,13 +27,8 @@ import type {
   LeadsListResponse,
   LeadStatus,
   LeadSocialLinks,
-  LeadsQueryFilters,
   UpdateLeadPayload,
-} from '@/types/leads';
-
-type ApiResponse<T> = {
-  data: T;
-};
+} from '@/types/leads-generated';
 
 /**
  * Generic value/label option shape used by lead form member selectors.
@@ -31,14 +38,16 @@ export type SelectOption = {
   label: string;
 };
 
-/**
- * Payload for bulk lead updates.
- *
- * `lead_ids` specifies targets; `update_data` includes writable bulk fields.
- */
-export type BulkUpdateLeadsPayload = {
+type CreateLeadMutationPayload = CreateLeadPayload;
+type UpdateLeadMutationPayload = UpdateLeadPayload;
+type BulkUpdateLeadsPayload = {
   lead_ids: string[];
-  update_data: Partial<Pick<UpdateLeadPayload, 'status' | 'assigned_agent_id'>>;
+  update_data: Partial<
+    Pick<
+      UpdateLeadPayload,
+      'status' | 'assigned_agent_id' | 'pipeline_stage_id'
+    >
+  >;
 };
 
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
@@ -282,107 +291,6 @@ function normalizeLeadsResponse(
   };
 }
 
-function toQueryParams(filters?: LeadsQueryFilters): Record<string, unknown> {
-  if (!filters) {
-    return {};
-  }
-
-  const params: Record<string, unknown> = {};
-
-  if (typeof filters.page === 'number') params.page = filters.page;
-  if (typeof filters.limit === 'number') params.limit = filters.limit;
-
-  if (typeof filters.search === 'string' && filters.search.trim().length > 0) {
-    params.search = filters.search.trim();
-  }
-
-  // The 'filters' property is already a stringified AST from the UI filter bar
-  if (
-    typeof filters.filters === 'string' &&
-    filters.filters.trim().length > 0
-  ) {
-    params.filters = filters.filters;
-  }
-
-  // Convert sortBy/sortDir into the backend's expected 'sorts' AST array
-  if (filters.sortBy && filters.sortDir) {
-    params.sorts = JSON.stringify([
-      {
-        field: filters.sortBy,
-        direction: filters.sortDir,
-      },
-    ]);
-  }
-
-  return params;
-}
-
-async function fetchLeads(
-  orgId: string,
-  filters?: LeadsQueryFilters
-): Promise<LeadsListResponse> {
-  const { data } = await api.get<unknown, ApiResponse<unknown>>(
-    `/organizations/${orgId}/leads`,
-    {
-      params: toQueryParams(filters),
-    }
-  );
-
-  const fallbackPage =
-    typeof filters?.page === 'number' && filters.page > 0 ? filters.page : 1;
-  const fallbackLimit =
-    typeof filters?.limit === 'number' && filters.limit > 0
-      ? filters.limit
-      : 20;
-
-  return normalizeLeadsResponse(data, {
-    page: fallbackPage,
-    limit: fallbackLimit,
-  });
-}
-
-async function createLead(
-  orgId: string,
-  payload: CreateLeadPayload
-): Promise<Lead> {
-  const { data } = await api.post<
-    unknown,
-    ApiResponse<unknown>,
-    CreateLeadPayload
-  >(`/organizations/${orgId}/leads`, payload);
-  return normalizeLead(data);
-}
-
-async function updateLead(
-  orgId: string,
-  leadId: string,
-  payload: UpdateLeadPayload
-): Promise<Lead> {
-  const { data } = await api.patch<
-    unknown,
-    ApiResponse<unknown>,
-    UpdateLeadPayload
-  >(`/organizations/${orgId}/leads/${leadId}`, payload);
-
-  return normalizeLead(data);
-}
-
-async function bulkUpdateLeads(
-  orgId: string,
-  payload: BulkUpdateLeadsPayload
-): Promise<void> {
-  await api.patch<unknown, ApiResponse<unknown>, BulkUpdateLeadsPayload>(
-    `/organizations/${orgId}/leads/bulk`,
-    payload
-  );
-}
-
-async function deleteLead(orgId: string, leadId: string): Promise<void> {
-  await api.delete<unknown, ApiResponse<unknown>>(
-    `/organizations/${orgId}/leads/${leadId}`
-  );
-}
-
 async function fetchOrganizationMemberOptions(
   orgId: string
 ): Promise<SelectOption[]> {
@@ -411,7 +319,7 @@ async function fetchOrganizationMemberOptions(
 }
 
 /**
- * Creates single leads for the active organization.
+ * Creates single leads for the active organization using Orval-generated client calls.
  *
  * Side effects:
  * - Invalidates the organization leads base key so list queries refresh.
@@ -423,12 +331,15 @@ export function useCreateLeadMutation() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   return useMutation({
-    mutationFn: (payload: CreateLeadPayload) => {
+    mutationFn: async (payload: CreateLeadMutationPayload) => {
       if (!organizationId) {
         throw new Error('No active organization selected.');
       }
 
-      return createLead(organizationId, payload);
+      return leadsControllerCreateV1(
+        organizationId,
+        payload as unknown as CreateLeadDto
+      );
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -439,7 +350,7 @@ export function useCreateLeadMutation() {
 }
 
 /**
- * Updates a lead for the active organization.
+ * Updates a lead for the active organization using Orval-generated client calls.
  *
  * Side effects:
  * - Invalidates the organization leads base key after successful updates.
@@ -451,18 +362,22 @@ export function useUpdateLeadMutation() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       leadId,
       payload,
     }: {
       leadId: string;
-      payload: UpdateLeadPayload;
+      payload: UpdateLeadMutationPayload;
     }) => {
       if (!organizationId) {
         throw new Error('No active organization selected.');
       }
 
-      return updateLead(organizationId, leadId, payload);
+      return leadsControllerUpdateV1(
+        organizationId,
+        leadId,
+        payload as unknown as UpdateLeadDto
+      );
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -473,7 +388,7 @@ export function useUpdateLeadMutation() {
 }
 
 /**
- * Applies bulk updates to multiple leads.
+ * Applies bulk updates to multiple leads using Orval-generated client calls.
  *
  * Side effects:
  * - Invalidates the organization leads base key after successful bulk mutation.
@@ -485,12 +400,43 @@ export function useBulkUpdateLeadsMutation() {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   return useMutation({
-    mutationFn: (payload: BulkUpdateLeadsPayload) => {
+    mutationFn: async (payload: BulkUpdateLeadsPayload) => {
       if (!organizationId) {
         throw new Error('No active organization selected.');
       }
 
-      return bulkUpdateLeads(organizationId, payload);
+      return leadsControllerBulkUpdateV1(
+        organizationId,
+        payload as unknown as BulkUpdateLeadsDto
+      );
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.leads.base(organizationId),
+      });
+    },
+  });
+}
+
+/**
+ * Delete a lead for the active organization using Orval-generated client calls.
+ *
+ * Side effects:
+ * - Invalidates the organization leads base key after successful deletion.
+ *
+ * @returns Mutation object for lead deletion.
+ */
+export function useDeleteLeadMutation() {
+  const queryClient = useQueryClient();
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
+  return useMutation({
+    mutationFn: async (leadId: string) => {
+      if (!organizationId) {
+        throw new Error('No active organization selected.');
+      }
+
+      return leadsControllerRemoveV1(organizationId, leadId);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -521,53 +467,56 @@ export function useOrganizationMembersQuery() {
 
 /**
  * Aggregates leads query state and core lead mutations for the active organization.
+ * Uses Orval-generated client calls for list and mutation operations.
  *
  * React Query state managed:
  * - Leads list query keyed by organization + serialized filters.
- * - Create/update/delete mutation lifecycle for lead entities.
+ * - Create/update/delete mutation lifecycle for lead entities using Orval client calls.
  *
  * Side effects:
- * - Delete mutation invalidates the organization leads base key on success.
+ * - All mutations invalidate the organization leads base key on success.
  *
- * @param filters Optional server-side list filters and pagination/sort settings.
- * @returns Organization context, leads query, and create/update/delete mutation objects.
+ * @param filters Optional server-side list filters and pagination/sort settings (Orval LeadsControllerFindAllV1Params).
+ * @returns Organization context, leads query, and create/update/delete mutation objects backed by Orval client calls.
  */
-export function useLeads(filters?: LeadsQueryFilters, search?: string) {
-  const queryClient = useQueryClient();
+export function useLeads(
+  filters?: LeadsControllerFindAllV1Params,
+  search?: string
+) {
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
   const normalizedSearch = typeof search === 'string' ? search.trim() : '';
-  const normalizedFilters: LeadsQueryFilters = {
+  const normalizedFilters: LeadsControllerFindAllV1Params = {
     ...(filters ?? {}),
-    search: normalizedSearch.length > 0 ? normalizedSearch : undefined,
+  };
+  const queryParams: Record<string, unknown> = {
+    ...normalizedFilters,
+    ...(normalizedSearch.length > 0 ? { search: normalizedSearch } : {}),
   };
 
   const leadsQuery = useQuery({
-    queryKey: queryKeys.leads.all(
-      organizationId,
-      toQueryParams(normalizedFilters)
-    ),
-    queryFn: () => fetchLeads(organizationId!, normalizedFilters),
+    queryKey: queryKeys.leads.all(organizationId, queryParams),
+    queryFn: async () => {
+      if (!organizationId) {
+        throw new Error('No active organization selected.');
+      }
+
+      const data = await leadsControllerFindAllV1(
+        organizationId,
+        queryParams as LeadsControllerFindAllV1Params
+      );
+
+      return normalizeLeadsResponse(data as unknown, {
+        page: normalizedFilters.page ?? 1,
+        limit: normalizedFilters.limit ?? 20,
+      });
+    },
     enabled: Boolean(organizationId),
     retry: shouldRetryRequest,
   });
 
   const createLeadMutation = useCreateLeadMutation();
   const updateLeadMutation = useUpdateLeadMutation();
-
-  const deleteLeadMutation = useMutation({
-    mutationFn: (leadId: string) => {
-      if (!organizationId) {
-        throw new Error('No active organization selected.');
-      }
-
-      return deleteLead(organizationId, leadId);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.leads.base(organizationId),
-      });
-    },
-  });
+  const deleteLeadMutation = useDeleteLeadMutation();
 
   return {
     organizationId,

@@ -16,7 +16,7 @@ import {
 } from '@/hooks/useCrmSettings';
 import { useOrganizationMembersQuery } from '@/hooks/useLeads';
 import { useAuthStore } from '@/store/useAuthStore';
-import type { Lead } from '@/types/leads';
+import type { Lead } from '@/types/leads-generated';
 
 import { LeadDetailsTab } from './LeadDetailsTab';
 import { LeadNotesTab } from './LeadNotesTab';

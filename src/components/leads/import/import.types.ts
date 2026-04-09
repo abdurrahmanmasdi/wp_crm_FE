@@ -1,4 +1,4 @@
-import type { LeadPriority, LeadStatus } from '@/types/leads';
+import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 
 export type ImportPhase = 'upload' | 'mapping' | 'processing';
 

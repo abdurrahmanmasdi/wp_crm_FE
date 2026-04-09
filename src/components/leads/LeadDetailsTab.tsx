@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import type { Lead } from '@/types/leads';
+import type { Lead } from '@/types/leads-generated';
 
 type LeadDetailsTabProps = {
   lead: Lead;

@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { NONE_VALUE, type BatchSettings } from './import.types';
-import type { LeadPriority, LeadStatus } from '@/types/leads';
+import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 
 type Option = { label: string; value: string };
 

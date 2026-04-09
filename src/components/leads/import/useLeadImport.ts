@@ -20,7 +20,7 @@ import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useLeadsControllerBulkCreateV1 } from '@/api-generated/endpoints';
 import type { CreateLeadDto } from '@/api-generated/model';
-import type { LeadPriority, LeadStatus } from '@/types/leads';
+import type { LeadPriority, LeadStatus } from '@/types/leads-generated';
 
 import type {
   BatchSettings,

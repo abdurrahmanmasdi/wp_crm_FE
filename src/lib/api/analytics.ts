@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { LeadStatus } from '@/types/leads';
+import type { LeadStatus } from '@/types/leads-generated';
 
 /**
  * Stage distribution item used for pipeline bar chart visualizations.

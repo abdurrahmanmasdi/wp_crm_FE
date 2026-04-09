@@ -21,9 +21,5 @@ export type ProductsControllerFindAllV1Params = {
    * A JSON-stringified array of sort nodes.
    */
   sorts?: string;
-  /**
-   * Generic search text
-   */
-  search?: string;
   type?: ProductsControllerFindAllV1Type;
 };

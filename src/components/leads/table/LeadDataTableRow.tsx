@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { TableCell, TableRow } from '@/components/ui/table';
-import type { LeadStatus, LeadWithRelations } from '@/types/leads';
+import type { LeadStatus, LeadWithRelations } from '@/types/leads-generated';
 import { LeadRowActions } from './LeadRowActions';
 
 type MemberOption = {
