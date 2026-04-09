@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { authService } from '@/lib/auth.service';
+import { usersControllerGetCurrentUserV1 } from '@/api-generated/endpoints/users';
 import { useAuthStore } from '@/store/useAuthStore';
 
 /**
@@ -49,10 +49,10 @@ export function AuthInitializer() {
       }
 
       try {
-        const userResponse = await authService.me();
+        const userResponse = await usersControllerGetCurrentUserV1();
 
         if (isMounted) {
-          setAuth(userResponse.data);
+          setAuth(userResponse);
         }
       } catch {
         if (isMounted) {

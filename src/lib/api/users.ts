@@ -1,11 +1,4 @@
-import { api } from '@/lib/api';
-
-/**
- * Response payload for the effective permission list endpoint.
- */
-export type PermissionsResponse = {
-  permissions: string[];
-};
+import { usersControllerGetPermissionsV1 } from '@/api-generated/endpoints/users';
 
 /**
  * Fetches the authenticated user's effective permissions in a specific organization context.
@@ -19,11 +12,11 @@ export type PermissionsResponse = {
 export async function fetchMyPermissions(
   organizationId: string
 ): Promise<string[]> {
-  const response = await api.get<PermissionsResponse>('/users/me/permissions', {
+  const response = await usersControllerGetPermissionsV1({
     headers: {
       'x-organization-id': organizationId,
     },
   });
 
-  return response.data.permissions;
+  return response.permissions ?? [];
 }

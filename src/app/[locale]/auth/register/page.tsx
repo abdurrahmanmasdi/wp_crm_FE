@@ -1,6 +1,5 @@
 'use client';
 
-// import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -10,13 +9,12 @@ import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { authControllerRegisterV1 } from '@/api-generated/endpoints/auth';
+import { usersControllerAcceptInviteV1 } from '@/api-generated/endpoints/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { authService } from '@/lib/auth.service';
-// import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
-// import { useAuthStore } from '@/store/useAuthStore';
 
 const registerSchema = z.object({
   first_name: z.string().trim().min(1, 'First name is required'),
@@ -54,10 +52,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const t = useTranslations('Auth');
   const searchParams = useSearchParams();
-  // const setAuth = useAuthStore((state) => state.setAuth);
-  // const setActiveOrganizationId = useAuthStore(
-  //   (state) => state.setActiveOrganizationId
-  // );
   const [submitError, setSubmitError] = useState('');
   const inviteToken = searchParams.get('inviteToken');
   const inviteId = searchParams.get('inviteId');
@@ -80,55 +74,18 @@ export default function RegisterPage() {
     setSubmitError('');
 
     try {
-      await authService.register({
+      await authControllerRegisterV1({
         ...values,
         ...(inviteToken ? { inviteToken } : {}),
       });
 
-      // const loginResponse = await authService.login({
-      //   email: values.email,
-      //   password: values.password,
-      // });
-
-      // Cookies.set('access_token', loginResponse.data.access_token, {
-      //   expires: 7,
-      //   ...accessTokenCookieAttributes,
-      // });
-
-      // const userResponse = await authService.me();
-      // setAuth(userResponse.data);
-
-      // if (inviteToken) {
-      //   const organizationsResponse = await authService.getUserOrganizations();
-      //   const organizations = Array.isArray(organizationsResponse.data)
-      //     ? organizationsResponse.data
-      //     : (organizationsResponse.data.organizations ?? []);
-
-      //   const resolvedOrganizationId = organizations[0]?.id ?? null;
-      //   setActiveOrganizationId(resolvedOrganizationId);
-      //   router.push('/dashboard');
-      //   return;
-      // }
-
       if (inviteId) {
-        await authService.acceptInvite(inviteId);
-
-        // const organizationsResponse = await authService.getUserOrganizations();
-        // const organizations = Array.isArray(organizationsResponse.data)
-        //   ? organizationsResponse.data
-        //   : (organizationsResponse.data.organizations ?? []);
-
-        // const activeOrganizationId = organizations[0]?.id ?? null;
-
-        // setActiveOrganizationId(activeOrganizationId);
-        // router.push('/dashboard');
-        // return;
+        await usersControllerAcceptInviteV1(inviteId);
       }
 
       router.push(
         `/auth/verify-email?email=${encodeURIComponent(values.email)}`
       );
-      // router.push('/onboarding');
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
     }

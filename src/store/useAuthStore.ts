@@ -1,17 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import Cookies from 'js-cookie';
+import { authControllerLogoutV1 } from '@/api-generated/endpoints/auth';
+import type { UsersControllerGetCurrentUserV1200 } from '@/api-generated/model';
 import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
-import { authService } from '@/lib/auth.service';
 
-export type AuthUser = {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  created_at?: Date;
-  permissions?: string[];
-};
+export type AuthUser = UsersControllerGetCurrentUserV1200;
 
 type AuthStore = {
   user: AuthUser | null;
@@ -64,7 +58,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         try {
           // Revoke refresh token backend-side first
-          await authService.logout();
+          await authControllerLogoutV1();
         } catch (error) {
           // Log but continue with local cleanup even if backend revocation fails
           console.error('Failed to revoke refresh token:', error);

@@ -10,11 +10,12 @@ import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { authControllerLoginV1 } from '@/api-generated/endpoints/auth';
+import { usersControllerGetCurrentUserV1 } from '@/api-generated/endpoints/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { authService } from '@/lib/auth.service';
 import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -98,6 +99,24 @@ function isUnverifiedEmailError(error: unknown): boolean {
   );
 }
 
+function extractAccessToken(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const data = payload as Record<string, unknown>;
+
+  if (typeof data.access_token === 'string' && data.access_token.length > 0) {
+    return data.access_token;
+  }
+
+  if (typeof data.accessToken === 'string' && data.accessToken.length > 0) {
+    return data.accessToken;
+  }
+
+  return null;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -127,15 +146,18 @@ export default function LoginPage() {
     setVerificationEmail('');
 
     try {
-      const loginResponse = await authService.login(values);
+      const loginResponse = await authControllerLoginV1(values);
+      const accessToken = extractAccessToken(loginResponse);
 
-      Cookies.set('access_token', loginResponse.data.access_token, {
-        expires: 7,
-        ...accessTokenCookieAttributes,
-      });
+      if (accessToken) {
+        Cookies.set('access_token', accessToken, {
+          expires: 7,
+          ...accessTokenCookieAttributes,
+        });
+      }
 
-      const userResponse = await authService.me();
-      setAuth(userResponse.data);
+      const userResponse = await usersControllerGetCurrentUserV1();
+      setAuth(userResponse);
 
       const returnTo = searchParams.get('returnTo');
       const safeReturnTo =

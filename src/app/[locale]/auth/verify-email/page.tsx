@@ -7,11 +7,14 @@ import { useTranslations } from 'next-intl';
 import { CheckCircle2, MailWarning, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+  authControllerResendVerificationV1,
+  authControllerVerifyEmailV1,
+} from '@/api-generated/endpoints/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { authService } from '@/lib/auth.service';
 import { getErrorMessage } from '@/lib/error-utils';
 
 type VerificationStatus = 'loading' | 'success' | 'error';
@@ -48,7 +51,7 @@ export default function VerifyEmailPage() {
       try {
         setStatus('loading');
         setErrorMessage('');
-        await authService.verifyEmail({ token });
+        await authControllerVerifyEmailV1({ token });
         setStatus('success');
       } catch (error) {
         setStatus('error');
@@ -91,7 +94,7 @@ export default function VerifyEmailPage() {
 
     try {
       setIsResending(true);
-      await authService.resendVerification({
+      await authControllerResendVerificationV1({
         email: normalizedEmail,
       });
       toast.success(t('resendVerificationSuccess'));

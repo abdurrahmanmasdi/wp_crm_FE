@@ -8,11 +8,11 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
+import { authControllerRequestPasswordResetV1 } from '@/api-generated/endpoints/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { authService } from '@/lib/auth.service';
 import { getErrorMessage } from '@/lib/error-utils';
 
 const forgotPasswordSchema = z.object({
@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (values: ForgotPasswordFormValues) => {
     try {
-      await authService.forgotPassword({
+      await authControllerRequestPasswordResetV1({
         email: values.email,
       });
 
