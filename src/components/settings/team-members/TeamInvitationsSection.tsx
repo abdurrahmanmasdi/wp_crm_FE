@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { accessControlService } from '@/lib/access-control.service';
+import { getRoles } from '@/lib/api/access-control';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { PendingInvitesList } from '@/components/settings/team-members/PendingInvitesList';
@@ -19,8 +19,8 @@ export function TeamInvitationsSection() {
     queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
-        ? accessControlService.getRoles(activeOrganizationId)
-        : Promise.resolve({ data: [] }),
+        ? getRoles(activeOrganizationId)
+        : Promise.resolve([]),
     enabled: Boolean(activeOrganizationId),
   });
 
@@ -33,7 +33,7 @@ export function TeamInvitationsSection() {
       <InviteMemberDialog
         open={isInviteDialogOpen}
         onOpenChange={setIsInviteDialogOpen}
-        roles={rolesQuery.data?.data ?? []}
+        roles={rolesQuery.data ?? []}
         isLoadingRoles={rolesQuery.isLoading}
       />
     </>

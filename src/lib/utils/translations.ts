@@ -3,7 +3,7 @@
  * Provides helper functions for handling multilingual content
  */
 
-import type { Role } from '@/types/access-control';
+import type { Role } from '@/types/access-control-generated';
 
 /**
  * Get the localized role name based on the current locale

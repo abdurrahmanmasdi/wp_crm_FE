@@ -34,7 +34,7 @@ import {
 } from '@/hooks/useCrmSettings';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { LeadSource } from '@/types/crm-settings';
+import type { LeadSource } from '@/types/crm-settings-generated';
 
 export function LeadSourcesSettings() {
   const t = useTranslations('Settings.CRM');

@@ -18,7 +18,7 @@ import {
   useUpdateLeadMutation,
 } from '@/hooks/useLeads';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { PipelineStage } from '@/types/crm-settings';
+import type { PipelineStage } from '@/types/crm-settings-generated';
 import type { Lead } from '@/types/leads-generated';
 
 const UNASSIGNED_COLUMN_ID = '__unassigned__';

@@ -17,11 +17,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { RoleEditorSheet } from './RoleEditorSheet';
-import { accessControlService } from '@/lib/access-control.service';
+import { deleteRole, getRoles } from '@/lib/api/access-control';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
-import type { Role } from '@/types/access-control';
+import type { Role } from '@/types/access-control-generated';
 import { useAuthStore } from '@/store/useAuthStore';
 import { RequirePermission } from '@/components/auth/RequirePermission';
 import { AppResource, AppAction } from '@/constants/permissions.registry';
@@ -45,18 +45,18 @@ export function RolesList() {
     queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
-        ? accessControlService.getRoles(activeOrganizationId)
-        : Promise.resolve({ data: [] }),
+        ? getRoles(activeOrganizationId)
+        : Promise.resolve([]),
     enabled: !!activeOrganizationId,
   });
 
-  const roles = rolesData?.data ?? [];
+  const roles = rolesData ?? [];
 
   // Delete role mutation
   const deleteRoleMutation = useMutation({
     mutationFn: (roleId: string) =>
       activeOrganizationId
-        ? accessControlService.deleteRole(activeOrganizationId, roleId)
+        ? deleteRole(activeOrganizationId, roleId)
         : Promise.reject(new Error('No organization selected')),
     onSuccess: () => {
       toast.success(t('deleteSuccess'));

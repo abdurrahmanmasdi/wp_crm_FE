@@ -6,9 +6,13 @@ import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { accessControlService } from '@/lib/access-control.service';
+import {
+  createPermissionOverride,
+  getMemberPermissionBreakdown,
+  getPermissions,
+} from '@/lib/api/access-control';
 
-import type { OrganizationMember, Permission } from '@/types/access-control';
+import type { Permission } from '@/types/access-control-generated';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -19,6 +23,7 @@ import {
 } from '@/components/ui/sheet';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { OrganizationMember } from '@/types/organizations-generated';
 import {
   getResourcePrefix,
   formatResourceName,
@@ -57,7 +62,7 @@ export function MemberPermissionsSheet({
   // Fetch permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
     queryKey: queryKeys.permissions.all(),
-    queryFn: () => accessControlService.getPermissions(),
+    queryFn: () => getPermissions(),
     enabled: isOpen,
   });
 
@@ -68,23 +73,20 @@ export function MemberPermissionsSheet({
       if (!orgId || !member) {
         return Promise.resolve(null);
       }
-      return accessControlService.getMemberPermissionBreakdown(
-        orgId,
-        member.membershipId
-      );
+      return getMemberPermissionBreakdown(orgId, member.membershipId);
     },
     enabled: isOpen && !!member && !!orgId,
   });
 
-  const breakdown = breakdownData?.data;
+  const breakdown = breakdownData;
 
   // Group permissions by resource (prefix)
   const groupedPermissions = useMemo(() => {
-    if (!permissionsData?.data) return {};
+    if (!permissionsData) return {};
 
     const grouped: Record<string, Permission[]> = {};
 
-    permissionsData.data.forEach((permission) => {
+    permissionsData.forEach((permission) => {
       // Use registry helper to extract resource prefix (e.g., "leads:read" -> "leads")
       const resourcePrefix = getResourcePrefix(permission.action);
       const resourceName = formatResourceName(resourcePrefix);
@@ -119,14 +121,10 @@ export function MemberPermissionsSheet({
       // Batch all permission assignments
       return Promise.all(
         permissions.map((p) =>
-          accessControlService.createPermissionOverride(
-            orgId,
-            member.membershipId,
-            {
-              permission_id: p.permissionId,
-              is_granted: p.isGranted,
-            }
-          )
+          createPermissionOverride(orgId, member.membershipId, {
+            permission_id: p.permissionId,
+            is_granted: p.isGranted,
+          })
         )
       );
     },

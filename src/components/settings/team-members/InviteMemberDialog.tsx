@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { type Role } from '@/types/access-control';
+import type { Role } from '@/types/access-control-generated';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useInvitations, type GeneratedInvite } from '@/hooks/useInvitations';

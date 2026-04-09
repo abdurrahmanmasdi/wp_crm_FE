@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { accessControlService } from '@/lib/access-control.service';
+import { changeMemberRole, getRoles } from '@/lib/api/access-control';
 import { getOrganizationMembers } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
@@ -54,13 +54,13 @@ export function TeamMembersList() {
     queryKey: queryKeys.roles.all(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
-        ? accessControlService.getRoles(activeOrganizationId)
-        : Promise.resolve({ data: [] }),
+        ? getRoles(activeOrganizationId)
+        : Promise.resolve([]),
     enabled: !!activeOrganizationId,
   });
 
   const members = membersData ?? [];
-  const roles = rolesData?.data ?? [];
+  const roles = rolesData ?? [];
   const isLoading = isMembersLoading || isRolesLoading;
   const error = membersError || rolesError;
 
@@ -68,7 +68,7 @@ export function TeamMembersList() {
   const changeRoleMutation = useMutation({
     mutationFn: (params: { membershipId: string; roleId: string }) =>
       activeOrganizationId
-        ? accessControlService.changeMemberRole(
+        ? changeMemberRole(
             activeOrganizationId,
             params.membershipId,
             params.roleId

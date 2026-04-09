@@ -38,7 +38,7 @@ import {
 } from '@/hooks/useCrmSettings';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { PipelineStage } from '@/types/crm-settings';
+import type { PipelineStage } from '@/types/crm-settings-generated';
 
 function parseOrderIndex(input: string): number | null {
   const parsed = Number(input);

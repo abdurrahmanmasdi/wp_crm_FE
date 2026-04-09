@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Permission } from '@/types/access-control';
+import type { Permission } from '@/types/access-control-generated';
 
 interface RolePermissionGroupsProps {
   groupedPermissions: Record<string, Permission[]>;

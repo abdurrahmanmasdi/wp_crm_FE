@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-import { crmSettingsService } from '@/lib/crm-settings.service';
+import {
+  createLeadSource,
+  createPipelineStage,
+  deleteLeadSource,
+  deletePipelineStage,
+  getLeadSources,
+  getPipelineStages,
+  updateLeadSource,
+  updatePipelineStage,
+} from '@/lib/api/crm-settings';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type {
@@ -11,7 +20,7 @@ import type {
   PipelineStage,
   UpdateLeadSourcePayload,
   UpdatePipelineStagePayload,
-} from '@/types/crm-settings';
+} from '@/types/crm-settings-generated';
 
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
   if (axios.isAxiosError(error)) {
@@ -24,230 +33,18 @@ function shouldRetryRequest(failureCount: number, error: unknown): boolean {
   return failureCount < 3;
 }
 
-function asString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0 ? value : null;
-}
-
-function asNonNegativeInteger(value: unknown): number | null {
-  const normalized =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string'
-        ? Number(value)
-        : Number.NaN;
-
-  if (!Number.isFinite(normalized) || normalized < 0) {
-    return null;
-  }
-
-  return Math.floor(normalized);
-}
-
-function asBoolean(value: unknown, fallback = true): boolean {
-  if (typeof value === 'boolean') {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true') {
-      return true;
-    }
-
-    if (normalized === 'false') {
-      return false;
-    }
-  }
-
-  if (typeof value === 'number') {
-    return value !== 0;
-  }
-
-  return fallback;
-}
-
-function normalizePipelineStage(item: unknown): PipelineStage | null {
-  const record =
-    item && typeof item === 'object' ? (item as Record<string, unknown>) : null;
-
-  if (!record) {
-    return null;
-  }
-
-  const id = asString(record.id);
-  const name = asString(record.name);
-
-  if (!id || !name) {
-    return null;
-  }
-
-  return {
-    id,
-    organization_id: asString(record.organization_id) ?? '',
-    name,
-    order_index: asNonNegativeInteger(record.order_index) ?? 0,
-    created_at: asString(record.created_at) ?? '',
-    updated_at: asString(record.updated_at) ?? '',
-  };
-}
-
-function normalizeLeadSource(item: unknown): LeadSource | null {
-  const record =
-    item && typeof item === 'object' ? (item as Record<string, unknown>) : null;
-
-  if (!record) {
-    return null;
-  }
-
-  const id = asString(record.id);
-  const name = asString(record.name);
-
-  if (!id || !name) {
-    return null;
-  }
-
-  return {
-    id,
-    organization_id: asString(record.organization_id) ?? '',
-    name,
-    is_active: asBoolean(record.is_active),
-    created_at: asString(record.created_at) ?? '',
-    updated_at: asString(record.updated_at) ?? '',
-  };
-}
-
-function normalizePipelineStagesResponse(data: unknown): PipelineStage[] {
-  const rootRecord =
-    data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
-  const rawList = Array.isArray(data)
-    ? data
-    : Array.isArray(rootRecord.data)
-      ? rootRecord.data
-      : Array.isArray(rootRecord.items)
-        ? rootRecord.items
-        : Array.isArray(rootRecord.stages)
-          ? rootRecord.stages
-          : [];
-
-  return rawList
-    .map((item) => normalizePipelineStage(item))
-    .filter((item): item is PipelineStage => item !== null)
-    .sort((a, b) => a.order_index - b.order_index);
-}
-
-function normalizeLeadSourcesResponse(data: unknown): LeadSource[] {
-  const rootRecord =
-    data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
-  const rawList = Array.isArray(data)
-    ? data
-    : Array.isArray(rootRecord.data)
-      ? rootRecord.data
-      : Array.isArray(rootRecord.items)
-        ? rootRecord.items
-        : Array.isArray(rootRecord.sources)
-          ? rootRecord.sources
-          : [];
-
-  return rawList
-    .map((item) => normalizeLeadSource(item))
-    .filter((item): item is LeadSource => item !== null);
-}
-
 async function fetchPipelineStages(orgId: string): Promise<PipelineStage[]> {
-  const { data } = await crmSettingsService.getPipelineStages(orgId);
-  return normalizePipelineStagesResponse(data);
-}
-
-async function createPipelineStage(
-  orgId: string,
-  payload: CreatePipelineStagePayload
-): Promise<PipelineStage> {
-  const { data } = await crmSettingsService.createPipelineStage(orgId, payload);
-  const normalized = normalizePipelineStage(data);
-
-  if (!normalized) {
-    throw new Error('Unexpected pipeline stage response');
-  }
-
-  return normalized;
-}
-
-async function updatePipelineStage(
-  orgId: string,
-  stageId: string,
-  payload: UpdatePipelineStagePayload
-): Promise<PipelineStage> {
-  const { data } = await crmSettingsService.updatePipelineStage(
-    orgId,
-    stageId,
-    payload
-  );
-  const normalized = normalizePipelineStage(data);
-
-  if (!normalized) {
-    throw new Error('Unexpected pipeline stage response');
-  }
-
-  return normalized;
-}
-
-async function deletePipelineStage(
-  orgId: string,
-  stageId: string
-): Promise<void> {
-  await crmSettingsService.deletePipelineStage(orgId, stageId);
+  return getPipelineStages(orgId);
 }
 
 async function fetchLeadSources(orgId: string): Promise<LeadSource[]> {
-  const { data } = await crmSettingsService.getLeadSources(orgId);
-  return normalizeLeadSourcesResponse(data);
+  return getLeadSources(orgId);
 }
 
 async function fetchActiveLeadSources(orgId: string): Promise<LeadSource[]> {
-  const { data } = await crmSettingsService.getLeadSources(orgId, {
+  return getLeadSources(orgId, {
     activeOnly: true,
   });
-  return normalizeLeadSourcesResponse(data);
-}
-
-async function createLeadSource(
-  orgId: string,
-  payload: CreateLeadSourcePayload
-): Promise<LeadSource> {
-  const { data } = await crmSettingsService.createLeadSource(orgId, payload);
-  const normalized = normalizeLeadSource(data);
-
-  if (!normalized) {
-    throw new Error('Unexpected lead source response');
-  }
-
-  return normalized;
-}
-
-async function updateLeadSource(
-  orgId: string,
-  sourceId: string,
-  payload: UpdateLeadSourcePayload
-): Promise<LeadSource> {
-  const { data } = await crmSettingsService.updateLeadSource(
-    orgId,
-    sourceId,
-    payload
-  );
-  const normalized = normalizeLeadSource(data);
-
-  if (!normalized) {
-    throw new Error('Unexpected lead source response');
-  }
-
-  return normalized;
-}
-
-async function deleteLeadSource(
-  orgId: string,
-  sourceId: string
-): Promise<void> {
-  await crmSettingsService.deleteLeadSource(orgId, sourceId);
 }
 
 /**

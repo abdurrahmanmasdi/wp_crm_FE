@@ -15,9 +15,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { accessControlService } from '@/lib/access-control.service';
+import {
+  createRole,
+  getPermissions,
+  updateRole,
+} from '@/lib/api/access-control';
 import { getErrorMessage } from '@/lib/error-utils';
-import type { Permission, Role } from '@/types/access-control';
+import type { Permission, Role } from '@/types/access-control-generated';
 import {
   getResourcePrefix,
   formatResourceName,
@@ -77,14 +81,14 @@ export function RoleEditorSheet({
   // Fetch all permissions
   const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
     queryKey: queryKeys.permissions.all(),
-    queryFn: () => accessControlService.getPermissions(),
+    queryFn: () => getPermissions(),
   });
 
   // Group permissions by resource prefix using useMemo
   const groupedPermissions = useMemo(() => {
-    const permissions = permissionsData?.data ?? [];
+    const permissions = permissionsData ?? [];
     return groupPermissionsByResource(permissions);
-  }, [permissionsData?.data]);
+  }, [permissionsData]);
 
   // Initialize form with empty values
   const {
@@ -148,7 +152,7 @@ export function RoleEditorSheet({
         });
       }
 
-      return accessControlService.createRole(orgId, {
+      return createRole(orgId, {
         name: data.name,
         ...(Object.keys(name_translations).length > 0 && {
           name_translations,
@@ -184,7 +188,7 @@ export function RoleEditorSheet({
         });
       }
 
-      return accessControlService.updateRole(orgId, roleToEdit!.id, {
+      return updateRole(orgId, roleToEdit!.id, {
         name: !isSystemRole ? data.name : undefined,
         ...(Object.keys(name_translations).length > 0 && {
           name_translations,

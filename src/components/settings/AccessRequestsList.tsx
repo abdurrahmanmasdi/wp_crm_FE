@@ -31,7 +31,7 @@ import type {
   OrganizationAccessRequest,
   OrganizationAccessRequestsResponse,
 } from '@/types/organizations-generated';
-import { accessControlService } from '@/lib/access-control.service';
+import { getRoles } from '@/lib/api/access-control';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
@@ -153,7 +153,7 @@ export function AccessRequestsList() {
 
   const rolesQuery = useQuery({
     queryKey: queryKeys.roles.all(activeOrganizationId),
-    queryFn: () => accessControlService.getRoles(activeOrganizationId!),
+    queryFn: () => getRoles(activeOrganizationId!),
     enabled: Boolean(activeOrganizationId),
   });
 
@@ -356,7 +356,7 @@ export function AccessRequestsList() {
                 <SelectValue placeholder={t('selectRolePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {rolesQuery.data?.data
+                {rolesQuery.data
                   ?.filter((role) => role.slug !== 'owner')
                   .map((role) => (
                     <SelectItem key={role.id} value={role.id}>
