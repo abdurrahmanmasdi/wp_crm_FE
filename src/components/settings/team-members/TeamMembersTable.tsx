@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { OrganizationMember } from '@/lib/org.service';
+import type { OrganizationMember } from '@/types/organizations-generated';
 import { getLocalizedRoleName } from '@/lib/utils/translations';
 import type { Role } from '@/types/access-control';
 

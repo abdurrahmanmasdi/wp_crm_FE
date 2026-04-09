@@ -14,7 +14,7 @@ import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { orgService } from '@/lib/org.service';
+import { createOrganization } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -85,11 +85,11 @@ export default function CreateWorkspacePage() {
 
   const onSubmit = async (values: CreateWorkspaceFormValues) => {
     try {
-      const response = await orgService.createOrganization({
+      const organization = await createOrganization({
         name: values.name.trim(),
       });
 
-      useAuthStore.getState().setActiveOrganizationId(response.data.id);
+      useAuthStore.getState().setActiveOrganizationId(organization.id);
 
       // Step 2 begins immediately after workspace creation.
       router.push('/onboarding/invite');

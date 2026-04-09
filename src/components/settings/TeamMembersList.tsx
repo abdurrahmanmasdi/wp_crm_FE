@@ -5,11 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { orgService, type OrganizationMember } from '@/lib/org.service';
 import { accessControlService } from '@/lib/access-control.service';
+import { getOrganizationMembers } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { OrganizationMember } from '@/types/organizations-generated';
 import { MemberPermissionsSheet } from './MemberPermissionsSheet';
 import { TeamMembersTable } from '@/components/settings/team-members/TeamMembersTable';
 import { RoleChangeConfirmationDialog } from '@/components/settings/team-members/RoleChangeConfirmationDialog';
@@ -40,8 +41,8 @@ export function TeamMembersList() {
     queryKey: queryKeys.organizations.members(activeOrganizationId),
     queryFn: () =>
       activeOrganizationId
-        ? orgService.getOrganizationMembers(activeOrganizationId)
-        : Promise.resolve({ data: [] }),
+        ? getOrganizationMembers(activeOrganizationId)
+        : Promise.resolve([]),
     enabled: !!activeOrganizationId,
   });
 
@@ -58,7 +59,7 @@ export function TeamMembersList() {
     enabled: !!activeOrganizationId,
   });
 
-  const members = membersData?.data ?? [];
+  const members = membersData ?? [];
   const roles = rolesData?.data ?? [];
   const isLoading = isMembersLoading || isRolesLoading;
   const error = membersError || rolesError;

@@ -23,10 +23,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  orgService,
-  type OrganizationAccessRequest,
-  type OrganizationAccessRequestsResponse,
-} from '@/lib/org.service';
+  approveRequest,
+  getPendingRequests,
+  rejectRequest,
+} from '@/lib/api/organization';
+import type {
+  OrganizationAccessRequest,
+  OrganizationAccessRequestsResponse,
+} from '@/types/organizations-generated';
 import { accessControlService } from '@/lib/access-control.service';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
@@ -66,7 +70,7 @@ function normalizeRequests(
 }
 
 function getRequestId(request: AccessRequestListItem) {
-  return request.membershipId ?? request.id ?? '';
+  return request.membershipId ?? request.membership_id ?? request.id ?? '';
 }
 
 function getRequestName(request: AccessRequestListItem) {
@@ -141,9 +145,8 @@ export function AccessRequestsList() {
         return [] as AccessRequestListItem[];
       }
 
-      const response =
-        await orgService.getPendingRequests(activeOrganizationId);
-      return normalizeRequests(response.data);
+      const response = await getPendingRequests(activeOrganizationId);
+      return normalizeRequests(response);
     },
     enabled: Boolean(activeOrganizationId),
   });
@@ -166,11 +169,7 @@ export function AccessRequestsList() {
         throw new Error('No active organization selected.');
       }
 
-      return orgService.approveRequest(
-        activeOrganizationId,
-        membershipId,
-        roleId
-      );
+      return approveRequest(activeOrganizationId, membershipId, roleId);
     },
     onSuccess: () => {
       toast.success(t('approveSuccess'));
@@ -194,7 +193,7 @@ export function AccessRequestsList() {
         throw new Error('No active organization selected.');
       }
 
-      return orgService.rejectRequest(activeOrganizationId, membershipId);
+      return rejectRequest(activeOrganizationId, membershipId);
     },
     onSuccess: () => {
       toast.success(t('rejectSuccess'));

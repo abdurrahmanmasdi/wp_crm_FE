@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
 import { createGroupConversation } from '@/lib/api/chat';
-import { orgService } from '@/lib/org.service';
+import { getOrganizationMembers } from '@/lib/api/organization';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
@@ -56,7 +56,7 @@ export function NewGroupDialog({
   const { data: members, isLoading: isMembersLoading } = useQuery({
     queryKey: queryKeys.organizations.members(organizationId),
     queryFn: () =>
-      organizationId ? orgService.getOrganizationMembers(organizationId) : null,
+      organizationId ? getOrganizationMembers(organizationId) : [],
     enabled: !!organizationId && isOpen,
   });
 
@@ -87,7 +87,7 @@ export function NewGroupDialog({
    * Exclude current user
    */
   const filteredMembers = useMemo(() => {
-    const data = members?.data;
+    const data = members ?? [];
     if (!data) return [];
 
     return data.filter((member) => {

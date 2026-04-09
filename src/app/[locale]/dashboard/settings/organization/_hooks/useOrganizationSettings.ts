@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { orgService } from '@/lib/org.service';
+import { getOrganization, updateOrganization } from '@/lib/api/organization';
 import { useAuthStore } from '@/store/useAuthStore';
 
 import { defaultValues } from '../_constants';
@@ -34,8 +34,7 @@ export function useOrganizationSettings() {
     queryKey: ['organization', activeOrganizationId],
     queryFn: async () => {
       if (!activeOrganizationId) return null;
-      const res = await orgService.getOrganization(activeOrganizationId);
-      return res.data;
+      return getOrganization(activeOrganizationId);
     },
     // Wait for Zustand rehydration so activeOrganizationId is the real value
     enabled: hasHydrated && Boolean(activeOrganizationId),
@@ -92,7 +91,7 @@ export function useOrganizationSettings() {
   const mutation = useMutation({
     mutationFn: (data: OrganizationFormValues) => {
       if (!activeOrganizationId) throw new Error('No active organization');
-      return orgService.updateOrganization(activeOrganizationId, data);
+      return updateOrganization(activeOrganizationId, data);
     },
     onSuccess: () => {
       toast.success('Organization settings updated successfully');

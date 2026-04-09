@@ -8,10 +8,11 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
-import { orgService, type OrganizationMembership } from '@/lib/org.service';
+import { cancelRequest, getMyMemberships } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { MembershipStatus } from '@/types/enums';
+import type { OrganizationMembership } from '@/types/organizations-generated';
 import { useAuthStore } from '@/store/useAuthStore';
 
 function getMemberships(data: unknown): OrganizationMembership[] {
@@ -46,10 +47,7 @@ export default function WaitingPage() {
 
   const membershipsQuery = useQuery({
     queryKey: queryKeys.auth.myMemberships(),
-    queryFn: async () => {
-      const response = await orgService.getMyMemberships();
-      return response.data;
-    },
+    queryFn: getMyMemberships,
     refetchInterval: 5000,
     enabled: isInitialized && !isLoading && user != null,
   });
@@ -62,7 +60,7 @@ export default function WaitingPage() {
 
   const cancelRequestMutation = useMutation({
     mutationFn: async (membershipId: string) => {
-      return orgService.cancelRequest(membershipId);
+      return cancelRequest(membershipId);
     },
     onSuccess: async () => {
       toast.success('Your request has been canceled.');

@@ -13,7 +13,7 @@ import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 import { LoadingSpinner } from '@/components/onboarding/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { orgService } from '@/lib/org.service';
+import { joinOrganization } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { OnboardingFooter } from '@/components/onboarding/onboarding-footer';
@@ -63,7 +63,7 @@ export default function JoinWorkspacePage() {
 
   const onSubmit = async (values: JoinWorkspaceFormValues) => {
     try {
-      await orgService.joinOrganization({
+      await joinOrganization({
         slug: values.slug.trim(),
       });
 

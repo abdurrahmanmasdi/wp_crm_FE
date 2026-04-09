@@ -4,10 +4,11 @@ import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { usePathname, useRouter } from '@/i18n/routing';
-import { orgService, type OrganizationMembership } from '@/lib/org.service';
+import { getMyMemberships } from '@/lib/api/organization';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MembershipStatus } from '@/types/enums';
+import type { OrganizationMembership } from '@/types/organizations-generated';
 
 /**
  * Route protection scope used by `useAuthRedirectGate`.
@@ -100,10 +101,7 @@ export function useAuthRedirectGate(
 
   const membershipsQuery = useQuery({
     queryKey: queryKeys.auth.routeMemberships(Boolean(user)),
-    queryFn: async () => {
-      const response = await orgService.getMyMemberships();
-      return response.data;
-    },
+    queryFn: getMyMemberships,
     enabled: shouldResolveMemberships,
     staleTime: 5000,
     refetchInterval: scope === 'onboarding' && isWaitingRoute ? 5000 : false,

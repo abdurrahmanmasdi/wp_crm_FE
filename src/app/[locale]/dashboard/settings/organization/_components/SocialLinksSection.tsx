@@ -16,9 +16,15 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { orgService, type SocialLink } from '@/lib/org.service';
+import {
+  createSocialLink,
+  deleteSocialLink,
+  getSocialLinks,
+  updateSocialLink,
+} from '@/lib/api/organization';
 import { socialLinkSchema } from '../_schema';
 import { SectionCard } from './SectionCard';
+import type { SocialLink } from '@/types/organizations-generated';
 import * as z from 'zod';
 
 type SocialLinkFormValues = z.infer<typeof socialLinkSchema>;
@@ -44,9 +50,9 @@ function SocialLinkRow({
   const saveMutation = useMutation({
     mutationFn: (data: SocialLinkFormValues) => {
       if (isNew) {
-        return orgService.createSocialLink(data);
+        return createSocialLink(data);
       }
-      return orgService.updateSocialLink(link.id, data);
+      return updateSocialLink(link.id, data);
     },
     onSuccess: () => {
       toast.success(isNew ? 'Social link added' : 'Social link updated');
@@ -59,7 +65,7 @@ function SocialLinkRow({
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (isNew || !link) return;
-      await orgService.deleteSocialLink(link.id);
+      await deleteSocialLink(link.id);
     },
     onSuccess: () => {
       if (!isNew) toast.success('Social link removed');
@@ -159,10 +165,7 @@ export function SocialLinksSection() {
 
   const { data: links = [], isLoading } = useQuery({
     queryKey: ['social-links'],
-    queryFn: async () => {
-      const res = await orgService.getSocialLinks();
-      return res.data;
-    },
+    queryFn: getSocialLinks,
   });
 
   return (

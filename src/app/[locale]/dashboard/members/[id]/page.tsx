@@ -16,8 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDashboardMetrics } from '@/hooks/useAnalytics';
+import { getOrganizationMembers } from '@/lib/api/organization';
 import { getErrorMessage } from '@/lib/error-utils';
-import { orgService } from '@/lib/org.service';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -59,17 +59,17 @@ export default function MemberProfilePage() {
 
   const membersQuery = useQuery({
     queryKey: queryKeys.organizations.members(activeOrganizationId),
-    queryFn: () => orgService.getOrganizationMembers(activeOrganizationId!),
+    queryFn: () => getOrganizationMembers(activeOrganizationId!),
     enabled: Boolean(activeOrganizationId),
   });
 
   const member = useMemo(() => {
-    const members = membersQuery.data?.data ?? [];
+    const members = membersQuery.data ?? [];
 
     return members.find(
       (item) => item.user.id === id || item.membershipId === id
     );
-  }, [id, membersQuery.data?.data]);
+  }, [id, membersQuery.data]);
 
   const metricsQuery = useDashboardMetrics(activeOrganizationId ?? '', {
     agentId: id,

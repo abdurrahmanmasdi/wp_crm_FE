@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { orgService } from '@/lib/org.service';
+import { inviteTeamMember } from '@/lib/api/organization';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const inviteSchema = z.object({
@@ -134,7 +134,7 @@ export default function InviteTeamPage() {
     setSubmitError('');
 
     try {
-      await orgService.inviteTeamMember(activeOrganizationId, {
+      await inviteTeamMember(activeOrganizationId, {
         email: values.email.trim(),
         role: values.role,
       });

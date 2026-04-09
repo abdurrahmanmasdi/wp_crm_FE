@@ -18,9 +18,15 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { orgService, type BankAccount } from '@/lib/org.service';
+import {
+  createBankAccount,
+  deleteBankAccount,
+  getBankAccounts,
+  updateBankAccount,
+} from '@/lib/api/organization';
 import { bankAccountSchema } from '../_schema';
 import { SectionCard } from './SectionCard';
+import type { BankAccount } from '@/types/organizations-generated';
 import * as z from 'zod';
 
 type BankAccountFormValues = z.infer<typeof bankAccountSchema>;
@@ -49,9 +55,9 @@ function BankAccountRow({
   const saveMutation = useMutation({
     mutationFn: (data: BankAccountFormValues) => {
       if (isNew) {
-        return orgService.createBankAccount(data);
+        return createBankAccount(data);
       }
-      return orgService.updateBankAccount(account.id, data);
+      return updateBankAccount(account.id, data);
     },
     onSuccess: () => {
       toast.success(isNew ? 'Bank account added' : 'Bank account updated');
@@ -64,7 +70,7 @@ function BankAccountRow({
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (isNew || !account) return;
-      await orgService.deleteBankAccount(account.id);
+      await deleteBankAccount(account.id);
     },
     onSuccess: () => {
       if (!isNew) toast.success('Bank account removed');
@@ -214,10 +220,7 @@ export function BankAccountsSection() {
 
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: ['bank-accounts'],
-    queryFn: async () => {
-      const res = await orgService.getBankAccounts();
-      return res.data;
-    },
+    queryFn: getBankAccounts,
   });
 
   return (

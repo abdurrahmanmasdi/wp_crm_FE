@@ -14,7 +14,7 @@ import type {
   LeadsControllerFindAllV1Params,
   UpdateLeadDto,
 } from '@/api-generated/model';
-import { orgService } from '@/lib/org.service';
+import { getOrganizationMembers } from '@/lib/api/organization';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type {
@@ -294,7 +294,7 @@ function normalizeLeadsResponse(
 async function fetchOrganizationMemberOptions(
   orgId: string
 ): Promise<SelectOption[]> {
-  const { data } = await orgService.getOrganizationMembers(orgId);
+  const data = await getOrganizationMembers(orgId);
 
   return data
     .map((member) => {

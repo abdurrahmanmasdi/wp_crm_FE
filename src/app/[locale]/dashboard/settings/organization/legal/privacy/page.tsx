@@ -39,8 +39,9 @@ import {
 } from '@/components/ui/select';
 import mammoth from 'mammoth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { orgService, Organization } from '@/lib/org.service';
+import { getOrganization, updateOrganization } from '@/lib/api/organization';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { Organization } from '@/types/organizations-generated';
 
 // 1. Custom Font Size Extension
 const FontSize = Extension.create({
@@ -105,8 +106,7 @@ export default function PrivacyEditorPage() {
     queryKey: ['organization', activeOrganizationId],
     queryFn: async () => {
       if (!activeOrganizationId) throw new Error('No active organization');
-      const response = await orgService.getOrganization(activeOrganizationId);
-      return response.data;
+      return getOrganization(activeOrganizationId);
     },
     enabled: !!activeOrganizationId,
   });
@@ -114,11 +114,7 @@ export default function PrivacyEditorPage() {
   const mutation = useMutation<Organization, Error, Record<string, unknown>>({
     mutationFn: async (data: Record<string, unknown>) => {
       if (!activeOrganizationId) throw new Error('No active organization');
-      const response = await orgService.updateOrganization(
-        activeOrganizationId,
-        data
-      );
-      return response.data;
+      return updateOrganization(activeOrganizationId, data);
     },
     onSuccess: () => {
       toast.success('Organization settings updated successfully');
