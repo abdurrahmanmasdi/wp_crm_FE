@@ -50,12 +50,13 @@ export interface SharedSearchableSelectFieldProps<
   control: Control<TFieldValues>;
   name: TName;
   label: string;
-  options: Array<SharedSearchableSelectOption>;
+  options: ReadonlyArray<SharedSearchableSelectOption>;
   placeholder?: string;
   searchPlaceholder?: string;
   emptyLabel?: string;
   description?: string;
   disabled?: boolean;
+  multiple?: boolean;
   allowNone?: boolean;
   noneLabel?: string;
 }
@@ -79,6 +80,7 @@ export function SharedSearchableSelectField<
   emptyLabel = 'No results found.',
   description,
   disabled,
+  multiple = false,
   allowNone = false,
   noneLabel,
 }: SharedSearchableSelectFieldProps<TFieldValues, TName>) {
@@ -89,6 +91,11 @@ export function SharedSearchableSelectField<
       control={control}
       name={name}
       render={({ field }) => {
+        const currentValues = Array.isArray(field.value)
+          ? field.value.filter(
+              (value: unknown): value is string => typeof value === 'string'
+            )
+          : [];
         const currentValue =
           typeof field.value === 'string'
             ? field.value
@@ -96,6 +103,9 @@ export function SharedSearchableSelectField<
         const selectedOption = options.find(
           (option) => option.value === currentValue
         );
+        const selectedLabels = options
+          .filter((option) => currentValues.includes(option.value))
+          .map((option) => option.label);
 
         return (
           <FormItem>
@@ -109,15 +119,23 @@ export function SharedSearchableSelectField<
                     role="combobox"
                     className={cn(
                       'w-full justify-between',
-                      !selectedOption && 'text-muted-foreground'
+                      !selectedOption &&
+                        !selectedLabels.length &&
+                        'text-muted-foreground'
                     )}
                     disabled={disabled}
                   >
-                    {selectedOption
-                      ? selectedOption.label
-                      : currentValue === '' && allowNone
-                        ? (noneLabel ?? emptyLabel)
-                        : (placeholder ?? '')}
+                    {multiple
+                      ? selectedLabels.length > 0
+                        ? selectedLabels.length === 1
+                          ? selectedLabels[0]
+                          : `${selectedLabels.length} selected`
+                        : (placeholder ?? '')
+                      : selectedOption
+                        ? selectedOption.label
+                        : currentValue === '' && allowNone
+                          ? (noneLabel ?? emptyLabel)
+                          : (placeholder ?? '')}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
@@ -136,14 +154,20 @@ export function SharedSearchableSelectField<
                         <CommandItem
                           value={noneLabel ?? emptyLabel}
                           onSelect={() => {
-                            field.onChange('');
+                            field.onChange(multiple ? [] : '');
                             setIsOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              currentValue === '' ? 'opacity-100' : 'opacity-0'
+                              multiple
+                                ? currentValues.length === 0
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                                : currentValue === ''
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
                             )}
                           />
                           {noneLabel ?? emptyLabel}
@@ -155,6 +179,19 @@ export function SharedSearchableSelectField<
                           key={option.value}
                           value={option.label}
                           onSelect={() => {
+                            if (multiple) {
+                              const nextValues = currentValues.includes(
+                                option.value
+                              )
+                                ? currentValues.filter(
+                                    (value: string) => value !== option.value
+                                  )
+                                : [...currentValues, option.value];
+
+                              field.onChange(nextValues);
+                              return;
+                            }
+
                             field.onChange(option.value);
                             setIsOpen(false);
                           }}
@@ -162,9 +199,13 @@ export function SharedSearchableSelectField<
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              option.value === currentValue
-                                ? 'opacity-100'
-                                : 'opacity-0'
+                              multiple
+                                ? currentValues.includes(option.value)
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                                : option.value === currentValue
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
                             )}
                           />
                           {option.label}

@@ -100,7 +100,7 @@ export function DashboardHeader() {
 
             <DropdownMenuItem
               className="text-foreground focus:bg-secondary focus:text-primary rounded-xl px-3 py-2 text-sm"
-              onClick={() => router.push('/dashboard/settings')}
+              onClick={() => router.push('/dashboard/profile')}
             >
               {t('profileSettings')}
             </DropdownMenuItem>
