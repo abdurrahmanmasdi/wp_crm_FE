@@ -22,8 +22,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  UpdateMemberProfileDto,
+  UpdateUserProfileDto,
   UsersControllerAcceptInviteV1200,
   UsersControllerGetCurrentUserV1200,
+  UsersControllerGetPerformanceProfileV1200,
   UsersControllerGetPermissionsV1200,
   UsersControllerGetUserOrganizationsV1200Item,
 } from '../model';
@@ -188,6 +191,101 @@ export function useUsersControllerGetCurrentUserV1<
   return query;
 }
 
+/**
+ * Updates user profile information that applies across all organizations (avatar, phone, languages, etc.)
+ * @summary Update global user profile
+ */
+export const usersControllerUpdateGlobalProfileV1 = (
+  updateUserProfileDto: UpdateUserProfileDto,
+  options?: SecondParameter<typeof customInstance>
+) => {
+  return customInstance<void>(
+    {
+      url: `/api/v1/users/me`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateUserProfileDto,
+    },
+    options
+  );
+};
+
+export const getUsersControllerUpdateGlobalProfileV1MutationOptions = <
+  TError = void | void | void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>,
+    TError,
+    { data: UpdateUserProfileDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>,
+  TError,
+  { data: UpdateUserProfileDto },
+  TContext
+> => {
+  const mutationKey = ['usersControllerUpdateGlobalProfileV1'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>,
+    { data: UpdateUserProfileDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return usersControllerUpdateGlobalProfileV1(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UsersControllerUpdateGlobalProfileV1MutationResult = NonNullable<
+  Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>
+>;
+export type UsersControllerUpdateGlobalProfileV1MutationBody =
+  UpdateUserProfileDto;
+export type UsersControllerUpdateGlobalProfileV1MutationError =
+  | void
+  | void
+  | void;
+
+/**
+ * @summary Update global user profile
+ */
+export const useUsersControllerUpdateGlobalProfileV1 = <
+  TError = void | void | void,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>,
+      TError,
+      { data: UpdateUserProfileDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof usersControllerUpdateGlobalProfileV1>>,
+  TError,
+  { data: UpdateUserProfileDto },
+  TContext
+> => {
+  const mutationOptions =
+    getUsersControllerUpdateGlobalProfileV1MutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 /**
  * Returns the effective permissions for the authenticated user in their active organization context. Requires x-organization-id header.
  * @summary Get user permissions for organization
@@ -673,6 +771,261 @@ export const useUsersControllerCancelJoinRequestV1 = <
 > => {
   const mutationOptions =
     getUsersControllerCancelJoinRequestV1MutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Retrieves combined user profile, membership info, and calculated sales metrics (MTD revenue and active pipeline value)
+ * @summary Get performance dashboard profile
+ */
+export const usersControllerGetPerformanceProfileV1 = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<UsersControllerGetPerformanceProfileV1200>(
+    { url: `/api/v1/users/performance-profile`, method: 'GET', signal },
+    options
+  );
+};
+
+export const getUsersControllerGetPerformanceProfileV1QueryKey = () => {
+  return [`/api/v1/users/performance-profile`] as const;
+};
+
+export const getUsersControllerGetPerformanceProfileV1QueryOptions = <
+  TData = Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+  TError = void | void,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getUsersControllerGetPerformanceProfileV1QueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>
+  > = ({ signal }) =>
+    usersControllerGetPerformanceProfileV1(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type UsersControllerGetPerformanceProfileV1QueryResult = NonNullable<
+  Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>
+>;
+export type UsersControllerGetPerformanceProfileV1QueryError = void | void;
+
+export function useUsersControllerGetPerformanceProfileV1<
+  TData = Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+  TError = void | void,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+          TError,
+          Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useUsersControllerGetPerformanceProfileV1<
+  TData = Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+  TError = void | void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+          TError,
+          Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useUsersControllerGetPerformanceProfileV1<
+  TData = Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+  TError = void | void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get performance dashboard profile
+ */
+
+export function useUsersControllerGetPerformanceProfileV1<
+  TData = Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+  TError = void | void,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof usersControllerGetPerformanceProfileV1>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getUsersControllerGetPerformanceProfileV1QueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Updates organization-specific profile information (job title, tier, specializations, availability, etc.)
+ * @summary Update membership profile
+ */
+export const usersControllerUpdateMembershipProfileV1 = (
+  updateMemberProfileDto: UpdateMemberProfileDto,
+  options?: SecondParameter<typeof customInstance>
+) => {
+  return customInstance<void>(
+    {
+      url: `/api/v1/users/me/membership`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateMemberProfileDto,
+    },
+    options
+  );
+};
+
+export const getUsersControllerUpdateMembershipProfileV1MutationOptions = <
+  TError = void | void | void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>,
+    TError,
+    { data: UpdateMemberProfileDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>,
+  TError,
+  { data: UpdateMemberProfileDto },
+  TContext
+> => {
+  const mutationKey = ['usersControllerUpdateMembershipProfileV1'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      'mutationKey' in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>,
+    { data: UpdateMemberProfileDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return usersControllerUpdateMembershipProfileV1(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UsersControllerUpdateMembershipProfileV1MutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>
+  >;
+export type UsersControllerUpdateMembershipProfileV1MutationBody =
+  UpdateMemberProfileDto;
+export type UsersControllerUpdateMembershipProfileV1MutationError =
+  | void
+  | void
+  | void;
+
+/**
+ * @summary Update membership profile
+ */
+export const useUsersControllerUpdateMembershipProfileV1 = <
+  TError = void | void | void,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>,
+      TError,
+      { data: UpdateMemberProfileDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof usersControllerUpdateMembershipProfileV1>>,
+  TError,
+  { data: UpdateMemberProfileDto },
+  TContext
+> => {
+  const mutationOptions =
+    getUsersControllerUpdateMembershipProfileV1MutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
