@@ -731,7 +731,11 @@
       "tabs": {
         "details": "التفاصيل",
         "notes": "الملاحظات",
-        "attachments": "المرفقات"
+        "attachments": "المرفقات",
+        "proposals": "العروض"
+      },
+      "actions": {
+        "createProposal": "إنشاء عرض"
       },
       "notes": {
         "inputLabel": "إضافة ملاحظة",

@@ -731,7 +731,11 @@
       "tabs": {
         "details": "Details",
         "notes": "Notes",
-        "attachments": "Attachments"
+        "attachments": "Attachments",
+        "proposals": "Proposals"
+      },
+      "actions": {
+        "createProposal": "Create Proposal"
       },
       "notes": {
         "inputLabel": "Add note",

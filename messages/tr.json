@@ -731,7 +731,11 @@
       "tabs": {
         "details": "Detaylar",
         "notes": "Notlar",
-        "attachments": "Ekler"
+        "attachments": "Ekler",
+        "proposals": "Teklifler"
+      },
+      "actions": {
+        "createProposal": "Teklif Oluştur"
       },
       "notes": {
         "inputLabel": "Not ekle",

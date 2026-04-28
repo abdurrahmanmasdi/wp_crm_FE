@@ -1,26 +1,30 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { Link as LinkIcon, Mail, Phone } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { FileText, Link as LinkIcon, Mail, Phone } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProposalBuilderModal } from '@/app/[locale]/dashboard/proposals/_components/ProposalBuilderModal';
 import {
   useLeadSourcesQuery,
   usePipelineStagesQuery,
 } from '@/hooks/useCrmSettings';
 import { useOrganizationMembersQuery } from '@/hooks/useLeads';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useProposalStore } from '@/store/useProposalStore';
 import type { Lead } from '@/types/leads-generated';
 
 import { LeadDetailsTab } from './LeadDetailsTab';
 import { LeadNotesTab } from './LeadNotesTab';
 import { LeadAttachmentsTab } from './LeadAttachmentsTab';
+import { LeadProposalsTab } from './LeadProposalsTab';
 
 type LeadDetailSheetProps = {
   lead: Lead | null;
@@ -140,12 +144,17 @@ export function LeadDetailSheet({
   const pipelineStagesQuery = usePipelineStagesQuery();
   const leadSourcesQuery = useLeadSourcesQuery();
   const membersQuery = useOrganizationMembersQuery();
+  const setActiveLead = useProposalStore((state) => state.setActiveLead);
+  const setActiveProposal = useProposalStore(
+    (state) => state.setActiveProposal
+  );
 
   const leadId = lead?.id ?? null;
 
   const [noteInput, setNoteInput] = useState('');
   const [attachmentNameInput, setAttachmentNameInput] = useState('');
   const [attachmentUrlInput, setAttachmentUrlInput] = useState('');
+  const [isProposalBuilderOpen, setIsProposalBuilderOpen] = useState(false);
 
   const leadName = useMemo(() => {
     if (!lead) {
@@ -253,6 +262,12 @@ export function LeadDetailSheet({
     onOpenChange(nextOpen);
   };
 
+  const handleCreateProposalClick = () => {
+    setActiveLead(lead);
+    setActiveProposal(null);
+    setIsProposalBuilderOpen(true);
+  };
+
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="w-full p-0 sm:max-w-2xl">
@@ -281,6 +296,21 @@ export function LeadDetailSheet({
                   </Badge>
                 </div>
               </div>
+
+              <Button
+                type="button"
+                className="shrink-0 gap-2"
+                onClick={handleCreateProposalClick}
+              >
+                <FileText className="h-4 w-4" />
+                {(() => {
+                  try {
+                    return t('detailSheet.actions.createProposal');
+                  } catch {
+                    return 'Create Proposal';
+                  }
+                })()}
+              </Button>
             </div>
 
             <div className="bg-muted/40 mt-4 rounded-xl border border-white/10 p-4">
@@ -323,7 +353,7 @@ export function LeadDetailSheet({
               defaultValue="details"
               className="flex h-full min-h-0 flex-col"
             >
-              <TabsList className="bg-background mt-3 grid h-9 w-full grid-cols-3 rounded-lg border border-white/10 p-1">
+              <TabsList className="bg-background mt-3 grid h-9 w-full grid-cols-4 rounded-lg border border-white/10 p-1">
                 <TabsTrigger value="details">
                   {t('detailSheet.tabs.details')}
                 </TabsTrigger>
@@ -332,6 +362,15 @@ export function LeadDetailSheet({
                 </TabsTrigger>
                 <TabsTrigger value="attachments">
                   {t('detailSheet.tabs.attachments')}
+                </TabsTrigger>
+                <TabsTrigger value="proposals">
+                  {(() => {
+                    try {
+                      return t('detailSheet.tabs.proposals');
+                    } catch {
+                      return 'Proposals';
+                    }
+                  })()}
                 </TabsTrigger>
               </TabsList>
 
@@ -378,7 +417,23 @@ export function LeadDetailSheet({
                   setAttachmentUrlInput={setAttachmentUrlInput}
                 />
               </TabsContent>
+
+              <TabsContent
+                value="proposals"
+                className="mt-4 min-h-0 flex-1 overflow-y-auto"
+              >
+                <LeadProposalsTab
+                  leadId={leadId}
+                  onCreateFirstProposal={handleCreateProposalClick}
+                />
+              </TabsContent>
             </Tabs>
+
+            <ProposalBuilderModal
+              open={isProposalBuilderOpen}
+              onOpenChange={setIsProposalBuilderOpen}
+              lead={lead}
+            />
           </div>
         </div>
       </SheetContent>
