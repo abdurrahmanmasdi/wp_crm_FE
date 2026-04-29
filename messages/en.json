@@ -30,6 +30,7 @@
     "rolesPermissions": "Roles & Permissions",
     "orgSettings": "Organization Settings",
     "crmSettings": "CRM Settings",
+    "aiAssistant": "AI Assistant",
     "logout": "Log Out",
     "Sidebar": {
       "dashboardSuite": "Dashboard Suite"

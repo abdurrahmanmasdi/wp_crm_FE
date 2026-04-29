@@ -70,6 +70,10 @@ const navigationItems: NavigationItem[] = [
         href: '/dashboard/settings/crm',
         labelKey: 'crmSettings',
       },
+      {
+        href: '/dashboard/settings/ai',
+        labelKey: 'aiAssistant',
+      },
     ],
   },
 ] as const;
