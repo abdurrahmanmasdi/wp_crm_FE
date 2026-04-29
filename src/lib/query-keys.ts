@@ -57,8 +57,6 @@ export const queryKeys = {
   },
 
   crmSettings: {
-    pipelineStages: (orgId: OrganizationId) =>
-      ['crm-settings', 'pipeline-stages', orgId] as const,
     leadSourcesBase: (orgId: OrganizationId) =>
       ['crm-settings', 'lead-sources', orgId] as const,
     leadSources: (orgId: OrganizationId, scope: 'active' | 'all' = 'all') =>

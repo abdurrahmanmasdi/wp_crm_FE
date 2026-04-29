@@ -274,57 +274,7 @@
     },
     "CRM": {
       "tabs": {
-        "pipelineStages": "مراحل خط المبيعات",
         "leadSources": "مصادر العملاء المحتملين"
-      },
-      "pipelineStages": {
-        "title": "مراحل خط المبيعات",
-        "subtitle": "عرّف ورتّب المراحل المستخدمة في خط المبيعات.",
-        "add": "إضافة مرحلة",
-        "loading": "جاري تحميل مراحل خط المبيعات...",
-        "empty": "لا توجد مراحل لخط المبيعات.",
-        "failedToLoad": "تعذر تحميل مراحل خط المبيعات",
-        "deleteConfirm": "هل أنت متأكد أنك تريد حذف \"{name}\"؟",
-        "table": {
-          "name": "الاسم",
-          "orderIndex": "الترتيب",
-          "actions": "الإجراءات"
-        },
-        "actions": {
-          "edit": "تحرير",
-          "delete": "حذف",
-          "deleting": "جاري الحذف...",
-          "moveUp": "نقل لأعلى",
-          "moveDown": "نقل لأسفل"
-        },
-        "createDialog": {
-          "title": "إنشاء مرحلة لخط المبيعات",
-          "description": "أضف مرحلة جديدة لمسار العملاء المحتملين."
-        },
-        "editDialog": {
-          "title": "تحرير مرحلة خط المبيعات",
-          "description": "حدّث اسم المرحلة وترتيبها."
-        },
-        "form": {
-          "name": "اسم المرحلة",
-          "namePlaceholder": "مثال: الاستكشاف",
-          "orderIndex": "مؤشر الترتيب",
-          "cancel": "إلغاء",
-          "create": "إنشاء",
-          "creating": "جار الإنشاء...",
-          "save": "حفظ",
-          "saving": "جار الحفظ..."
-        },
-        "validation": {
-          "nameRequired": "اسم المرحلة مطلوب",
-          "orderIndexInvalid": "يجب أن يكون مؤشر الترتيب صفرا أو أكثر"
-        },
-        "toasts": {
-          "created": "تم إنشاء مرحلة خط المبيعات",
-          "updated": "تم تحديث مرحلة خط المبيعات",
-          "deleted": "تم حذف مرحلة خط المبيعات",
-          "reordered": "تمت إعادة ترتيب مراحل خط المبيعات"
-        }
       },
       "leadSources": {
         "title": "مصادر العملاء المحتملين",
@@ -467,8 +417,6 @@
     "conversionRateTrend": "+%2.1 من الشهر الماضي",
     "upcomingTours": "الجولات القادمة",
     "upcomingToursTrend": "4 جولات تغادر هذا الأسبوع",
-    "revenuePipeline": "خط الإيرادات",
-    "revenuePipelineTrend": "-%3 من الفترة الأخيرة",
     "bookingVolume": "حجم الحجوزات",
     "bookingAnalyticsText": "تحليلات الأداء لآخر 30 يوماً",
     "live": "مباشر",
@@ -490,7 +438,6 @@
     "title": "لوحة تحليلات",
     "description": "تابع أداء العملاء المحتملين وقيمة خط المبيعات وآخر الأنشطة بشكل فوري.",
     "kpi_total_leads": "إجمالي العملاء المحتملين",
-    "kpi_pipeline_value": "قيمة خط المبيعات",
     "kpi_active_stages": "المراحل النشطة",
     "charts_leads_by_stage": "العملاء حسب المرحلة",
     "charts_leads_by_source": "العملاء حسب المصدر",
@@ -508,7 +455,6 @@
       "select_organization": "يرجى اختيار منظمة لعرض ملفك الشخصي.",
       "active_for_leads": "نشط للعملاء المحتملين",
       "earnings_title": "مغلق هذا الشهر",
-      "pipeline_title": "الأموال على الطاولة",
       "capacity_title": "سعة العملاء المحتملين",
       "of": "من",
       "target": "الهدف",
@@ -629,7 +575,6 @@
         "status": "الحالة",
         "priority": "الأولوية",
         "source": "مصدر العميل المحتمل",
-        "pipelineStage": "مرحلة خط المبيعات",
         "country": "الدولة",
         "timezone": "المنطقة الزمنية",
         "primaryLanguage": "اللغة الأساسية"
@@ -710,10 +655,8 @@
         "languages": "اللغات",
         "primaryLanguage": "اللغة الأساسية",
         "preferredLanguage": "اللغة المفضلة",
-        "pipelineStage": "مرحلة خط المبيعات",
         "source": "مصدر العميل المحتمل",
         "assignedAgent": "الموظف المسؤول",
-        "pipelineStageId": "معرّف مرحلة خط المبيعات",
         "sourceId": "معرّف مصدر العميل المحتمل",
         "assignedAgentId": "معرّف الوكيل المعيّن",
         "estimatedValue": "القيمة التقديرية",
@@ -816,10 +759,6 @@
         "preferred_language": {
           "label": "اللغة المفضلة",
           "placeholder": "اختر اللغة المفضلة"
-        },
-        "pipeline_stage_id": {
-          "label": "مرحلة خط المبيعات",
-          "placeholder": "اختر المرحلة"
         },
         "assigned_agent_id": {
           "label": "الموظف المسؤول",

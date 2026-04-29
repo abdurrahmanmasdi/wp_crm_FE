@@ -22,8 +22,6 @@ type ImportMappingPhaseProps = {
   priorityOptions: LeadPriority[];
   leadSourcesData: { id: string; name: string }[];
   isLeadSourcesLoading: boolean;
-  pipelineStagesData: { id: string; name: string }[];
-  isPipelineStagesLoading: boolean;
   countryOptions: Option[];
   timezoneOptions: Option[];
   languageOptions: Option[];
@@ -41,8 +39,6 @@ export function ImportMappingPhase({
   priorityOptions,
   leadSourcesData,
   isLeadSourcesLoading,
-  pipelineStagesData,
-  isPipelineStagesLoading,
   countryOptions,
   timezoneOptions,
   languageOptions,
@@ -74,8 +70,6 @@ export function ImportMappingPhase({
           priorityOptions={priorityOptions}
           leadSourcesData={leadSourcesData}
           isLeadSourcesLoading={isLeadSourcesLoading}
-          pipelineStagesData={pipelineStagesData}
-          isPipelineStagesLoading={isPipelineStagesLoading}
           countryOptions={countryOptions}
           timezoneOptions={timezoneOptions}
           languageOptions={languageOptions}

@@ -8,13 +8,10 @@
 import type { BulkUpdateLeadDataDtoStatus } from './bulkUpdateLeadDataDtoStatus';
 import type { BulkUpdateLeadDataDtoPriority } from './bulkUpdateLeadDataDtoPriority';
 import type { BulkUpdateLeadDataDtoAssignedAgentId } from './bulkUpdateLeadDataDtoAssignedAgentId';
-import type { BulkUpdateLeadDataDtoPipelineStageId } from './bulkUpdateLeadDataDtoPipelineStageId';
 
 export interface BulkUpdateLeadDataDto {
   status?: BulkUpdateLeadDataDtoStatus;
   priority?: BulkUpdateLeadDataDtoPriority;
   /** @nullable */
   assigned_agent_id?: BulkUpdateLeadDataDtoAssignedAgentId;
-  /** @nullable */
-  pipeline_stage_id?: BulkUpdateLeadDataDtoPipelineStageId;
 }

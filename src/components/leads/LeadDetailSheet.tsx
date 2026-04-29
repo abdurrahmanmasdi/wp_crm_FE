@@ -1,10 +1,8 @@
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
-import { FileText, Link as LinkIcon, Mail, Phone } from 'lucide-react';
+import { FileText, Mail, Phone } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProposalBuilderModal } from '@/app/[locale]/dashboard/proposals/_components/ProposalBuilderModal';
-import {
-  useLeadSourcesQuery,
-  usePipelineStagesQuery,
-} from '@/hooks/useCrmSettings';
+import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
 import { useOrganizationMembersQuery } from '@/hooks/useLeads';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProposalStore } from '@/store/useProposalStore';
@@ -141,7 +136,6 @@ export function LeadDetailSheet({
   const t = useTranslations('Leads');
   const tTimezones = useTranslations('Timezones');
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
-  const pipelineStagesQuery = usePipelineStagesQuery();
   const leadSourcesQuery = useLeadSourcesQuery();
   const membersQuery = useOrganizationMembersQuery();
   const setActiveLead = useProposalStore((state) => state.setActiveLead);
@@ -175,14 +169,6 @@ export function LeadDetailSheet({
     [locale]
   );
 
-  const pipelineStageLabelMap = useMemo(
-    () =>
-      new Map(
-        (pipelineStagesQuery.data ?? []).map((stage) => [stage.id, stage.name])
-      ),
-    [pipelineStagesQuery.data]
-  );
-
   const leadSourceLabelMap = useMemo(
     () =>
       new Map(
@@ -207,10 +193,6 @@ export function LeadDetailSheet({
 
   const unassignedValue = t('detailSheet.values.unassigned');
   const unknownValue = t('detailSheet.values.unknown');
-
-  const pipelineStageName = lead.pipeline_stage_id
-    ? (pipelineStageLabelMap.get(lead.pipeline_stage_id) ?? unknownValue)
-    : unassignedValue;
 
   const sourceName = lead.source_id
     ? (leadSourceLabelMap.get(lead.source_id) ?? unknownValue)
@@ -380,7 +362,6 @@ export function LeadDetailSheet({
               >
                 <LeadDetailsTab
                   lead={lead}
-                  pipelineStageName={pipelineStageName}
                   sourceName={sourceName}
                   assignedAgentName={assignedAgentName}
                   localizedCountry={localizedCountry}

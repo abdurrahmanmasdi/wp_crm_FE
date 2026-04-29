@@ -9,7 +9,6 @@ import type { Conversation } from '@/types/chat-generated';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useConversationsQuery } from '@/hooks/useChat';
 import { NewChatDialog } from './NewChatDialog';
-import { NewGroupDialog } from './NewGroupDialog';
 
 /**
  * ConversationList Component
@@ -23,7 +22,6 @@ export function ConversationList() {
   const activeConversationId = searchParams.get('chat');
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
-  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
   // Get current user ID from auth store
   const user = useAuthStore((state) => state.user);
@@ -159,13 +157,6 @@ export function ConversationList() {
             >
               <Plus className="h-5 w-5" />
             </button>
-            {/* <button
-              onClick={() => setIsNewGroupOpen(true)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              title={t('createGroupChat')}
-            >
-              <Users className="h-5 w-5" />
-            </button> */}
           </div>
         </div>
 
@@ -272,13 +263,6 @@ export function ConversationList() {
       <NewChatDialog
         isOpen={isNewChatOpen}
         onClose={() => setIsNewChatOpen(false)}
-        onChatCreated={handleChatCreated}
-      />
-
-      {/* New Group Dialog */}
-      <NewGroupDialog
-        isOpen={isNewGroupOpen}
-        onClose={() => setIsNewGroupOpen(false)}
         onChatCreated={handleChatCreated}
       />
     </div>

@@ -24,7 +24,6 @@ import type {
 import type {
   ChatControllerGetConversationMessagesV1Params,
   CreateConversationDto,
-  CreateGroupConversationDto,
 } from '../model';
 
 import { customInstance } from '../../lib/api-custom-instance';
@@ -279,102 +278,6 @@ export const useChatControllerCreateConversationV1 = <
 > => {
   const mutationOptions =
     getChatControllerCreateConversationV1MutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-/**
- * @summary Create a new group conversation
- */
-export const chatControllerCreateGroupConversationV1 = (
-  createGroupConversationDto: CreateGroupConversationDto,
-  options?: SecondParameter<typeof customInstance>,
-  signal?: AbortSignal
-) => {
-  return customInstance<void>(
-    {
-      url: `/api/v1/chat/groups`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: createGroupConversationDto,
-      signal,
-    },
-    options
-  );
-};
-
-export const getChatControllerCreateGroupConversationV1MutationOptions = <
-  TError = void | void | void,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>,
-    TError,
-    { data: CreateGroupConversationDto },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>,
-  TError,
-  { data: CreateGroupConversationDto },
-  TContext
-> => {
-  const mutationKey = ['chatControllerCreateGroupConversationV1'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      'mutationKey' in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>,
-    { data: CreateGroupConversationDto }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return chatControllerCreateGroupConversationV1(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type ChatControllerCreateGroupConversationV1MutationResult = NonNullable<
-  Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>
->;
-export type ChatControllerCreateGroupConversationV1MutationBody =
-  CreateGroupConversationDto;
-export type ChatControllerCreateGroupConversationV1MutationError =
-  | void
-  | void
-  | void;
-
-/**
- * @summary Create a new group conversation
- */
-export const useChatControllerCreateGroupConversationV1 = <
-  TError = void | void | void,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>,
-      TError,
-      { data: CreateGroupConversationDto },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof chatControllerCreateGroupConversationV1>>,
-  TError,
-  { data: CreateGroupConversationDto },
-  TContext
-> => {
-  const mutationOptions =
-    getChatControllerCreateGroupConversationV1MutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

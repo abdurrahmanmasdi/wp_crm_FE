@@ -47,8 +47,6 @@ export function ImportLeadsModal({
     languageOptions,
     leadSourcesData,
     isLeadSourcesLoading,
-    pipelineStagesData,
-    isPipelineStagesLoading,
     setMapping,
     setBatchSettings,
     handleOpenChange,
@@ -93,8 +91,6 @@ export function ImportLeadsModal({
             priorityOptions={priorityOptions}
             leadSourcesData={leadSourcesData}
             isLeadSourcesLoading={isLeadSourcesLoading}
-            pipelineStagesData={pipelineStagesData}
-            isPipelineStagesLoading={isPipelineStagesLoading}
             countryOptions={countryOptions}
             timezoneOptions={timezoneOptions}
             languageOptions={languageOptions}

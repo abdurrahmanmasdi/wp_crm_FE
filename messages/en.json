@@ -274,57 +274,7 @@
     },
     "CRM": {
       "tabs": {
-        "pipelineStages": "Pipeline Stages",
         "leadSources": "Lead Sources"
-      },
-      "pipelineStages": {
-        "title": "Pipeline Stages",
-        "subtitle": "Define and order the stages used in your sales pipeline.",
-        "add": "Add Stage",
-        "loading": "Loading pipeline stages...",
-        "empty": "No pipeline stages found.",
-        "failedToLoad": "Failed to load pipeline stages",
-        "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
-        "table": {
-          "name": "Name",
-          "orderIndex": "Order",
-          "actions": "Actions"
-        },
-        "actions": {
-          "edit": "Edit",
-          "delete": "Delete",
-          "deleting": "Deleting...",
-          "moveUp": "Move up",
-          "moveDown": "Move down"
-        },
-        "createDialog": {
-          "title": "Create Pipeline Stage",
-          "description": "Add a new stage for your lead pipeline."
-        },
-        "editDialog": {
-          "title": "Edit Pipeline Stage",
-          "description": "Update the stage name and order."
-        },
-        "form": {
-          "name": "Stage name",
-          "namePlaceholder": "e.g., Discovery",
-          "orderIndex": "Order index",
-          "cancel": "Cancel",
-          "create": "Create",
-          "creating": "Creating...",
-          "save": "Save",
-          "saving": "Saving..."
-        },
-        "validation": {
-          "nameRequired": "Stage name is required",
-          "orderIndexInvalid": "Order index must be zero or greater"
-        },
-        "toasts": {
-          "created": "Pipeline stage created",
-          "updated": "Pipeline stage updated",
-          "deleted": "Pipeline stage deleted",
-          "reordered": "Pipeline stages reordered"
-        }
       },
       "leadSources": {
         "title": "Lead Sources",
@@ -467,8 +417,6 @@
     "conversionRateTrend": "+2.1% from last month",
     "upcomingTours": "Upcoming Tours",
     "upcomingToursTrend": "4 tours leaving this week",
-    "revenuePipeline": "Revenue Pipeline",
-    "revenuePipelineTrend": "-3% from last period",
     "bookingVolume": "Booking Volume",
     "bookingAnalyticsText": "Performance analytics for the last 30 days",
     "live": "Live",
@@ -490,7 +438,6 @@
     "title": "Analytics Dashboard",
     "description": "Track lead performance, pipeline value, and recent activity in real time.",
     "kpi_total_leads": "Total Leads",
-    "kpi_pipeline_value": "Pipeline Value",
     "kpi_active_stages": "Active Stages",
     "charts_leads_by_stage": "Leads by Stage",
     "charts_leads_by_source": "Leads by Source",
@@ -508,7 +455,6 @@
       "select_organization": "Please select an organization to view your profile.",
       "active_for_leads": "Active for Leads",
       "earnings_title": "Closed This Month",
-      "pipeline_title": "Money on the Table",
       "capacity_title": "Lead Capacity",
       "of": "of",
       "target": "target",
@@ -629,7 +575,6 @@
         "status": "Status",
         "priority": "Priority",
         "source": "Lead Source",
-        "pipelineStage": "Pipeline Stage",
         "country": "Country",
         "timezone": "Timezone",
         "primaryLanguage": "Primary Language"
@@ -710,10 +655,8 @@
         "languages": "Languages",
         "primaryLanguage": "Primary language",
         "preferredLanguage": "Preferred language",
-        "pipelineStage": "Pipeline stage",
         "source": "Lead source",
         "assignedAgent": "Assigned agent",
-        "pipelineStageId": "Pipeline stage ID",
         "sourceId": "Lead source ID",
         "assignedAgentId": "Assigned agent ID",
         "estimatedValue": "Estimated value",
@@ -816,10 +759,6 @@
         "preferred_language": {
           "label": "Preferred Language",
           "placeholder": "Select preferred language"
-        },
-        "pipeline_stage_id": {
-          "label": "Pipeline Stage",
-          "placeholder": "Select stage"
         },
         "assigned_agent_id": {
           "label": "Assigned Agent",

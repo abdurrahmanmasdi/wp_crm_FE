@@ -8,5 +8,4 @@
 
 export type UsersControllerGetPerformanceProfileV1200Metrics = {
   closed_revenue_mtd?: number;
-  active_pipeline_value?: number;
 };

@@ -274,64 +274,7 @@
     },
     "CRM": {
       "tabs": {
-        "pipelineStages": "Satış Hattı Aşamaları",
         "leadSources": "Müşteri Kaynakları"
-      },
-      "pipelineStages": {
-        "title": "Satış Hattı Aşamaları",
-        "subtitle": "Satış hattınızda kullanılan aşamaları tanımlayın ve sıralayın.",
-        "add": "Aşama Ekle",
-        "loading": "Satış hattı aşamaları yükleniyor...",
-        "empty": "Satış hattı aşaması bulunamadı.",
-        "failedToLoad": "Satış hattı aşamaları yüklenemedi",
-        "deleteConfirm": "\"{name}\" öğesini silmek istediğinizden emin misiniz?",
-        "table": {
-          "name": "Ad",
-          "orderIndex": "Sıra",
-          "actions": "İşlemler"
-        },
-        "actions": {
-          "board": {
-            "unassigned": "Atanmamış",
-            "noLeadsInColumn": "Bu sütunda aday yok",
-            "expectedValue": "Beklenen Değer",
-            "unassignedAgent": "Atanmamış",
-            "dragError": "Aday taşınamadı. Lütfen tekrar deneyin."
-          },
-          "edit": "Düzenle",
-          "delete": "Sil",
-          "deleting": "Siliniyor...",
-          "moveUp": "Yukarı taşı",
-          "moveDown": "Aşağı taşı"
-        },
-        "createDialog": {
-          "title": "Satış Hattı Aşaması Oluştur",
-          "description": "Müşteri hattınıza yeni bir aşama ekleyin."
-        },
-        "editDialog": {
-          "title": "Satış Hattı Aşamasını Düzenle",
-          "description": "Aşama adını ve sırasını güncelleyin."
-        },
-        "form": {
-          "name": "Aşama adı",
-          "namePlaceholder": "ör. Keşif",
-          "orderIndex": "Sıra indeksi",
-          "cancel": "İptal",
-          "create": "Oluştur",
-          "creating": "Oluşturuluyor...",
-          "save": "Kaydet",
-          "saving": "Kaydediliyor..."
-        },
-        "validation": {
-          "nameRequired": "Aşama adı gerekli",
-          "orderIndexInvalid": "Sıra indeksi 0 veya daha büyük olmalıdır"
-        },
-        "toasts": {
-          "created": "Satış hattı aşaması oluşturuldu",
-          "updated": "Satış hattı aşaması güncellendi",
-          "deleted": "Satış hattı aşaması silindi",
-          "reordered": "Satış hattı aşamaları yeniden sıralandı"
-        }
       },
       "leadSources": {
         "title": "Müşteri Kaynakları",
@@ -474,8 +417,6 @@
     "conversionRateTrend": "Geçen aydan beri +%2.1",
     "upcomingTours": "Yaklaşan Turlar",
     "upcomingToursTrend": "Bu hafta 4 tur ayrılıyor",
-    "revenuePipeline": "Gelir Hattı",
-    "revenuePipelineTrend": "Son dönem itibaren -%3",
     "bookingVolume": "Rezervasyon Hacmi",
     "bookingAnalyticsText": "Son 30 gün için performans analitikleri",
     "live": "Canlı",
@@ -497,7 +438,6 @@
     "title": "Analitik Kontrol Paneli",
     "description": "Müşteri adayı performansını, satış hattı değerini ve son aktiviteleri gerçek zamanlı takip edin.",
     "kpi_total_leads": "Toplam Aday Müşteri",
-    "kpi_pipeline_value": "Satış Hattı Değeri",
     "kpi_active_stages": "Aktif Aşamalar",
     "charts_leads_by_stage": "Aşamaya Göre Aday Müşteriler",
     "charts_leads_by_source": "Kaynağa Göre Aday Müşteriler",
@@ -515,7 +455,6 @@
       "select_organization": "Profilinizi görmek için bir kuruluş seçin.",
       "active_for_leads": "Müşteri Adayları İçin Etkin",
       "earnings_title": "Bu Ay Kapandı",
-      "pipeline_title": "Masada Parası Var",
       "capacity_title": "Müşteri Adayı Kapasitesi",
       "of": "of",
       "target": "hedef",
@@ -636,7 +575,6 @@
         "status": "Durum",
         "priority": "Öncelik",
         "source": "Aday Kaynağı",
-        "pipelineStage": "Satış Aşaması",
         "country": "Ülke",
         "timezone": "Saat Dilimi",
         "primaryLanguage": "Birincil Dil"
@@ -710,10 +648,8 @@
         "languages": "Diller",
         "primaryLanguage": "Birincil dil",
         "preferredLanguage": "Tercih edilen dil",
-        "pipelineStage": "Satış hattı aşaması",
         "source": "Aday kaynağı",
         "assignedAgent": "Atanan temsilci",
-        "pipelineStageId": "Satış hattı aşama ID",
         "sourceId": "Aday kaynağı ID",
         "assignedAgentId": "Atanan temsilci ID",
         "estimatedValue": "Tahmini değer",
@@ -816,10 +752,6 @@
         "preferred_language": {
           "label": "Tercih Edilen Dil",
           "placeholder": "Tercih edilen dili seçin"
-        },
-        "pipeline_stage_id": {
-          "label": "Satış Aşaması",
-          "placeholder": "Aşama seçin"
         },
         "assigned_agent_id": {
           "label": "Atanan Ajan",

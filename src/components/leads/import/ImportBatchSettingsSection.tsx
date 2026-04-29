@@ -21,8 +21,6 @@ type ImportBatchSettingsSectionProps = {
   priorityOptions: LeadPriority[];
   leadSourcesData: { id: string; name: string }[];
   isLeadSourcesLoading: boolean;
-  pipelineStagesData: { id: string; name: string }[];
-  isPipelineStagesLoading: boolean;
   countryOptions: Option[];
   timezoneOptions: Option[];
   languageOptions: Option[];
@@ -35,8 +33,6 @@ export function ImportBatchSettingsSection({
   priorityOptions,
   leadSourcesData,
   isLeadSourcesLoading,
-  pipelineStagesData,
-  isPipelineStagesLoading,
   countryOptions,
   timezoneOptions,
   languageOptions,
@@ -70,7 +66,9 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {statusOptions.map((status) => (
                 <SelectItem key={status} value={status}>
                   {t(`status.${status}` as never)}
@@ -95,7 +93,9 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {priorityOptions.map((priority) => (
                 <SelectItem key={priority} value={priority}>
                   {t(`priority.${priority}` as never)}
@@ -118,35 +118,12 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {leadSourcesData.map((source) => (
                 <SelectItem key={source.id} value={source.id}>
                   {source.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="grid gap-1">
-          <p className="text-sm font-medium">
-            {t('import.settings.pipelineStage')}
-          </p>
-          <Select
-            value={batchSettings.pipeline_stage_id || NONE_VALUE}
-            onValueChange={(value) =>
-              setBatchSettings((prev) => ({ ...prev, pipeline_stage_id: value }))
-            }
-            disabled={isPipelineStagesLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('import.settings.select')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
-              {pipelineStagesData.map((stage) => (
-                <SelectItem key={stage.id} value={stage.id}>
-                  {stage.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -168,7 +145,9 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {countryOptions.map((country) => (
                 <SelectItem key={country.value} value={country.value}>
                   {country.label}
@@ -193,7 +172,9 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {timezoneOptions.map((timezone) => (
                 <SelectItem key={timezone.value} value={timezone.value}>
                   {timezone.label}
@@ -220,7 +201,9 @@ export function ImportBatchSettingsSection({
               <SelectValue placeholder={t('import.settings.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={NONE_VALUE}>{t('import.settings.none')}</SelectItem>
+              <SelectItem value={NONE_VALUE}>
+                {t('import.settings.none')}
+              </SelectItem>
               {languageOptions.map((language) => (
                 <SelectItem key={language.value} value={language.value}>
                   {language.label}

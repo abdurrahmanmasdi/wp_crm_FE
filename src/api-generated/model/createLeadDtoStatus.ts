@@ -11,7 +11,10 @@ export type CreateLeadDtoStatus =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CreateLeadDtoStatus = {
-  OPEN: 'OPEN',
+  NEW: 'NEW',
+  QUALIFYING: 'QUALIFYING',
+  READY_TO_PAY: 'READY_TO_PAY',
+  HANDED_OFF: 'HANDED_OFF',
   WON: 'WON',
   LOST: 'LOST',
   UNQUALIFIED: 'UNQUALIFIED',

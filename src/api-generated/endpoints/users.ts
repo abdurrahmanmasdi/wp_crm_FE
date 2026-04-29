@@ -775,7 +775,7 @@ export const useUsersControllerCancelJoinRequestV1 = <
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Retrieves combined user profile, membership info, and calculated sales metrics (MTD revenue and active pipeline value)
+ * Retrieves combined user profile, membership info, and calculated sales metrics (MTD revenue)
  * @summary Get performance dashboard profile
  */
 export const usersControllerGetPerformanceProfileV1 = (

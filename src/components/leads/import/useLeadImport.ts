@@ -12,10 +12,7 @@ import {
   MAJOR_TIMEZONES,
   SUPPORTED_LANGUAGES,
 } from '@/constants/regions';
-import {
-  useLeadSourcesQuery,
-  usePipelineStagesQuery,
-} from '@/hooks/useCrmSettings';
+import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
 import { getErrorMessage } from '@/lib/error-utils';
 import { queryKeys } from '@/lib/query-keys';
 import { useLeadsControllerBulkCreateV1 } from '@/api-generated/endpoints/leads';
@@ -71,7 +68,15 @@ const DEFAULT_PROGRESS: LeadImportProgress = {
   failed: 0,
 };
 
-const statusOptions: LeadStatus[] = ['OPEN', 'WON', 'LOST', 'UNQUALIFIED'];
+const statusOptions: LeadStatus[] = [
+  'NEW',
+  'WON',
+  'LOST',
+  'HANDED_OFF',
+  'QUALIFYING',
+  'READY_TO_PAY',
+  'UNQUALIFIED',
+];
 const priorityOptions: LeadPriority[] = ['HOT', 'WARM', 'COLD'];
 
 const BATCH_SIZE = 500;
@@ -185,7 +190,6 @@ export function useLeadImport({ organizationId }: UseLeadImportParams) {
   const t = useTranslations('Leads');
   const tTimezones = useTranslations('Timezones');
   const queryClient = useQueryClient();
-  const pipelineStagesQuery = usePipelineStagesQuery();
   const leadSourcesQuery = useLeadSourcesQuery({ activeOnly: true });
   const bulkCreateMutation = useLeadsControllerBulkCreateV1();
 
@@ -413,13 +417,6 @@ export function useLeadImport({ organizationId }: UseLeadImportParams) {
         payload.source_id = batchSettings.source_id as any;
       }
 
-      if (
-        batchSettings.pipeline_stage_id &&
-        batchSettings.pipeline_stage_id !== NONE_VALUE
-      ) {
-        payload.pipeline_stage_id = batchSettings.pipeline_stage_id as any;
-      }
-
       validLeads.push(payload);
     }
 
@@ -499,8 +496,6 @@ export function useLeadImport({ organizationId }: UseLeadImportParams) {
     languageOptions,
     leadSourcesData: leadSourcesQuery.data ?? [],
     isLeadSourcesLoading: leadSourcesQuery.isLoading,
-    pipelineStagesData: pipelineStagesQuery.data ?? [],
-    isPipelineStagesLoading: pipelineStagesQuery.isLoading,
     setMapping,
     setBatchSettings,
     handleOpenChange,

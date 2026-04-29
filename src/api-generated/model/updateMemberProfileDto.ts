@@ -17,11 +17,6 @@ export interface UpdateMemberProfileDto {
   /** Availability status of the member */
   availability_status?: UpdateMemberProfileDtoAvailabilityStatus;
   /**
-   * Maximum number of active leads this member can handle
-   * @minimum 1
-   */
-  max_active_leads?: number;
-  /**
    * Commission rate as a percentage (0-100)
    * @minimum 0
    * @maximum 100

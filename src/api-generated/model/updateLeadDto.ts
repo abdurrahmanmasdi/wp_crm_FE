@@ -16,7 +16,6 @@ import type { UpdateLeadDtoEstimatedValue } from './updateLeadDtoEstimatedValue'
 import type { UpdateLeadDtoCurrency } from './updateLeadDtoCurrency';
 import type { UpdateLeadDtoExpectedServiceDate } from './updateLeadDtoExpectedServiceDate';
 import type { UpdateLeadDtoNextFollowUpAt } from './updateLeadDtoNextFollowUpAt';
-import type { UpdateLeadDtoPipelineStageId } from './updateLeadDtoPipelineStageId';
 import type { UpdateLeadDtoAssignedAgentId } from './updateLeadDtoAssignedAgentId';
 import type { UpdateLeadDtoSourceId } from './updateLeadDtoSourceId';
 
@@ -48,8 +47,6 @@ export interface UpdateLeadDto {
   expected_service_date?: UpdateLeadDtoExpectedServiceDate;
   /** @nullable */
   next_follow_up_at?: UpdateLeadDtoNextFollowUpAt;
-  /** @nullable */
-  pipeline_stage_id?: UpdateLeadDtoPipelineStageId;
   /** @nullable */
   assigned_agent_id?: UpdateLeadDtoAssignedAgentId;
   /** @nullable */

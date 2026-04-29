@@ -16,7 +16,6 @@ import type { CreateLeadDtoEstimatedValue } from './createLeadDtoEstimatedValue'
 import type { CreateLeadDtoCurrency } from './createLeadDtoCurrency';
 import type { CreateLeadDtoExpectedServiceDate } from './createLeadDtoExpectedServiceDate';
 import type { CreateLeadDtoNextFollowUpAt } from './createLeadDtoNextFollowUpAt';
-import type { CreateLeadDtoPipelineStageId } from './createLeadDtoPipelineStageId';
 import type { CreateLeadDtoAssignedAgentId } from './createLeadDtoAssignedAgentId';
 import type { CreateLeadDtoSourceId } from './createLeadDtoSourceId';
 
@@ -48,8 +47,6 @@ export interface CreateLeadDto {
   expected_service_date?: CreateLeadDtoExpectedServiceDate;
   /** @nullable */
   next_follow_up_at?: CreateLeadDtoNextFollowUpAt;
-  /** @nullable */
-  pipeline_stage_id?: CreateLeadDtoPipelineStageId;
   /** @nullable */
   assigned_agent_id?: CreateLeadDtoAssignedAgentId;
   /** @nullable */

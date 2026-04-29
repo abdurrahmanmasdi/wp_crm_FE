@@ -3,23 +3,16 @@ import axios from 'axios';
 
 import {
   createLeadSource,
-  createPipelineStage,
   deleteLeadSource,
-  deletePipelineStage,
   getLeadSources,
-  getPipelineStages,
   updateLeadSource,
-  updatePipelineStage,
 } from '@/lib/api/crm-settings';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/useAuthStore';
 import type {
   CreateLeadSourcePayload,
-  CreatePipelineStagePayload,
   LeadSource,
-  PipelineStage,
   UpdateLeadSourcePayload,
-  UpdatePipelineStagePayload,
 } from '@/types/crm-settings-generated';
 
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
@@ -33,10 +26,6 @@ function shouldRetryRequest(failureCount: number, error: unknown): boolean {
   return failureCount < 3;
 }
 
-async function fetchPipelineStages(orgId: string): Promise<PipelineStage[]> {
-  return getPipelineStages(orgId);
-}
-
 async function fetchLeadSources(orgId: string): Promise<LeadSource[]> {
   return getLeadSources(orgId);
 }
@@ -44,115 +33,6 @@ async function fetchLeadSources(orgId: string): Promise<LeadSource[]> {
 async function fetchActiveLeadSources(orgId: string): Promise<LeadSource[]> {
   return getLeadSources(orgId, {
     activeOnly: true,
-  });
-}
-
-/**
- * Loads pipeline stages for the active organization.
- *
- * React Query state managed:
- * - Query key: `queryKeys.crmSettings.pipelineStages(activeOrganizationId)`
- *
- * @returns Query result for normalized and sorted pipeline stages.
- */
-export function usePipelineStagesQuery() {
-  const organizationId = useAuthStore((state) => state.activeOrganizationId);
-
-  return useQuery({
-    queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
-    queryFn: () => fetchPipelineStages(organizationId!),
-    enabled: Boolean(organizationId),
-    retry: shouldRetryRequest,
-  });
-}
-
-/**
- * Creates a new pipeline stage for the active organization.
- *
- * Side effects:
- * - Invalidates pipeline stages query cache after successful mutation.
- *
- * @returns Mutation object for pipeline stage creation.
- */
-export function useCreatePipelineStageMutation() {
-  const queryClient = useQueryClient();
-  const organizationId = useAuthStore((state) => state.activeOrganizationId);
-
-  return useMutation({
-    mutationFn: (payload: CreatePipelineStagePayload) => {
-      if (!organizationId) {
-        throw new Error('No active organization selected.');
-      }
-
-      return createPipelineStage(organizationId, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
-      });
-    },
-  });
-}
-
-/**
- * Updates an existing pipeline stage for the active organization.
- *
- * Side effects:
- * - Invalidates pipeline stages query cache after successful mutation.
- *
- * @returns Mutation object for pipeline stage updates.
- */
-export function useUpdatePipelineStageMutation() {
-  const queryClient = useQueryClient();
-  const organizationId = useAuthStore((state) => state.activeOrganizationId);
-
-  return useMutation({
-    mutationFn: ({
-      stageId,
-      payload,
-    }: {
-      stageId: string;
-      payload: UpdatePipelineStagePayload;
-    }) => {
-      if (!organizationId) {
-        throw new Error('No active organization selected.');
-      }
-
-      return updatePipelineStage(organizationId, stageId, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
-      });
-    },
-  });
-}
-
-/**
- * Deletes a pipeline stage for the active organization.
- *
- * Side effects:
- * - Invalidates pipeline stages query cache after successful mutation.
- *
- * @returns Mutation object for pipeline stage deletion.
- */
-export function useDeletePipelineStageMutation() {
-  const queryClient = useQueryClient();
-  const organizationId = useAuthStore((state) => state.activeOrganizationId);
-
-  return useMutation({
-    mutationFn: (stageId: string) => {
-      if (!organizationId) {
-        throw new Error('No active organization selected.');
-      }
-
-      return deletePipelineStage(organizationId, stageId);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.crmSettings.pipelineStages(organizationId),
-      });
-    },
   });
 }
 

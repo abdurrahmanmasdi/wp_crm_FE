@@ -10,10 +10,7 @@ import {
 } from '@/components/ui/form-controls/SharedSearchableSelectField';
 import { SharedSelect } from '@/components/ui/form-controls/SharedSelect';
 import { SharedTextField } from '@/components/ui/form-controls/SharedTextField';
-import {
-  useLeadSourcesQuery,
-  usePipelineStagesQuery,
-} from '@/hooks/useCrmSettings';
+import { useLeadSourcesQuery } from '@/hooks/useCrmSettings';
 
 import {
   type AddLeadFormValues,
@@ -34,18 +31,8 @@ export function LeadSalesSection({
   disabled = false,
 }: LeadSalesSectionProps) {
   const t = useTranslations('Leads');
-  const pipelineStagesQuery = usePipelineStagesQuery();
   const leadSourcesQuery = useLeadSourcesQuery({ activeOnly: true });
   const { control } = useFormContext<AddLeadFormValues>();
-
-  const pipelineStageOptions = useMemo(
-    () =>
-      (pipelineStagesQuery.data ?? []).map((stage) => ({
-        value: stage.id,
-        label: stage.name,
-      })),
-    [pipelineStagesQuery.data]
-  );
 
   const leadSourceOptions = useMemo(
     () =>
@@ -56,7 +43,6 @@ export function LeadSalesSection({
     [leadSourcesQuery.data]
   );
 
-  const isPipelineStagesLoading = pipelineStagesQuery.isLoading;
   const isLeadSourcesLoading = leadSourcesQuery.isLoading;
 
   const statusSelectOptions = useMemo(
@@ -128,19 +114,6 @@ export function LeadSalesSection({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <SharedSearchableSelectField
-          control={control}
-          name="pipeline_stage_id"
-          label={t('form.fields.pipeline_stage_id.label')}
-          placeholder={t('form.fields.pipeline_stage_id.placeholder')}
-          options={pipelineStageOptions}
-          searchPlaceholder={t('form.searchPlaceholder')}
-          emptyLabel={t('form.noResults')}
-          allowNone
-          noneLabel={t('form.noneOption')}
-          disabled={disabled || isPipelineStagesLoading}
-        />
-
         <SharedSearchableSelectField
           control={control}
           name="assigned_agent_id"

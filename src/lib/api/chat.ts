@@ -1,13 +1,11 @@
 import {
   chatControllerCreateConversationV1,
-  chatControllerCreateGroupConversationV1,
   chatControllerGetConversationMessagesV1,
   chatControllerGetConversationsV1,
 } from '@/api-generated/endpoints/chat';
 import type {
   ChatControllerGetConversationMessagesV1Params,
   CreateConversationDto,
-  CreateGroupConversationDto,
 } from '@/api-generated/model';
 import type { Conversation, Message } from '@/types/chat-generated';
 
@@ -195,25 +193,6 @@ export const createConversation = async (
   const response = (await chatControllerCreateConversationV1({
     targetUserId,
   } as CreateConversationDto)) as unknown;
-
-  return extractConversation(response);
-};
-
-/**
- * Creates a new group conversation with a name and participant IDs.
- *
- * Endpoint: `POST /chat/groups`
- *
- * @param payload Group payload containing `name` and `participantIds`.
- * @returns A promise that resolves to the created conversation from the API `data` envelope.
- */
-export const createGroupConversation = async (payload: {
-  name: string;
-  participantIds: string[];
-}): Promise<Conversation> => {
-  const response = (await chatControllerCreateGroupConversationV1(
-    payload as CreateGroupConversationDto
-  )) as unknown;
 
   return extractConversation(response);
 };

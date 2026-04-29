@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -18,7 +17,6 @@ import {
 import { LeadsDataTable } from '@/components/leads/LeadsDataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppAction, AppResource } from '@/constants/permissions.registry';
-import { usePipelineStagesQuery } from '@/hooks/useCrmSettings';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useLeads } from '@/hooks/useLeads';
 import { getErrorMessage } from '@/lib/error-utils';
@@ -41,19 +39,6 @@ const SORTABLE_FIELDS: LeadSortBy[] = [
   'estimated_value',
   'created_at',
 ];
-
-const LeadsKanbanBoard = dynamic(
-  () =>
-    import('@/components/leads/board/LeadsKanbanBoard').then(
-      (mod) => mod.LeadsKanbanBoard
-    ),
-  {
-    loading: () => (
-      <div className="border-muted h-150 w-full animate-pulse rounded-xl border-2 border-dashed" />
-    ),
-    ssr: false,
-  }
-);
 
 function parseSortBy(value: string | null): LeadSortBy | undefined {
   if (!value) {
@@ -154,7 +139,6 @@ export default function LeadsPage() {
     },
     debouncedSearch
   );
-  const pipelineStagesQuery = usePipelineStagesQuery();
 
   useEffect(() => {
     setSearchInput(searchParam);
@@ -438,35 +422,6 @@ export default function LeadsPage() {
               sortDir={sortDirParam}
               onSortChange={handleSortChange}
             />
-          </TabsContent>
-
-          <TabsContent
-            value="board"
-            className="mt-0 flex min-h-0 flex-1 flex-col"
-          >
-            {leadsQuery.isLoading || pipelineStagesQuery.isLoading ? (
-              <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
-                <p className="text-muted-foreground text-sm">{t('loading')}</p>
-              </section>
-            ) : leadsQuery.error || pipelineStagesQuery.error ? (
-              <section className="bg-card flex min-h-0 flex-1 rounded-2xl border border-white/5 p-4 shadow-2xl shadow-black/20">
-                <div className="bg-background w-full rounded-xl border border-dashed border-white/10 p-6 text-center">
-                  <p className="text-destructive text-sm font-semibold">
-                    {t('loadErrorTitle')}
-                  </p>
-                  <p className="text-muted-foreground mt-2 text-xs">
-                    {getErrorMessage(
-                      leadsQuery.error ?? pipelineStagesQuery.error
-                    )}
-                  </p>
-                </div>
-              </section>
-            ) : (
-              <LeadsKanbanBoard
-                leads={leads}
-                pipelineStages={pipelineStagesQuery.data ?? []}
-              />
-            )}
           </TabsContent>
         </Tabs>
       )}

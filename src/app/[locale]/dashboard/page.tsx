@@ -1,8 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-
-import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
 import {
   LeadsBySourceChart,
@@ -77,10 +75,6 @@ export default function DashboardPage() {
         </section>
       ) : (
         <>
-          <DashboardKPIs
-            pipelineOverview={metricsQuery.data.pipelineOverview}
-          />
-
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <LeadsByStageChart
               data={metricsQuery.data.pipelineOverview.leadsByStage}

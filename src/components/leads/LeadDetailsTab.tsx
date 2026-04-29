@@ -7,7 +7,6 @@ import type { Lead } from '@/types/leads-generated';
 
 type LeadDetailsTabProps = {
   lead: Lead;
-  pipelineStageName: string;
   sourceName: string;
   assignedAgentName: string;
   localizedCountry: string;
@@ -39,7 +38,6 @@ function DetailItem({
 
 export function LeadDetailsTab({
   lead,
-  pipelineStageName,
   sourceName,
   assignedAgentName,
   localizedCountry,
@@ -62,11 +60,11 @@ export function LeadDetailsTab({
             label={t('detailSheet.fields.estimatedValue')}
             value={formatEstimatedValue(lead.estimated_value, lead.currency)}
           />
+
           <DetailItem
-            label={t('detailSheet.fields.pipelineStage')}
-            value={pipelineStageName}
+            label={t('detailSheet.fields.source')}
+            value={sourceName}
           />
-          <DetailItem label={t('detailSheet.fields.source')} value={sourceName} />
           <DetailItem
             label={t('detailSheet.fields.assignedAgent')}
             value={assignedAgentName}
