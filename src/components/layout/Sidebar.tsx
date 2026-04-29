@@ -51,16 +51,16 @@ const navigationItems: NavigationItem[] = [
     labelKey: 'settings',
     icon: Settings,
     children: [
-      {
-        href: '/dashboard/settings/team',
-        labelKey: 'teamManagement',
-        resource: AppResource.TEAM_MEMBERS,
-      },
-      {
-        href: '/dashboard/settings/roles',
-        labelKey: 'rolesPermissions',
-        resource: AppResource.ROLES,
-      },
+      // {
+      //   href: '/dashboard/settings/team',
+      //   labelKey: 'teamManagement',
+      //   resource: AppResource.TEAM_MEMBERS,
+      // },
+      // {
+      //   href: '/dashboard/settings/roles',
+      //   labelKey: 'rolesPermissions',
+      //   resource: AppResource.ROLES,
+      // },
       {
         href: '/dashboard/settings/organization',
         labelKey: 'orgSettings',

@@ -123,7 +123,7 @@ export const useAuthControllerLoginV1 = <TError = void, TContext = unknown>(
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * @summary Verify email using one-time token
+ * @summary Verify email using one-time token and issue session
  */
 export const authControllerVerifyEmailV1 = (
   verifyEmailDto: VerifyEmailDto,
@@ -187,7 +187,7 @@ export type AuthControllerVerifyEmailV1MutationBody = VerifyEmailDto;
 export type AuthControllerVerifyEmailV1MutationError = unknown;
 
 /**
- * @summary Verify email using one-time token
+ * @summary Verify email using one-time token and issue session
  */
 export const useAuthControllerVerifyEmailV1 = <
   TError = unknown,

@@ -9,12 +9,19 @@ import axios from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { authControllerRegisterV1 } from '@/api-generated/endpoints/auth';
-import { usersControllerAcceptInviteV1 } from '@/api-generated/endpoints/users';
+import {
+  authControllerLoginV1,
+  authControllerRegisterV1,
+} from '@/api-generated/endpoints/auth';
+import {
+  usersControllerAcceptInviteV1,
+  usersControllerGetCurrentUserV1,
+} from '@/api-generated/endpoints/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useAuthStore, type AuthUser } from '@/store/useAuthStore';
 
 const registerSchema = z.object({
   first_name: z.string().trim().min(1, 'First name is required'),
@@ -53,6 +60,7 @@ export default function RegisterPage() {
   const t = useTranslations('Auth');
   const searchParams = useSearchParams();
   const [submitError, setSubmitError] = useState('');
+  const setAuth = useAuthStore((state) => state.setAuth);
   const inviteToken = searchParams.get('inviteToken');
   const inviteId = searchParams.get('inviteId');
 
@@ -81,6 +89,21 @@ export default function RegisterPage() {
 
       if (inviteId) {
         await usersControllerAcceptInviteV1(inviteId);
+      }
+
+      try {
+        await authControllerLoginV1({
+          email: values.email,
+          password: values.password,
+        });
+        const userResponse = await usersControllerGetCurrentUserV1();
+        setAuth(userResponse);
+      } catch {
+        setAuth({
+          email: values.email,
+          first_name: values.first_name,
+          last_name: values.last_name,
+        } as AuthUser);
       }
 
       router.push(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import Cookies from 'js-cookie';
+import axios from 'axios';
 import { usersControllerGetCurrentUserV1 } from '@/api-generated/endpoints/users';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -27,6 +27,30 @@ export function AuthInitializer() {
     (state) => state.finishInitialization
   );
 
+  const isUnverifiedEmailError = (error: unknown): boolean => {
+    if (!axios.isAxiosError(error)) {
+      return false;
+    }
+
+    const responseMessage =
+      error.response?.data?.message ?? error.response?.data?.error;
+    const normalizedMessage =
+      typeof responseMessage === 'string'
+        ? responseMessage.toLowerCase()
+        : Array.isArray(responseMessage) && responseMessage.length > 0
+          ? String(responseMessage[0]).toLowerCase()
+          : '';
+
+    return (
+      (error.response?.status === 403 &&
+        normalizedMessage.includes('verify') &&
+        normalizedMessage.includes('email')) ||
+      normalizedMessage.includes('email not verified') ||
+      normalizedMessage.includes('unverified') ||
+      normalizedMessage.includes('verification required')
+    );
+  };
+
   useEffect(() => {
     // Wait for Zustand hydration to complete
     if (!_hasHydrated) {
@@ -39,24 +63,15 @@ export function AuthInitializer() {
     const initializeAuth = async () => {
       startInitialization();
 
-      const token = Cookies.get('access_token');
-      if (!token) {
-        if (isMounted) {
-          clearAuthState();
-          finishInitialization();
-        }
-        return;
-      }
-
       try {
         const userResponse = await usersControllerGetCurrentUserV1();
 
         if (isMounted) {
           setAuth(userResponse);
         }
-      } catch {
-        if (isMounted) {
-          // If /users/me fails (e.g., token expired), clear all auth state.
+      } catch (error) {
+        if (isMounted && !isUnverifiedEmailError(error)) {
+          // If /users/me fails for non-verification reasons, clear auth state.
           clearAuthState();
         }
       } finally {

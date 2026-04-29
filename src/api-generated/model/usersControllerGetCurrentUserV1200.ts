@@ -12,6 +12,7 @@ export type UsersControllerGetCurrentUserV1200 = {
   first_name?: string;
   last_name?: string;
   created_at?: string;
+  is_email_verified?: boolean;
   /** User permissions for the specified organization */
   permissions?: string[];
 };

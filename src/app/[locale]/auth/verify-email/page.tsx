@@ -1,66 +1,162 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { CheckCircle2, MailWarning, TriangleAlert } from 'lucide-react';
+import Cookies from 'js-cookie';
+import { Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
   authControllerResendVerificationV1,
   authControllerVerifyEmailV1,
 } from '@/api-generated/endpoints/auth';
+import { useUsersControllerGetCurrentUserV1 } from '@/api-generated/endpoints/users';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useRouter } from '@/i18n/routing';
+import { accessTokenCookieAttributes } from '@/lib/auth-cookie';
 import { getErrorMessage } from '@/lib/error-utils';
+import { useAuthStore, type AuthUser } from '@/store/useAuthStore';
 
-type VerificationStatus = 'loading' | 'success' | 'error';
+type VerifiableUser = {
+  isEmailVerified?: boolean;
+  is_email_verified?: boolean;
+  email_verified?: boolean;
+  status?: string;
+};
+
+function isEmailVerified(user: AuthUser | null): boolean {
+  if (!user) {
+    return false;
+  }
+
+  const candidate = user as AuthUser & VerifiableUser;
+
+  if (typeof candidate.isEmailVerified === 'boolean') {
+    return candidate.isEmailVerified;
+  }
+
+  if (typeof candidate.is_email_verified === 'boolean') {
+    return candidate.is_email_verified;
+  }
+
+  if (typeof candidate.email_verified === 'boolean') {
+    return candidate.email_verified;
+  }
+
+  if (typeof candidate.status === 'string') {
+    return candidate.status.toUpperCase() === 'VERIFIED';
+  }
+
+  return false;
+}
+
 const RESEND_COOLDOWN_SECONDS = 8;
 
-export default function VerifyEmailPage() {
-  const searchParams = useSearchParams();
-  const t = useTranslations('Auth');
-  const token = (searchParams.get('token') ?? '').trim();
+type VerifyEmailResponse = {
+  access_token?: string;
+  accessToken?: string;
+  user?: AuthUser;
+};
 
-  const verifyTriggeredRef = useRef(false);
-  const [status, setStatus] = useState<VerificationStatus>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [resendEmail, setResendEmail] = useState(
-    searchParams.get('email') ?? ''
-  );
+function extractAccessToken(
+  payload: VerifyEmailResponse | null
+): string | null {
+  if (!payload) {
+    return null;
+  }
+
+  if (typeof payload.access_token === 'string' && payload.access_token) {
+    return payload.access_token;
+  }
+
+  if (typeof payload.accessToken === 'string' && payload.accessToken) {
+    return payload.accessToken;
+  }
+
+  return null;
+}
+
+export default function VerifyEmailPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const storedUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [isResending, setIsResending] = useState(false);
   const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const hasAutoResentRef = useRef(false);
+  const hasVerifiedRef = useRef(false);
+
+  const { data: currentUser } = useUsersControllerGetCurrentUserV1({
+    query: {
+      refetchInterval: 15000,
+    },
+  });
+
+  const resolvedUser = currentUser ?? storedUser;
+  const emailFromQuery = searchParams.get('email');
+  const emailForResend = resolvedUser?.email ?? emailFromQuery ?? '';
+  const email = emailForResend || 'your email';
+  const token = (searchParams.get('token') ?? '').trim();
+  const verified = isEmailVerified(resolvedUser ?? null);
 
   useEffect(() => {
-    if (!token) {
-      setStatus('error');
-      setErrorMessage(t('verifyEmailTokenMissing'));
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, [currentUser, setUser]);
+
+  useEffect(() => {
+    if (verified) {
+      router.push('/onboarding/create');
+    }
+  }, [router, verified]);
+
+  useEffect(() => {
+    if (!token || hasVerifiedRef.current) {
       return;
     }
 
-    if (verifyTriggeredRef.current) {
-      return;
-    }
+    hasVerifiedRef.current = true;
 
-    verifyTriggeredRef.current = true;
-
-    const verify = async () => {
+    const verifyToken = async () => {
       try {
-        setStatus('loading');
-        setErrorMessage('');
-        await authControllerVerifyEmailV1({ token });
-        setStatus('success');
+        setIsVerifying(true);
+        const response = (await authControllerVerifyEmailV1({
+          token,
+        })) as unknown as VerifyEmailResponse;
+        const accessToken = extractAccessToken(response);
+
+        if (accessToken) {
+          Cookies.set('access_token', accessToken, {
+            expires: 7,
+            ...accessTokenCookieAttributes,
+          });
+        }
+
+        if (response?.user) {
+          setAuth(response.user);
+        }
+
+        toast.success('Email verified. Redirecting...');
+        router.push('/onboarding/create');
       } catch (error) {
-        setStatus('error');
-        setErrorMessage(getErrorMessage(error) || t('somethingWrong'));
+        toast.error(getErrorMessage(error));
+      } finally {
+        setIsVerifying(false);
       }
     };
 
-    void verify();
-  }, [t, token]);
+    void verifyToken();
+  }, [router, setAuth, token]);
 
   useEffect(() => {
     if (resendCooldownSeconds <= 0) {
@@ -83,123 +179,78 @@ export default function VerifyEmailPage() {
     };
   }, [resendCooldownSeconds]);
 
-  const handleResend = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const normalizedEmail = resendEmail.trim();
-    if (!normalizedEmail) {
-      toast.error(t('emailValidationError'));
+  const handleResend = useCallback(async () => {
+    if (!emailForResend) {
+      toast.error('Please enter a valid email address.');
       return;
     }
 
     try {
       setIsResending(true);
       await authControllerResendVerificationV1({
-        email: normalizedEmail,
+        email: emailForResend,
       });
-      toast.success(t('resendVerificationSuccess'));
+      toast.success('Verification email resent.');
       setResendCooldownSeconds(RESEND_COOLDOWN_SECONDS);
     } catch (error) {
-      toast.error(getErrorMessage(error) || t('somethingWrong'));
+      toast.error(getErrorMessage(error));
     } finally {
       setIsResending(false);
     }
-  };
+  }, [emailForResend]);
+
+  useEffect(() => {
+    if (token || !emailForResend || hasAutoResentRef.current) {
+      return;
+    }
+
+    hasAutoResentRef.current = true;
+    void handleResend();
+  }, [emailForResend, token, handleResend]);
 
   return (
-    <main className="bg-background text-foreground min-h-screen px-6 py-10">
-      <div className="absolute top-6 right-6 flex items-center gap-2">
-        <ThemeToggle />
-        <LanguageToggle />
-      </div>
+    <main className="bg-background text-foreground relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.12),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,hsl(var(--accent)/0.18),transparent_45%)]" />
 
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md items-center">
-        <div className="bg-card w-full rounded-2xl border border-white/10 p-6 shadow-2xl shadow-black/20">
-          <div className="mb-6 space-y-2">
-            <p className="text-primary text-xs font-semibold tracking-[0.2em] uppercase">
-              {t('privateBeta')}
-            </p>
-            <h1 className="text-2xl font-semibold">{t('verifyEmailTitle')}</h1>
-            <p className="text-muted-foreground text-sm">
-              {t('verifyEmailDescription')}
-            </p>
-          </div>
-
-          {status === 'loading' ? (
-            <section className="space-y-4 py-3">
-              <div className="border-primary/30 border-t-primary mx-auto h-10 w-10 animate-spin rounded-full border-2" />
-              <p className="text-muted-foreground text-center text-sm">
-                {t('verifyingEmailLoading')}
-              </p>
-            </section>
-          ) : null}
-
-          {status === 'success' ? (
-            <section className="space-y-5 py-2">
-              <div className="flex justify-center">
-                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+      <div className="relative flex min-h-screen items-center justify-center px-6 py-12">
+        <Card className="w-full max-w-lg border-white/10 shadow-2xl shadow-black/10">
+          <CardHeader className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 text-primary flex h-11 w-11 items-center justify-center rounded-full">
+                <Mail className="h-5 w-5" />
               </div>
-              <p className="text-center text-sm text-emerald-400">
-                {t('verifyEmailSuccess')}
-              </p>
-
-              <Button asChild className="h-11 w-full rounded-2xl font-semibold">
-                <Link href="/auth/login">{t('proceedToLogin')}</Link>
-              </Button>
-            </section>
-          ) : null}
-
-          {status === 'error' ? (
-            <section className="space-y-4 py-2">
-              <div className="flex justify-center">
-                <TriangleAlert className="h-12 w-12 text-amber-500" />
+              <div className="space-y-1">
+                <CardTitle>Verify your email</CardTitle>
+                <CardDescription>
+                  We sent an email to{' '}
+                  <span className="text-foreground font-medium">{email}</span>.
+                </CardDescription>
               </div>
-              <p className="text-center text-sm text-red-400">
-                {errorMessage || t('verifyEmailErrorFallback')}
-              </p>
-
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <div className="mb-2 flex items-center gap-2 text-amber-400">
-                  <MailWarning className="h-4 w-4" />
-                  <p className="text-sm font-semibold">
-                    {t('resendVerificationTitle')}
-                  </p>
-                </div>
-
-                {resendCooldownSeconds > 0 ? (
-                  <p className="text-sm text-amber-300">
-                    {t('resendVerificationCooldown', {
-                      seconds: resendCooldownSeconds,
-                    })}
-                  </p>
-                ) : (
-                  <form className="space-y-3" onSubmit={handleResend}>
-                    <Input
-                      type="email"
-                      placeholder={t('emailPlaceholder')}
-                      value={resendEmail}
-                      onChange={(event) => setResendEmail(event.target.value)}
-                      className="bg-secondary h-11 rounded-2xl border-white/10"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={isResending}
-                      className="h-10 w-full rounded-xl"
-                    >
-                      {isResending
-                        ? t('resendingVerification')
-                        : t('resendVerificationButton')}
-                    </Button>
-                  </form>
-                )}
-              </div>
-
-              <Button asChild variant="outline" className="w-full rounded-xl">
-                <Link href="/auth/login">{t('backToLogin')}</Link>
-              </Button>
-            </section>
-          ) : null}
-        </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-muted-foreground flex items-center gap-3 text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>
+                Waiting for verification... This page will automatically update.
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-11 w-full"
+              onClick={handleResend}
+              disabled={isResending || resendCooldownSeconds > 0 || isVerifying}
+            >
+              {resendCooldownSeconds > 0
+                ? `Resend in ${resendCooldownSeconds}s`
+                : isResending
+                  ? 'Resending...'
+                  : 'Resend Email'}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
