@@ -32,10 +32,8 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
   const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasAutoScrolledRef = useRef<string | null>(null);
 
-  // Get current user from auth store
-  const currentUserId = useAuthStore((state) => state.user?.id);
+  // Get organization from auth store
   const organizationId = useAuthStore((state) => state.activeOrganizationId);
 
   // Get socket instance and connection status
@@ -62,68 +60,124 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
   const messages = useMemo(() => [...pagedMessages].reverse(), [pagedMessages]);
 
   /**
-   * Auto-scroll to bottom when new messages arrive
+   * Auto-scroll to bottom when conversation changes.
+   * On conversation switch, jump instantly to the newest message.
    */
   useEffect(() => {
-    if (messages.length === 0) {
-      return;
-    }
-
-    if (hasAutoScrolledRef.current === conversationId) {
-      return;
-    }
-
-    hasAutoScrolledRef.current = conversationId;
     requestAnimationFrame(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
     });
-  }, [conversationId, messages.length]);
-
-  useEffect(() => {
-    hasAutoScrolledRef.current = null;
   }, [conversationId]);
 
   /**
-   * Setup WebSocket listeners for real-time messages
+   * Setup WebSocket listeners for real-time messages.
+   *
+   * The backend emits a `new_message` event with the envelope shape:
+   *   {
+   *     type: "NEW_MESSAGE",
+   *     organizationId: string,
+   *     conversationId: string,
+   *     message: {
+   *       id: string,
+   *       content: string,
+   *       sender: "USER" | "AI",      // high-level role
+   *       type?: string,              // e.g. AI_TEXT, USER_TEXT
+   *       sender_id?: string,
+   *       sender_name?: string,
+   *       createdAt: string,
+   *     }
+   *   }
+   *
+   * We also keep backward-compat with raw `Message` objects emitted by
+   * the previous socket implementation (where conversation_id was top-level).
    */
   useEffect(() => {
     if (!socket || !isConnected || !conversationId) {
       return;
     }
 
-    // Join the conversation room
+    // Join the conversation room so the server scopes events to us.
     socket.emit('join_conversation', { conversationId });
     console.log(`[ActiveChat] Joined conversation: ${conversationId}`);
 
-    // Listen for new messages
-    const handleNewMessage = (message: Message) => {
-      if (message.conversation_id !== conversationId) {
+    const handleNewMessage = (payload: unknown) => {
+      // ── Normalise the incoming payload into a Message object ──────────────
+      //
+      // Two formats can arrive:
+      //  A) Envelope: { type, organizationId, conversationId, message: {...} }
+      //  B) Legacy raw Message object (conversation_id at root)
+      let msg: Message | null = null;
+
+      const raw = payload as Record<string, unknown>;
+
+      if (raw.type === 'NEW_MESSAGE' && raw.message) {
+        // Format A: envelope
+        const env = raw.message as Record<string, unknown>;
+        const envConversationId = String(raw.conversationId ?? '');
+        if (envConversationId !== conversationId) return; // wrong room
+
+        const isAiSender =
+          String(env.sender ?? '').toUpperCase() === 'AI' ||
+          String(env.type ?? '').startsWith('AI_');
+
+        msg = {
+          id: String(env.id ?? `ws-${Date.now()}`),
+          conversation_id: envConversationId,
+          sender_id: isAiSender ? '' : String(env.sender_id ?? ''),
+          type: String(env.type ?? (isAiSender ? 'AI_TEXT' : 'USER_TEXT')),
+          content: String(env.content ?? ''),
+          created_at: String(
+            env.createdAt ?? env.created_at ?? new Date().toISOString()
+          ),
+          updated_at: String(
+            env.updatedAt ?? env.updated_at ?? new Date().toISOString()
+          ),
+          sender: {
+            id: String(env.sender_id ?? ''),
+            first_name: isAiSender
+              ? 'AI'
+              : (String(env.sender_name ?? '').split(' ')[0] ?? ''),
+            last_name: isAiSender
+              ? 'Assistant'
+              : (String(env.sender_name ?? '')
+                  .split(' ')
+                  .slice(1)
+                  .join(' ') ?? ''),
+            email: '',
+          },
+        };
+      } else if (typeof raw.conversation_id === 'string') {
+        // Format B: legacy raw Message
+        if (raw.conversation_id !== conversationId) return;
+        msg = raw as unknown as Message;
+      } else {
+        // Unknown format — log and bail.
+        console.warn('[ActiveChat] Unrecognised new_message payload:', payload);
         return;
       }
 
-      console.log('[ActiveChat] New message received:', message);
+      console.log('[ActiveChat] New message received:', msg);
+
+      // ── Write into the React Query infinite cache ─────────────────────────
+      // Messages are stored newest-first in the API (index 0 = newest).
+      // Prepend to the first page so the reversed render shows it at bottom.
       queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
         conversationMessagesQueryKey(organizationId, conversationId),
-        (previousData) => {
-          if (!previousData) {
-            return {
-              pages: [[message]],
-              pageParams: [undefined],
-            };
+        (prev) => {
+          if (!prev) {
+            return { pages: [[msg!]], pageParams: [undefined] };
           }
-
-          const firstPage = previousData.pages[0] ?? [];
-          if (firstPage.some((item) => item.id === message.id)) {
-            return previousData;
-          }
-
+          const firstPage = prev.pages[0] ?? [];
+          // Dedup: ignore if already in cache (e.g. arrived via poll first)
+          if (firstPage.some((m) => m.id === msg!.id)) return prev;
           return {
-            ...previousData,
-            pages: [[message, ...firstPage], ...previousData.pages.slice(1)],
+            ...prev,
+            pages: [[msg!, ...firstPage], ...prev.pages.slice(1)],
           };
         }
       );
 
+      // Snap to bottom immediately after the DOM updates.
       requestAnimationFrame(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       });
@@ -131,9 +185,6 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
 
     socket.on('new_message', handleNewMessage);
 
-    /**
-     * Cleanup: Leave conversation and remove listener
-     */
     return () => {
       socket.off('new_message', handleNewMessage);
       socket.emit('leave_conversation', { conversationId });
@@ -256,7 +307,47 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
             </div>
           ) : (
             messages.map((message) => {
-              const isOwn = message.sender_id === currentUserId;
+              /**
+               * Bubble ownership rules (type-based):
+               *  - LEAD_TEXT, LEAD_VOICE, LEAD_TEXT → left side (patient/client)
+               *  - AI_TEXT → right side (AI assistant)
+               *  - AGENT_TEXT → right side (human clinic worker)
+               */
+              const msgType = message.type || 'USER_TEXT';
+              const isClient =
+                msgType === 'LEAD_TEXT' ||
+                msgType === 'LEAD_VOICE' ||
+                msgType === 'LEAD_TEXT';
+              const isAI = msgType === 'AI_TEXT';
+              const isAgent = msgType === 'AGENT_TEXT';
+              const isOwn = isAgent; // Only agent messages are "yours"
+
+              // Determine avatar label
+              let avatarLabel = '?';
+              if (isAI) {
+                avatarLabel = '🤖';
+              } else if (isAgent) {
+                avatarLabel = getInitials(
+                  message.sender.first_name,
+                  message.sender.last_name
+                );
+              } else if (isClient) {
+                avatarLabel = getInitials(
+                  message.sender.first_name,
+                  message.sender.last_name
+                );
+              }
+
+              // Determine label text
+              let labelText = 'Unknown';
+              if (isClient) {
+                labelText = 'Patient';
+              } else if (isAI) {
+                labelText = '🤖 AI Assistant';
+              } else if (isAgent) {
+                labelText = '👤 You (Agent)';
+              }
+
               return (
                 <div
                   key={message.id}
@@ -264,11 +355,16 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
                 >
                   {/* Avatar */}
                   <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className="text-xs">
-                      {getInitials(
-                        message.sender.first_name,
-                        message.sender.last_name
-                      )}
+                    <AvatarFallback
+                      className={`text-xs ${
+                        isAI
+                          ? 'bg-violet-500/20 text-violet-300'
+                          : isOwn
+                            ? 'bg-primary/20 text-primary'
+                            : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {avatarLabel}
                     </AvatarFallback>
                   </Avatar>
 
@@ -278,28 +374,30 @@ export function ActiveChat({ conversationId }: ActiveChatProps) {
                       isOwn ? 'items-end' : 'items-start'
                     }`}
                   >
-                    {/* Sender Name & Timestamp */}
-                    <div className="text-muted-foreground flex gap-2 text-xs">
-                      {!isOwn && (
-                        <span className="font-medium">
-                          {message.sender.first_name} {message.sender.last_name}
-                        </span>
-                      )}
-                      <span>{formatTimeAgo(message.created_at)}</span>
-                    </div>
+                    {/* Sender Label (above bubble) */}
+                    <span className="text-muted-foreground text-xs font-medium">
+                      {labelText}
+                    </span>
 
-                    {/* Message Content */}
+                    {/* Message Content Bubble */}
                     <div
                       className={`rounded-lg px-3 py-2 ${
                         isOwn
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
+                          ? 'bg-primary text-primary-foreground rounded-br-sm'
+                          : isAI
+                            ? 'rounded-bl-sm bg-violet-500/10 text-violet-100 ring-1 ring-violet-500/20'
+                            : 'bg-muted text-foreground rounded-bl-sm'
                       }`}
                     >
                       <p className="max-w-md text-sm wrap-break-word">
                         {message.content}
                       </p>
                     </div>
+
+                    {/* Timestamp (below bubble) */}
+                    <span className="text-muted-foreground text-xs">
+                      {formatTimeAgo(message.created_at)}
+                    </span>
                   </div>
                 </div>
               );

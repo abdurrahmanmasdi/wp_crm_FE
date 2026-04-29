@@ -28,6 +28,7 @@ export interface Conversation {
   organization_id: string;
   is_group: boolean;
   name: string | null;
+  handled_by?: 'AI' | 'HUMAN';
   created_at: string;
   updated_at: string;
   messages?: LatestMessage[];
@@ -38,6 +39,11 @@ export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
+  /**
+   * Backend enum: LEAD_TEXT | LEAD_AUDIO | USER_TEXT | USER_AUDIO | AI_TEXT | AI_AUDIO | SYSTEM_PROMPT | TOOL_CALL | TOOL_RESULT
+   * Absent for legacy records — treat missing/unknown as USER_TEXT.
+   */
+  type?: string;
   content: string;
   created_at: string;
   updated_at: string;

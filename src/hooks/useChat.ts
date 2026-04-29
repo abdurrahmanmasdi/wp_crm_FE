@@ -29,6 +29,17 @@ export function conversationMessagesQueryKey(
   return queryKeys.chat.messages(organizationId, conversationId);
 }
 
+/**
+ * Builds the canonical query key for the conversation list of an organization.
+ * Mirrors the key used inside useConversationsQuery so any component can
+ * target the same cache entry with queryClient.setQueryData / invalidateQueries.
+ */
+export function conversationsQueryKey(
+  organizationId: string | null | undefined
+) {
+  return queryKeys.chat.conversations(organizationId);
+}
+
 function shouldRetryRequest(failureCount: number, error: unknown): boolean {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
@@ -84,7 +95,7 @@ export function useChatHistoryQuery(conversationId: string | null) {
       ),
     initialPageParam: undefined,
     enabled: Boolean(organizationId && conversationId),
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes — WebSocket handles real-time updates
     retry: shouldRetryRequest,
     getNextPageParam: (lastPage) => {
       if (lastPage.length < CHAT_HISTORY_PAGE_SIZE) {
@@ -95,4 +106,16 @@ export function useChatHistoryQuery(conversationId: string | null) {
       return lastMessage?.id;
     },
   });
+}
+
+/**
+ * Returns true when a message was authored by the AI engine rather than a human.
+ *
+ * The backend stores AI messages with types `AI_TEXT` or `AI_AUDIO`.
+ * Messages whose sender_id is null/empty are also treated as AI-originated.
+ */
+export function isAiMessage(message: Message): boolean {
+  if (!message.sender_id) return true;
+  const type = (message as Message & { type?: string }).type ?? '';
+  return type === 'AI_TEXT' || type === 'AI_AUDIO';
 }

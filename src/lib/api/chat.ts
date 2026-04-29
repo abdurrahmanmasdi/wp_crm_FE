@@ -51,25 +51,44 @@ function normalizeUser(raw: unknown) {
   };
 }
 
-function normalizeMessage(raw: unknown): Message | null {
+function normalizeMessage(
+  raw: unknown,
+  fallbackConversationId?: string
+): Message | null {
   const record = asRecord(raw);
   const id = asString(record.id);
   const conversationId =
-    asString(record.conversation_id) || asString(record.conversationId);
+    asString(record.conversation_id) ||
+    asString(record.conversationId) ||
+    asString(fallbackConversationId);
   const senderId = asString(record.sender_id) || asString(record.senderId);
 
-  if (!id || !conversationId || !senderId) {
+  if (!id || !conversationId) {
     return null;
   }
+
+  const sender = normalizeUser(record.sender);
+  const messageType = asString(record.type);
+  const isAiMessageType = messageType.startsWith('AI_');
+  const safeSender =
+    sender.id || sender.first_name || sender.last_name || sender.email
+      ? sender
+      : {
+          id: senderId,
+          first_name: isAiMessageType ? 'AI' : '',
+          last_name: isAiMessageType ? 'Assistant' : '',
+          email: '',
+        };
 
   return {
     id,
     conversation_id: conversationId,
     sender_id: senderId,
     content: asString(record.content),
+    type: messageType || undefined,
     created_at: asString(record.created_at) || asString(record.createdAt),
     updated_at: asString(record.updated_at) || asString(record.updatedAt),
-    sender: normalizeUser(record.sender),
+    sender: safeSender,
   };
 }
 
@@ -99,7 +118,7 @@ function normalizeConversation(raw: unknown): Conversation | null {
     .filter((participant) => participant.id && participant.user.id);
 
   const messages = extractList(record.messages, ['messages'])
-    .map(normalizeMessage)
+    .map((message) => normalizeMessage(message, id))
     .filter((message): message is Message => message !== null);
 
   return {
@@ -175,7 +194,7 @@ export const getConversationMessages = async (
   )) as unknown;
 
   return extractList(response, ['data', 'items', 'messages'])
-    .map(normalizeMessage)
+    .map((message) => normalizeMessage(message, conversationId))
     .filter((message): message is Message => message !== null);
 };
 

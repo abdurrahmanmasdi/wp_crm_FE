@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, Plus } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/types/chat-generated';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useConversationsQuery } from '@/hooks/useChat';
+import { useConversationsQuery, conversationsQueryKey } from '@/hooks/useChat';
+import { useChatSocket } from '@/providers/ChatSocketProvider';
 import { NewChatDialog } from './NewChatDialog';
 
 /**
@@ -30,16 +32,100 @@ export function ConversationList() {
       ? (user as { id: string }).id
       : null;
 
+  const queryClient = useQueryClient();
+  const { socket, isConnected } = useChatSocket();
+
+  const organizationId = useAuthStore((state) => state.activeOrganizationId);
+
   /**
    * Fetch all conversations for the current user
    */
   const { data, isLoading, error } = useConversationsQuery();
 
   /**
+   * WebSocket: listen for new_message events and optimistically update the
+   * conversation list cache so the preview and ordering update instantly.
+   *
+   * Payload shape (same as ActiveChat):
+   *   { type: "NEW_MESSAGE", organizationId, conversationId, message: { id, content, sender, createdAt, ... } }
+   */
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleNewMessage = (payload: unknown) => {
+      const raw = payload as Record<string, unknown>;
+
+      // Only handle the typed envelope; ignore legacy raw Message shapes here
+      // because ConversationList doesn't need sub-conversation detail.
+      if (raw.type !== 'NEW_MESSAGE' || !raw.message) return;
+
+      const env = raw.message as Record<string, unknown>;
+      const eventConversationId = String(raw.conversationId ?? '');
+      const content = String(env.content ?? '');
+      const isAiSender =
+        String(env.sender ?? '').toUpperCase() === 'AI' ||
+        String(env.type ?? '').startsWith('AI_');
+      const senderName = isAiSender
+        ? 'AI'
+        : String(env.sender_name ?? env.sender_id ?? 'Unknown');
+      const arrivedAt = String(
+        env.createdAt ?? env.created_at ?? new Date().toISOString()
+      );
+
+      queryClient.setQueryData<Conversation[]>(
+        conversationsQueryKey(organizationId),
+        (prev) => {
+          if (!prev) return prev;
+
+          // Build a synthetic LatestMessage to replace the preview.
+          const previewMessage = {
+            id: String(env.id ?? `ws-${Date.now()}`),
+            conversation_id: eventConversationId,
+            sender_id: isAiSender ? '' : String(env.sender_id ?? ''),
+            content,
+            created_at: arrivedAt,
+            updated_at: arrivedAt,
+            sender: {
+              id: String(env.sender_id ?? ''),
+              first_name: senderName.split(' ')[0] ?? senderName,
+              last_name: senderName.split(' ').slice(1).join(' ') ?? '',
+              email: '',
+            },
+          };
+
+          const index = prev.findIndex((c) => c.id === eventConversationId);
+
+          if (index === -1) {
+            // Conversation not yet in cache — do nothing (next poll will add it).
+            return prev;
+          }
+
+          // Produce the updated conversation with the new preview + timestamp.
+          const updated: Conversation = {
+            ...prev[index]!,
+            updated_at: arrivedAt,
+            messages: [previewMessage],
+          };
+
+          // Move to top and replace in-place (immutably).
+          return [updated, ...prev.slice(0, index), ...prev.slice(index + 1)];
+        }
+      );
+    };
+
+    socket.on('new_message', handleNewMessage);
+    return () => {
+      socket.off('new_message', handleNewMessage);
+    };
+  }, [socket, isConnected, organizationId, queryClient]);
+
+  /**
    * Filter conversations based on search query
    */
   const filteredConversations = (data || []).filter((conversation) => {
     const query = searchQuery.toLowerCase();
+
+    if (!query) return true;
 
     // For group conversations, search by name
     if (conversation.is_group) {
@@ -51,7 +137,12 @@ export function ConversationList() {
       (p) => p.user_id !== currentUserId
     );
 
-    if (!otherParticipant) return false;
+    if (!otherParticipant) {
+      const fallbackName = (
+        conversation.name || `Conversation ${conversation.id}`
+      ).toLowerCase();
+      return fallbackName.includes(query);
+    }
 
     const fullName =
       `${otherParticipant.user.first_name} ${otherParticipant.user.last_name}`.toLowerCase();
@@ -84,8 +175,12 @@ export function ConversationList() {
     }
 
     // For DMs, show the other user's name
-    const otherParticipant = conversation.participants[0];
-    if (!otherParticipant) return t('unknownUser');
+    const otherParticipant = conversation.participants.find(
+      (p) => p.user_id !== currentUserId
+    );
+    if (!otherParticipant) {
+      return conversation.name || `Conversation ${conversation.id.slice(0, 8)}`;
+    }
 
     return `${otherParticipant.user.first_name} ${otherParticipant.user.last_name}`;
   };
@@ -103,8 +198,12 @@ export function ConversationList() {
         .toUpperCase();
     }
 
-    const otherParticipant = conversation.participants[0];
-    if (!otherParticipant) return '?';
+    const otherParticipant = conversation.participants.find(
+      (p) => p.user_id !== currentUserId
+    );
+    if (!otherParticipant) {
+      return 'CV';
+    }
 
     return `${otherParticipant.user.first_name[0]}${otherParticipant.user.last_name[0]}`.toUpperCase();
   };
@@ -122,11 +221,14 @@ export function ConversationList() {
     const latestMessage = conversation.messages[0];
     const snippet = latestMessage.content.substring(0, 50);
 
+    const senderLabel =
+      latestMessage.sender.first_name ||
+      latestMessage.sender.email.split('@')[0] ||
+      (latestMessage.sender_id ? t('unknownUser') : 'AI');
+
     return {
       text: snippet + (latestMessage.content.length > 50 ? '...' : ''),
-      sender:
-        latestMessage.sender.first_name ||
-        latestMessage.sender.email.split('@')[0],
+      sender: senderLabel,
     };
   };
 
