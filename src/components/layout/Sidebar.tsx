@@ -74,6 +74,10 @@ const navigationItems: NavigationItem[] = [
         href: '/dashboard/settings/ai',
         labelKey: 'aiAssistant',
       },
+      {
+        href: '/dashboard/settings/knowledge',
+        labelKey: 'knowledgeBase',
+      },
     ],
   },
 ] as const;
